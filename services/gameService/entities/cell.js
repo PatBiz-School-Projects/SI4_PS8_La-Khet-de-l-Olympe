@@ -1,0 +1,19 @@
+class Cell {
+
+    constructor(x,y) {
+        this.x = x;
+        this.y = y;
+        this.piece = null
+    }
+    get isAvailable(){
+        return this.piece === null;
+    }
+
+    addPiece(piece) {
+        this.piece = piece;
+    }
+
+    reset(){
+        this.piece = null;
+    }
+}
