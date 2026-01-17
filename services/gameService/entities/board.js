@@ -1,13 +1,15 @@
+const Cell = require('./cell')
 class Board {
     constructor(){
-        const board = [];
+        this.grid = [];
 
         for(let i = 0; i < 10; i++){
             const row = []
             for(let j = 0; j < 10; j++){
                 row.push(new Cell(i, j));
             }
-            board.push(row);
-        }
+            this.grid.push(row);
+    }
     }
 }
+module.exports = Board;
