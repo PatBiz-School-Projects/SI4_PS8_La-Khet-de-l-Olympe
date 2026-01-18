@@ -17,3 +17,5 @@ class Cell {
         this.piece = null;
     }
 }
+
+module.exports = Cell;
