@@ -26,6 +26,14 @@ class GameBoard extends HTMLElement {
             this.setUpCanvas();
             this.renderer = new Renderer(this.ctx, this.boardSize);
             const resData = await fetch("/api/init-board");
+            const data = await resData.json();
+            this.renderer.drawGrid(data.grid);
+            const event = new CustomEvent('turn-updated',{
+                detail: {player: data.currentPlayer},
+                bubbles:true,
+                composed: true,
+            });
+            this.dispatchEvent(event);
             /*await fetch("/api/place", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
