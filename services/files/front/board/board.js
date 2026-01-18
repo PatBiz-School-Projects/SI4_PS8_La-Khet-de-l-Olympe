@@ -5,6 +5,7 @@ class GameBoard extends HTMLElement {
         super();
         this.boardSize = 600;
         this.renderer = null;
+        this.data=null;
     }
 
     setUpCanvas(){
@@ -13,7 +14,10 @@ class GameBoard extends HTMLElement {
         this.canvas.width = this.boardSize;
         this.canvas.height = this.boardSize;
     }
-
+    renderBoard = () => {
+        if (!this.renderer || !this.data) return;
+        this.renderer.render(this.data, this.renderBoard);
+    };
     async connectedCallback() {
         try {
             const response = await fetch("board/board.html");
@@ -22,8 +26,17 @@ class GameBoard extends HTMLElement {
             this.setUpCanvas();
             this.renderer = new Renderer(this.ctx, this.boardSize);
             const resData = await fetch("/api/init-board");
-            const data = await resData.json();
-            this.renderer.drawGrid(data);
+            /*await fetch("/api/place", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    x: 4,
+                    y: 4,
+                    piece: { image: "pyramid.jpg", orientation: "N", owner: 1 }
+                })
+            });*/
+            this.data = await resData.json();
+            this.renderBoard();
         }catch (error) {
             console.log(error);
         }
