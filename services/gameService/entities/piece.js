@@ -1,4 +1,4 @@
-export const Dir = Object.freeze({
+const Dir = Object.freeze({
     N: "N",
     E: "E",
     S: "S",
@@ -14,7 +14,7 @@ function rotateTurns(dir, turns) {
     return DIR_ORDER[(i + t) % 4];
 }
 
-export class LaserImpact {
+class LaserImpact {
     static reflect(outDir) { return { type: "reflect", outDir }; }
     static absorb() { return { type: "absorb" }; }
     static destroy() { return { type: "destroy" }; }
@@ -90,13 +90,13 @@ const Reflective = (Base) => class extends Base {
     }
 };
 
-export class Pharao extends Piece {
+class Pharao extends Piece {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"pharaon.png");
     }
 }
 
-export class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
+class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"pyramid.jpg");
     }
@@ -108,7 +108,7 @@ export class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
     }
 }
 
-export class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
+class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"scarab.png");
     }
@@ -124,7 +124,7 @@ export class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
     changeSides(){} // à implémenter + tard
 }
 
-export class Anubis extends Reflective(Moveable(Rotatable(Piece))) {
+class Anubis extends Reflective(Moveable(Rotatable(Piece))) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"anubis.png");
     }
@@ -135,9 +135,11 @@ export class Anubis extends Reflective(Moveable(Rotatable(Piece))) {
     }
 }
 
-export class Sphinx extends Rotatable(Piece) {
+class Sphinx extends Rotatable(Piece) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"sphinx.png");
     }
     hitLaser(){} // à implémenter
 }
+
+module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharao,LaserImpact,Dir};
