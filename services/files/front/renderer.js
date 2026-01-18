@@ -5,7 +5,7 @@ export class Renderer{
     }
 
     drawGrid(data){
-        const grid = data.grid;
+        const grid = data;
         if(!grid)return;
 
         const gridSize = grid.length;

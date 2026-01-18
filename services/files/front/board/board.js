@@ -23,7 +23,13 @@ class GameBoard extends HTMLElement {
             this.renderer = new Renderer(this.ctx, this.boardSize);
             const resData = await fetch("/api/init-board");
             const data = await resData.json();
-            this.renderer.drawGrid(data);
+            this.renderer.drawGrid(data.grid);
+            const event = new CustomEvent('turn-updated',{
+                detail: {player: data.currentPlayer},
+                bubbles:true,
+                composed: true,
+            });
+            this.dispatchEvent(event);
         }catch (error) {
             console.log(error);
         }
