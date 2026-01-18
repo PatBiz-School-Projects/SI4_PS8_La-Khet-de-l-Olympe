@@ -21,8 +21,7 @@ class GameBoard extends HTMLElement {
     async connectedCallback() {
         try {
             const response = await fetch("board/board.html");
-            const html = await response.text();
-            this.innerHTML = html;
+            this.innerHTML = await response.text();
             this.setUpCanvas();
             this.renderer = new Renderer(this.ctx, this.boardSize);
             const resData = await fetch("/api/init-board");

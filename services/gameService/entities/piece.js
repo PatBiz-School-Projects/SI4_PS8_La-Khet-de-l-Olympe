@@ -120,7 +120,6 @@ class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
             [Dir.W]: { action: "reflect", outRel: Dir.S },
         };
     }
-
     changeSides(){} // à implémenter + tard
 }
 
