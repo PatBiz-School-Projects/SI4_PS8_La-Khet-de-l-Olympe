@@ -7,27 +7,17 @@ export const Dir = Object.freeze({
 
 const DIR_ORDER = [Dir.N, Dir.E, Dir.S, Dir.W];
 
-function rotateTurns(currentDirection, turns) {
-    const i = DIR_ORDER.indexOf(currentDirection);
+function rotateTurns(dir, turns) {
+    const i = DIR_ORDER.indexOf(dir);
     if (i === -1) throw new Error("Direction invalide");
     const t = ((turns % 4) + 4) % 4;
     return DIR_ORDER[(i + t) % 4];
 }
-function getLocalImpactSide(globalDir) {
-    const orientationTurns = DIR_ORDER.indexOf(this.orientation);
-    return rotateTurns(globalDir, -orientationTurns);
-}
-
-function getGlobalDirection(localDir) {
-    const orientationTurns = DIR_ORDER.indexOf(this.orientation);
-    return rotateTurns(localDir, orientationTurns);
-}
-
 
 export class LaserImpact {
     static reflect(outDir) { return { type: "reflect", outDir }; }
     static absorb() { return { type: "absorb" }; }
-    static destroy() { return { type: "destroy" }; } // destroy la pièce
+    static destroy() { return { type: "destroy" }; }
 }
 
 class Piece {
@@ -39,6 +29,16 @@ class Piece {
         this.image = image;
     }
 
+    getLocalImpactSide(globalDir) {
+        const turns = DIR_ORDER.indexOf(this.orientation);
+        return rotateTurns(globalDir, -turns);
+    }
+
+    getGlobalDirection(localDir) {
+        const turns = DIR_ORDER.indexOf(this.orientation);
+        return rotateTurns(localDir, turns);
+    }
+
     canRotate() { return false; }
     canMove() { return false; }
     canReflect() { return false; }
@@ -46,76 +46,73 @@ class Piece {
     rotate(turns) { throw new Error("This piece cannot rotate."); }
     move(x, y) { throw new Error("This piece cannot move."); }
 
-    onLaserHit(laserDirGlobal) {
+    onLaserHit() {
         return LaserImpact.destroy();
     }
 }
 
-class RotatePiece extends Piece {
+const Rotatable = (Base) => class extends Base {
     canRotate() { return true; }
-
-    rotate90() { return this.rotate(1); }
-
     rotate(turns) {
         this.orientation = rotateTurns(this.orientation, turns);
         return this.orientation;
     }
-}
+    rotate90() { return this.rotate(1); }
+};
 
-class MoveablePiece extends Piece {
+const Moveable = (Base) => class extends Base {
     canMove() { return true; }
-
     move(x, y) {
         this.x = x;
         this.y = y;
         return { x, y };
     }
-}
+};
 
-class ReflectivePiece extends Piece {
+const Reflective = (Base) => class extends Base {
     canReflect() { return true; }
 
-    constructor(owner, x, y, orientation, image) {
-        super(owner, x, y, orientation, image);
-        this.reflectiveSides = this.buildReflectiveSides();
-    }
-
-    buildReflectiveSides() { // par défaut si c'est pas dit c'est destroy
+    buildReflectiveSides() {
         throw new Error("Must be implemented");
     }
 
-    onLaserHit(laserDirectionGlobal) {
-        const impactSide = getLocalImpactSide(laserDirectionGlobal); // la direction globale d'où vient ke laser
-        const rule = this.reflectiveSides[impactSide] ?? { action: "destroy" }; // l'action lié au laser venant de cette direction
+    onLaserHit(laserDirGlobal) {
+        const impactLocal = this.getLocalImpactSide(laserDirGlobal); //
+        const rules = this.buildReflectiveSides();
+        const rule = rules[impactLocal] ?? { action: "destroy" };
 
         if (rule.action === "reflect") {
-            return LaserImpact.reflect(
-                getGlobalDirection(rule.outRel) // convertit la direction relative de la pièce en direction globale
-            );
+            return LaserImpact.reflect(this.getGlobalDirection(rule.outRel));
         }
-
-        return rule.action === "absorb" ? LaserImpact.absorb() : LaserImpact.destroy();
+        return rule.action === "absorb"
+            ? LaserImpact.absorb()
+            : LaserImpact.destroy();
     }
-
-}
+};
 
 export class Pharao extends Piece {
     constructor(owner,x,y,orientation) {
-        super(owner,x,y,orientation,"phararon.png");
+        super(owner,x,y,orientation,"pharaon.png");
     }
 }
 
-export class Pyramid extends MoveablePiece,RotatePiece,ReflectivePiece {
+export class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"pyramid.jpg");
     }
     buildReflectiveSides() {
-        
+        return {
+            [Dir.N]: { action: "reflect", outRel: Dir.E },
+            [Dir.E]: { action: "reflect", outRel: Dir.N },
+        };
     }
 }
 
-export class Scarab extends ReflectivePiece,MoveablePiece,RotatePiece {
-    buildFacesRel() {
+export class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
+    constructor(owner,x,y,orientation) {
+        super(owner,x,y,orientation,"scarab.png");
+    }
+    buildReflectiveSides() {
         return {
             [Dir.N]: { action: "reflect", outRel: Dir.E },
             [Dir.E]: { action: "reflect", outRel: Dir.N },
@@ -127,18 +124,18 @@ export class Scarab extends ReflectivePiece,MoveablePiece,RotatePiece {
     changeSides(){} // à implémenter + tard
 }
 
-export class Anubis extends ReflectivePiece,MoveablePiece,RotatePiece{
+export class Anubis extends Reflective(Moveable(Rotatable(Piece))) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"anubis.png");
     }
-    buildFacesRel() {
+    buildReflectiveSides() {
         return {
-            [Dir.N]: { action: "absorb"}
-        }
+            [Dir.N]: { action: "absorb" },
+        };
     }
 }
 
-export class Sphinx extends Piece{
+export class Sphinx extends Rotatable(Piece) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"sphinx.png");
     }
