@@ -40,14 +40,27 @@ class GameBoard extends HTMLElement {
                 body: JSON.stringify({
                     x: 4,
                     y: 4,
-                    piece: {image: "anubis.png", orientation: "N", owner: 1}
+                    piece: {image: "sphinx.png", orientation: "N", owner: 1}
                 })
             }));
             const data3 = await data2.json()
-            console.log(data3)
             this.data = data3.grid;
-            console.log(this.data)
             this.renderBoard();
+            const data4 = (await fetch("/api/move", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    x: 4,
+                    y: 4,
+                    owner: 1,
+                    fromX : 6,
+                    fromY : 6
+                }
+                )
+            }));
+            const data5 = await data4.json()
+            this.data = data5.grid;
+            this.renderBoard()
         }catch (error) {
             console.log(error);
         }

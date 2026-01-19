@@ -49,6 +49,13 @@ class Piece {
     onLaserHit() {
         return LaserImpact.destroy();
     }
+    toDto(){
+        return{
+            x:this.x,
+            y:this.y,
+            owner:this.owner
+        }
+    }
 }
 
 const Rotatable = (Base) => class extends Base {

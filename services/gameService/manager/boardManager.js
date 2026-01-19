@@ -33,6 +33,7 @@ class BoardManager {
     }
 
     movePiece(fromX, fromY, toX, toY) {
+        // précède par des middleware qui diront si le coup est légal (bon tour, bon move...)
         const piece = this.board.grid[fromY][fromX].piece;
         if (!piece) return false;
 
@@ -40,7 +41,11 @@ class BoardManager {
         this.board.grid[toY][toX].addPiece(piece);
 
         piece.move(toX, toY);
-        return true;
+        return {
+            ok : true,
+            detail: "PIECE_MOVED",
+            grid:this.board.grid
+        }
     }
 
 }

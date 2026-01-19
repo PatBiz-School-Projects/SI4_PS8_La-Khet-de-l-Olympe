@@ -17,6 +17,17 @@ const routes = {
             res.writeHead(400, { "Content-Type": "application/json" });
             res.end(JSON.stringify({ ok: false, error: "INVALID_JSON" }));
         }
+    },
+    '/api/move' : async (req,res) => {
+        try{
+            const { x,y,owner,fromX,fromY} = await readJsonBody(req);
+            const result = boardManager.movePiece(x,y,fromX,fromY);
+            res.writeHead(result.ok ? 200 : 400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(result));
+        } catch (e) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ ok: false, error: "INVALID_JSON" }));
+        }
     }
 };
 
