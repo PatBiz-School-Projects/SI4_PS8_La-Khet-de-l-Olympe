@@ -43,8 +43,7 @@ export class Renderer{
         this.ctx.strokeRect(0, 0, this.boardSize, this.boardSize);
     }
 
-    drawPieces(data, requestRedraw) {
-        const grid = data.grid;
+    drawPieces(grid, requestRedraw) {
         const gridSize = grid.length;
         const cellSize = this.boardSize / gridSize;
 

@@ -16,6 +16,7 @@ class GameBoard extends HTMLElement {
     }
     renderBoard = () => {
         if (!this.renderer || !this.data) return;
+        console.log("data"+this.data)
         this.renderer.render(this.data, this.renderBoard);
     };
     async connectedCallback() {
@@ -33,16 +34,19 @@ class GameBoard extends HTMLElement {
                 composed: true,
             });
             this.dispatchEvent(event);
-            /*await fetch("/api/place", {
+            const data2= (await fetch("/api/place", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
                     x: 4,
                     y: 4,
-                    piece: { image: "pyramid.jpg", orientation: "N", owner: 1 }
+                    piece: {image: "anubis.png", orientation: "N", owner: 1}
                 })
-            });*/
-            this.data = await resData.json();
+            }));
+            const data3 = await data2.json()
+            console.log(data3)
+            this.data = data3.grid;
+            console.log(this.data)
             this.renderBoard();
         }catch (error) {
             console.log(error);
