@@ -11,6 +11,11 @@ class GameBoard extends HTMLElement {
     setUpCanvas(){
         this.canvas = this.querySelector('#gameCanvas');
         this.ctx = this.canvas.getContext("2d");
+
+        const padding = 40;
+        const availableWidth = window.innerWidth - padding;
+        const availableHeight = window.innerHeight-30;
+        this.boardSize = Math.min(availableWidth, availableHeight);
         this.canvas.width = this.boardSize;
         this.canvas.height = this.boardSize;
     }
@@ -40,7 +45,7 @@ class GameBoard extends HTMLElement {
                 body: JSON.stringify({
                     x: 4,
                     y: 4,
-                    piece: {image: "sphinx.png", orientation: "N", owner: 1}
+                    piece: {image: "sphinx-removebg-preview.png", orientation: "N", owner: 1}
                 })
             }));
             const data3 = await data2.json()
