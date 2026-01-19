@@ -28,7 +28,7 @@ class BoardManager {
             move(nx, ny) { this.x = nx; this.y = ny}
         }
         this.board.grid[y][x].addPiece(piece);
-        return { ok: true, detail: "PIECE_PLACED", ...this.boardToDTO() }
+        return { ok: true, detail: "PIECE_PLACED", ...this.board.toDTO() }
 
     }
 

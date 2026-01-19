@@ -13,7 +13,7 @@ class Board {
     }
     toDTO() {
         return {
-            grid: this.board.grid.map(row =>
+            grid: this.grid.map(row =>
                 row.map(cell => ({
                     x: cell.x,
                     y: cell.y,

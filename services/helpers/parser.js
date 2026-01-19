@@ -1,4 +1,4 @@
-export function readJsonBody(req) {
+function readJsonBody(req) {
     return new Promise((resolve, reject) => {
         let body = "";
         req.on("data", chunk => body += chunk);
@@ -11,3 +11,5 @@ export function readJsonBody(req) {
         });
     });
 }
+
+module.exports = readJsonBody;
