@@ -11,6 +11,11 @@ class Board {
             this.grid.push(row);
         }
     }
+
+    getPiece(x,y){
+        return this.grid[x][y].getPiece();
+    }
+
     toDTO() {
         return {
             grid: this.grid.map(row =>
