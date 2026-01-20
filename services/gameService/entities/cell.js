@@ -20,6 +20,9 @@ class Cell {
     reset(){
         this.piece = null;
     }
+    getPiece(){
+        return this.piece;
+    }
 }
 
 module.exports = Cell;

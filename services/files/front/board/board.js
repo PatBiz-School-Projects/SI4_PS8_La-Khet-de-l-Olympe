@@ -55,11 +55,11 @@ class GameBoard extends HTMLElement {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({
-                    x: 4,
-                    y: 4,
+                    fromX: 4,
+                    fromY: 4,
                     owner: 1,
-                    fromX : 6,
-                    fromY : 6
+                    toX : 6,
+                    toY : 6
                 }
                 )
             }));
