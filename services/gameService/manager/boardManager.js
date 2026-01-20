@@ -7,13 +7,9 @@ class BoardManager {
         this.gameStatus = "playing";
     }
 
-    initBoard(req,res) {
+    initBoard() {
         this.board = new Board();
         this.currentPlayer = 1;
-
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ status: "success", detail: "Board initialisée", grid: this.board.grid, currentPlayer:this.currentPlayer }));
-
         console.log("Nouvelle partie générée sur le serveur.");
     }
 
@@ -29,7 +25,6 @@ class BoardManager {
         }
         this.board.grid[y][x].addPiece(piece);
         return { ok: true, detail: "PIECE_PLACED", grid:this.board.grid };
-
     }
 
     movePiece(fromX, fromY, toX, toY) {
