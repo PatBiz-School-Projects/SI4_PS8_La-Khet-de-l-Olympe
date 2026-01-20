@@ -11,6 +11,10 @@ class BoardManager {
         this.board = new Board();
         this.currentPlayer = 1;
         console.log("Nouvelle partie générée sur le serveur.");
+        return {
+            board: this.board,
+            currentPlayer: 1
+        }
     }
 
     placePiece(x,y,pieceDTO) {
