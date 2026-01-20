@@ -106,8 +106,9 @@ class Pharao extends Piece {
 }
 
 class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
-    constructor(owner,x,y,orientation) {
+    constructor(owner,x,y,orientation,isFromReserve) {
         super(owner,x,y,orientation,"pyramid.jpg");
+        this.isFromReserve = isFromReserve;
     }
     buildReflectiveSides() {
         return {
