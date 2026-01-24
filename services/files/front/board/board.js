@@ -45,7 +45,7 @@ class GameBoard extends HTMLElement {
                 body: JSON.stringify({
                     x: 4,
                     y: 4,
-                    piece: {image: "sphinx-removebg-preview.png", orientation: "N", owner: 1}
+                    piece: {image: "sphinx.png", orientation: "N", owner: 1}
                 })
             }));
             const data3 = await data2.json()

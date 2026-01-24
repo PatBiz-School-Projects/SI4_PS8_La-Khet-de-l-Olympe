@@ -101,7 +101,7 @@ const Reflective = (Base) => class extends Base {
 
 class Pharao extends Piece {
     constructor(owner,x,y,orientation) {
-        super(owner,x,y,orientation,"pharaon.png");
+        super(owner,x,y,orientation,"pharaoh.png");
     }
 }
 
