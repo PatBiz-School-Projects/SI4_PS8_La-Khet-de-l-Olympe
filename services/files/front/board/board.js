@@ -39,30 +39,37 @@ class GameBoard extends HTMLElement {
                 composed: true,
             });
             this.dispatchEvent(event);
-            const data2= (await fetch("/api/place", {
+            const data2 = await fetch("/api/action", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    x: 4,
-                    y: 4,
-                    piece: {image: "sphinx-removebg-preview.png", orientation: "N", owner: 1}
+                    method: "place",
+                    args: {
+                        type: "Anubis",
+                        owner: 1,
+                        x: 4,
+                        y: 4,
+                        orientation: "N"
+                    }
                 })
-            }));
+            });
             const data3 = await data2.json()
             this.data = data3.grid;
             this.renderBoard();
-            const data4 = (await fetch("/api/move", {
+            const data4 = await fetch("/api/action", {
                 method: "POST",
-                headers: {"Content-Type": "application/json"},
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    fromX: 4,
-                    fromY: 4,
-                    owner: 1,
-                    toX : 6,
-                    toY : 6
-                }
-                )
-            }));
+                    method: "move",
+                    args: {
+                        fromX: 4,
+                        fromY: 4,
+                        owner : 1,
+                        toX: 6,
+                        toY: 4
+                    }
+                })
+            });
             const data5 = await data4.json()
             this.data = data5.grid;
             this.renderBoard()

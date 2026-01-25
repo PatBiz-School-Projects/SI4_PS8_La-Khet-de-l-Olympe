@@ -23,14 +23,12 @@ async function action(req,res){
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ ok: false, error: "NOT_YOUR_TURN" }));
         }
-        console.log("e")
         const result = methodToCall(boardManager,{args});
-        console.log("Méthode appelée")
         if(!result.ok){
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify(result));
         }
-        gameState.addTurn();
+        if(!method==="place")gameState.addTurn();
         res.writeHead(200, { "Content-Type": "application/json" });
         return res.end(JSON.stringify(result));
     } catch (e) {
