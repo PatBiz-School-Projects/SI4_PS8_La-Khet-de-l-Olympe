@@ -51,11 +51,9 @@ class Piece {
     }
     toDto(){
         return{
-            type:this.constructor.name,
             x:this.x,
             y:this.y,
-            orientation : this.orientation,
-            owner:this.owner
+            orientation : this.orientation
         }
     }
 }
