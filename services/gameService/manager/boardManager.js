@@ -1,10 +1,9 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
+const {createPieceFromDto} = require("../factory/pieceFactory");
 class BoardManager {
     constructor() {
         this.board = null;
-        this.currentPlayer = 1;
-        this.gameStatus = "playing";
     }
 
     initBoard() {
@@ -17,22 +16,17 @@ class BoardManager {
         }
     }
 
-    placePiece(x,y,pieceDTO) {
-        // place où faudrait un middleWare pour checker le move
-        const piece = {
-            owner: pieceDTO.owner,
-            x: x,
-            y: y,
-            orientation: pieceDTO.orientation,
-            image: pieceDTO.image,
-            move(nx, ny) { this.x = nx; this.y = ny}
-        }
-        this.board.grid[y][x].addPiece(piece);
+    placePiece(piece) {
+        if(this.board===null) return;
+        console.log(piece);
+        const result = createPieceFromDto(piece);
+        console.log(result);
+        this.board.grid[result.y][result.x].addPiece(result);
         return { ok: true, detail: "PIECE_PLACED", grid:this.board.grid };
     }
 
     movePiece(fromX, fromY, toX, toY) {
-        // précède par des middleware qui diront si le coup est légal (bon tour, bon move...)
+        // prècédé par des middleware qui diront si le coup est légal (bon tour, bon move...)
         const piece = this.board.grid[fromY][fromX].piece;
         if (!piece) return false;
 

@@ -1,6 +1,3 @@
-const Board = require('./entities/board');
-const BoardManager = require('./manager/boardManager')
-const readJsonBody= require('../helpers/parser.js');
 const handler = require('./handler.js');
 
 const routes = {
@@ -8,8 +5,9 @@ const routes = {
         //méthode du middleWare
         handler.initBoard(req, res);
     },
-    '/api/place' : (req,res) => handler.placePiece(req,res),
-    '/api/move' : (req,res) => handler.movePiece(req,res)
+    '/api/action' : (req, res) => {
+        handler.action(req, res);
+    }
 };
 
 async function manage(request,response){

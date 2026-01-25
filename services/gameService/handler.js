@@ -3,28 +3,29 @@ const BoardManager = require("./manager/boardManager");
 const GameState = require("./manager/gameState");
 const boardManager = new BoardManager();
 const gameState = new GameState();
-async function placePiece(req,res){
-    try {
-        const { x, y, piece } = await readJsonBody(req);
-        const result = boardManager.placePiece(x, y, piece);
-        res.writeHead(result.ok ? 200 : 400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(result));
-    } catch (e) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ ok: false, error: "INVALID_JSON" }));
-    }
-}
+const ACTIONS = require("./action");
 
-async function movePiece(req,res){
+async function action(req,res){
     try{
-        const { fromX,fromY,owner,toX,toY} = await readJsonBody(req);
-        console.log(fromX, fromY, toX, toY);
-        const isOwnersTurn = gameState.isPlayersTurn(owner);
-        if(!isOwnersTurn){
+        const body = await readJsonBody(req);
+        const { method, args } = body ?? {};
+        const methodToCall = ACTIONS[method]
+        if (!methodToCall) {
             res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ok:false,error:"NOT_YOUR_TURN"}));
+            return res.end(JSON.stringify({ ok: false, error: "INVALID_METHOD" }));
         }
-        const result = boardManager.movePiece(fromX,fromY,toX,toY);
+        const owner = args?.owner;
+        if (owner == null) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ ok: false, error: "MISSING_OWNER" }));
+        }
+        if (!gameState.isPlayersTurn(owner)) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ ok: false, error: "NOT_YOUR_TURN" }));
+        }
+        console.log("e")
+        const result = methodToCall(boardManager,{args});
+        console.log("Méthode appelée")
         if(!result.ok){
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify(result));
@@ -33,6 +34,7 @@ async function movePiece(req,res){
         res.writeHead(200, { "Content-Type": "application/json" });
         return res.end(JSON.stringify(result));
     } catch (e) {
+        console.log(e)
         res.writeHead(400, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ ok: false, error: "INVALID_JSON" }));
     }
@@ -44,4 +46,4 @@ function initBoard(req,res){
     res.end(JSON.stringify({ status: "success", detail: "Board initialisée", grid: data.grid, currentPlayer:data.currentPlayer }));
 }
 
-module.exports = {initBoard,movePiece,placePiece};
+module.exports = {initBoard,action};
