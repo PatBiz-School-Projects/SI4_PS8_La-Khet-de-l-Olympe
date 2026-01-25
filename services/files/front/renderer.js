@@ -12,6 +12,7 @@ export class Renderer{
         const img = new Image();
         entry = { img, loaded: false };
         this.imageCache.set(src, entry);
+        console.log(this.imageCache.get(src));
 
         img.onload = () => {
             entry.loaded = true;
