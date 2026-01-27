@@ -9,6 +9,9 @@ class BoardManager {
 
     initBoard() {
         this.board = new Board();
+
+        // TODO : Generating the initial position of the pieces
+
         this.currentPlayer = 1;
         console.log("Nouvelle partie générée sur le serveur.");
         return {
