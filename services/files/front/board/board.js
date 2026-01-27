@@ -14,6 +14,7 @@ import { Piece } from "./piece.js";
 class GameBoard extends HTMLElement {
     constructor() {
         super();
+        this.attachShadow({ mode: 'open' });
 
         const DEFAULT_BOARD_SIZE = 600;
 
@@ -39,16 +40,27 @@ class GameBoard extends HTMLElement {
      */
     async connectedCallback() {
         try {
-            // Load the HTML template
-            const templateResponse = await fetch("board/board.html");
-            this.innerHTML = await templateResponse.text();
+            // Load the component's HTML template & CSS style
+
+            const [htmlResponse, cssResponse] = await Promise.all([
+                fetch("board/board.html"),
+                fetch("board/board.css"),
+            ]);
+
+            const html = await htmlResponse.text();
+            const css = await cssResponse.text();
+
+            this.shadowRoot.innerHTML = `
+                <style>${css}</style>
+                ${html}
+            `;
         } catch (err) {
-            console.error("Error while loading the HTML template:", err)
+            console.error("Error while loading the component:", err)
         }
 
         this.boardSize = this._computeBoardSize();
 
-        this.canvas = this.querySelector('#gameCanvas');
+        this.canvas = this.shadowRoot.querySelector('#gameCanvas');
         this.canvas.width = this.boardSize;
         this.canvas.height = this.boardSize;
 
