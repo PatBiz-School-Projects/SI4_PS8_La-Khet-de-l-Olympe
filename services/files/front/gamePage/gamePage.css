@@ -8,19 +8,7 @@
     box-sizing: border-box;
 }
 
-#gameCanvas {
-    position: absolute;
-    top: 1vh;
-    right: 30vw;
-    background-color: #2c3e50;
-    border: 5px solid #d4af37;
-}
-
 #status-bar {
-    position: absolute;
-    top: 1vh;
-    align-self: flex-end;
-    margin-right: 1%;
     background: rgba(255, 255, 255, 0.1);
     backdrop-filter: blur(10px);
     border: 2px solid rgba(212, 175, 55, 0.5); /* Bordure Or */
@@ -37,4 +25,8 @@
 #status-bar span {
     font-weight: bold;
     text-shadow: 0 0 10px currentColor;
+}
+
+game-board {
+    margin-top: 3em;
 }
