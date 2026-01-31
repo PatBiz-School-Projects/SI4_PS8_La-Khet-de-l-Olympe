@@ -39,9 +39,21 @@ async function action(req,res){
 }
 
 function initBoard(req,res){
-    const data = boardManager.initBoard(req,res);
+    const data = boardManager.initBoard();
     res.writeHead(201, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ status: "success", detail: "Board initialisée", grid: data.grid, currentPlayer:data.currentPlayer }));
 }
 
-module.exports = {initBoard,action};
+async function getPiece(req,res){
+    const body = await readJsonBody(req);
+    const { x,y } = body;
+    const result = boardManager.getPiece(x,y);
+    if(!result.ok){
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify(result));
+    }
+    res.writeHead(400, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify(result));
+}
+
+module.exports = {initBoard,action,getPiece};

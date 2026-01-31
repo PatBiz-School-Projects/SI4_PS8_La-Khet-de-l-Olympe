@@ -38,6 +38,7 @@ const ActionIA = {
 const ACTIONS = {
     move : (boardManager,{args}) => {
         const {fromX,fromY,toX,toY} = args;
+        console.log(args)
         return boardManager.movePiece(fromX, fromY, toX, toY);
     },
     switch : (boardManager,{args}) => {
@@ -45,8 +46,11 @@ const ACTIONS = {
         return boardManager.switch(fromX,fromY,toX,toY);
     },
     place : (boardManager,{args}) => {
-        console.log(boardManager)
         return boardManager.placePiece(args);
+    },
+    rotate : (boardManager,{args}) => {
+        const { x, y, turns } = args;
+        return boardManager.rotatePiece(x,y,turns);
     }
 }
 
