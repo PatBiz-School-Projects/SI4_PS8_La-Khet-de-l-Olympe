@@ -13,7 +13,11 @@ class Board {
     }
 
     getPiece(x,y){
-        return this.grid[x][y].getPiece();
+        return this.grid[y][x].getPiece();
+    }
+
+    getSphinx(owner){
+        //TODO
     }
 
     toDTO() {

@@ -1,5 +1,4 @@
-const {Anubis, Pharao, Pyramid, Scarab, Sphinx} = require("../entities/piece");
-const Board = require("../entities/board");
+const {Anubis, Pyramid, Scarab} = require("../entities/piece");
 
 
 class MoveValidator {

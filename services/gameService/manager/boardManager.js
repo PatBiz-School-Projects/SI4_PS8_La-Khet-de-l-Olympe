@@ -1,6 +1,7 @@
 const Board = require('../entities/board');
-const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
+const {getCurrentPlayer} = require("gameState")
+const{fire} =require("laserService");
 class BoardManager {
     constructor() {
         this.board = null;
@@ -34,11 +35,28 @@ class BoardManager {
         this.board.grid[toY][toX].addPiece(piece);
 
         piece.move(toX, toY);
+        fire(getCurrentPlayer());// after a move the sphinx fires the laser (not sure where to put it)
         return {
             ok : true,
             detail: "PIECE_MOVED",
             grid:this.board.grid
         }
+    }
+
+    removePiece(x,y) {
+        const cell = this.board.grid[y][x];
+        const piece = cell.getPiece();
+        if(piece.constructor.name=== "Pyramid"){
+            if(piece.owner!==getCurrentPlayer()){
+                //add into the box of currentPlayer
+            }
+        }
+        cell.removePiece(piece);
+        return {
+            ok : true,
+            detail: "PIECE_REMOVED",
+            grid:this.board.grid
+        };
     }
 
 }

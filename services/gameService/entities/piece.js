@@ -14,11 +14,7 @@ function rotateTurns(dir, turns) {
     return DIR_ORDER[(i + t) % 4];
 }
 
-class LaserImpact {
-    static reflect(outDir) { return { type: "reflect", outDir }; }
-    static absorb() { return { type: "absorb" }; }
-    static destroy() { return { type: "destroy" }; }
-}
+const LaserImpact = require('laser');
 
 class Piece {
     constructor(owner, x, y, orientation, image) {
@@ -97,7 +93,7 @@ const Reflective = (Base) => class extends Base {
     }
 };
 
-class Pharao extends Piece {
+class Pharaoh extends Piece {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"pharaoh.png");
     }
@@ -146,7 +142,13 @@ class Sphinx extends Rotatable(Piece) {
     constructor(owner,x,y,orientation) {
         super(owner,x,y,orientation,"sphinx.png");
     }
-    hitLaser(){} // à implémenter
+    hitLaser(){
+        return {
+            originX: this.x,
+            originY: this.y,
+            direction: this.orientation,
+        };
+    }
 }
 
-module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharao,LaserImpact,Dir};
+module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharaoh,Dir};

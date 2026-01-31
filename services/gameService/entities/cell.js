@@ -13,6 +13,10 @@ class Cell {
         this.piece = piece;
     }
 
+    removePiece(piece) {
+        this.piece = null;
+    }
+
     getPiece(){
         return this.piece;
     }

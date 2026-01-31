@@ -1,3 +1,5 @@
+const {removePiece} = require("boardManager");
+
 class GameState {
     constructor(players = [1,2]){
         this.players = players;
@@ -18,6 +20,26 @@ class GameState {
     addTurn(){
         this.turnIndex = 1 - this.turnIndex
         if(this.turnIndex===1)this.turnCount++;
+    }
+
+    isGameFinished(){
+        return this.status===gameStatus.GAME_OVER;
+    }
+
+    checkLaserImpact(piece){
+        if(piece.constructor.name==="Pharaoh"){
+            this.status=gameStatus.GAME_OVER;
+            if(piece.owner!==this.getCurrentPlayer()){
+                this.winner=this.getCurrentPlayer();
+            }
+        }
+        else{
+            removePiece(piece);
+        }
+    }
+
+    getGameStatus(){
+        return this.status;
     }
 }
 
