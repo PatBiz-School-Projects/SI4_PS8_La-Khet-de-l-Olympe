@@ -7,6 +7,9 @@ const routes = {
     },
     '/api/action' : (req, res) => {
         handler.action(req, res);
+    },
+    '/api/board/piece' : (req, res) => {
+        handler.getPiece(req, res);
     }
 };
 

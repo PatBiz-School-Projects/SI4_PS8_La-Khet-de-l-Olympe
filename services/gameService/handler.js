@@ -44,7 +44,16 @@ function initBoard(req,res){
     res.end(JSON.stringify({ status: "success", detail: "Board initialisée", grid: data.grid, currentPlayer:data.currentPlayer }));
 }
 
-function getPiece(req,res){
+async function getPiece(req,res){
+    const body = await readJsonBody(req);
+    const { x,y } = body;
+    const result = boardManager.getPiece(x,y);
+    if(!result.ok){
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify(result));
+    }
+    res.writeHead(400, { "Content-Type": "application/json" });
+    return res.end(JSON.stringify(result));
 }
 
-module.exports = {initBoard,action};
+module.exports = {initBoard,action,getPiece};

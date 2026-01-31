@@ -1,6 +1,7 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
+const board = require("./boardManager");
 class BoardManager {
     constructor() {
         this.board = null;
@@ -71,6 +72,16 @@ class BoardManager {
                 ok : false,
                 detail : "PIECE_NOT_ROTATABLE"
             }
+        }
+    }
+
+    getPiece(x,y){
+        return this.board.getPiece(x,y) ? {
+            ok : true,
+            piece : this.board.getPiece(x,y)
+        } : {
+            ok : false,
+            detail : "PIECE_NOT_FOUND"
         }
     }
 
