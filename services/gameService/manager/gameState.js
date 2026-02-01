@@ -32,9 +32,19 @@ class GameState {
             if(piece.owner!==this.getCurrentPlayer()){
                 this.winner=this.getCurrentPlayer();
             }
+            //Draw case
+            else{
+                this.winner=piece.owner;
+            }
+
         }
         else{
-            removePiece(piece);
+            if(piece.constructor.name==="Pyramid" && piece.owner!==this.getCurrentPlayer()){
+                //add into the box of current Player
+            }
+            else{
+                removePiece(piece);
+            }
         }
     }
 

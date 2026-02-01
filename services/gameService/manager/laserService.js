@@ -13,7 +13,7 @@ class LaserService{
 
     fire(currentPlayer){
         const path = [];
-        const sphinx = this.board.getSphinx(currentPlayer);
+        const sphinx = this.board.getSphinxbyOwner(currentPlayer);//to implement
         let x = sphinx.x;
         let y = sphinx.y;
         let orientation= sphinx.orientation;

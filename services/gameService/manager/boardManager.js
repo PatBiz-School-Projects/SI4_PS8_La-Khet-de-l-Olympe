@@ -1,7 +1,6 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
-const {getCurrentPlayer} = require("gameState")
 const{fire} =require("laserService");
 class BoardManager {
     constructor() {
@@ -57,11 +56,6 @@ class BoardManager {
     removePiece(x,y) {
         const cell = this.board.grid[y][x];
         const piece = cell.getPiece();
-        if(piece.constructor.name=== "Pyramid"){
-            if(piece.owner!==getCurrentPlayer()){
-                //add into the box of currentPlayer
-            }
-        }
         cell.removePiece(piece);
         return {
             ok : true,
