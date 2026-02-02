@@ -13,7 +13,7 @@ class Board {
     }
 
     getPiece(x,y){
-        return this.grid[y][x].getPiece();
+        return this.grid[x][y].getPiece();
     }
 
     getSphinxbyOwner(owner){
@@ -35,6 +35,14 @@ class Board {
                 }))
             )
         };
+    }
+
+    addPiece(x,y,piece){
+        this.grid[x][y].addPiece(piece)
+    }
+
+    removePiece(x,y){
+        this.grid[x][y].removePiece()
     }
 }
 module.exports = Board;
