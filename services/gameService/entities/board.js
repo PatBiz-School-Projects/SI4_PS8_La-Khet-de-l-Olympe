@@ -23,16 +23,9 @@ class Board {
     toDTO() {
         return {
             grid: this.grid.map(row =>
-                row.map(cell => ({
-                    x: cell.x,
-                    y: cell.y,
-                    piece: cell.piece ? {
-                        owner: cell.piece.owner,
-                        orientation: cell.piece.orientation,
-                        image: cell.piece.image,
-                        type: cell.piece.constructor.name,
-                    } : null
-                }))
+                row.map(cell => (
+                    cell.toDTO()
+                ))
             )
         };
     }

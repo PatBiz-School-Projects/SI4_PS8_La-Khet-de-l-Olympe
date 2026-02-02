@@ -20,6 +20,13 @@ class Cell {
     getPiece(){
         return this.piece;
     }
+    toDTO(){
+        return {
+            x: this.x,
+            y: this.y,
+            piece: this.piece ? this.piece.toDTO() : null
+        }
+    }
 }
 
 module.exports = Cell;

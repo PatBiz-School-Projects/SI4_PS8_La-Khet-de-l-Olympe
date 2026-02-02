@@ -44,7 +44,7 @@ class Piece {
     onLaserHit() {
         return LaserImpact.destroy();
     }
-    toDto(){
+    toDTO(){
         return{
             owner : this.owner,
             type : this.constructor.name,
@@ -145,4 +145,4 @@ class Sphinx extends Rotatable(Piece) {
     }
 }
 
-module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharaoh,Dir};
+module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharaoh,Dir,Piece};
