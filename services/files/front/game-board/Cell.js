@@ -1,4 +1,5 @@
-import { Piece, PieceDTO } from "./piece.js";
+import { Coord } from "./Coord.js";
+import { Piece, PieceDTO } from "./Piece.js";
 
 
 /**
@@ -39,6 +40,11 @@ export class Cell {
     /** @type {number} */
     get y() {
         return this._y;
+    }
+
+    /** @type {Coord} */
+    get pos() {
+        return {x: this._x, y: this._y};
     }
 
     /** @type {Piece|null} */

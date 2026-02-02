@@ -1,4 +1,4 @@
-import "../board/board.js";
+import "../game-board/game-board.js";
 
 class GamePage extends HTMLElement {
     constructor() {

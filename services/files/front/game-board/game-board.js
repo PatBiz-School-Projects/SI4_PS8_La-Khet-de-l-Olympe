@@ -1,36 +1,18 @@
-import { Renderer } from "./renderer.js";
-import { Cell, CellDTO } from "./cell.js";
-import { Piece } from "./piece.js";
+import { BoardRenderer } from "./BoardRenderer.js";
+import { Cell, CellDTO } from "./Cell.js";
+import { Coord } from "./Coord.js"
+import { Piece } from "./Piece.js";
 
 
-/**
- * @typedef {Object} Coord
- *
- * @property {number} x
- * @property {number} y
- */
-
-
-class GameBoard extends HTMLElement {
+export class GameBoard extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
 
-        const DEFAULT_BOARD_SIZE = 600;
-
-        /** @private @type {number} Size of the board in pixels */
-        this.boardSize = DEFAULT_BOARD_SIZE;
-
         /** @private @type {Cell[][]} */
         this.grid = [];
 
-        /** @private @type {HTMLCanvasElement} */
-        this.canvas;
-
-        /** @private @type {CanvasRenderingContext2D} */
-        this.ctx;
-
-        /** @private @type {Renderer} */
+        /** @private @type {BoardRenderer} */
         this.renderer;
     }
 
@@ -43,8 +25,8 @@ class GameBoard extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("board/board.html"),
-                fetch("board/board.css"),
+                fetch("game-board/game-board.html"),
+                fetch("game-board/game-board.css"),
             ]);
 
             const html = await htmlResponse.text();
@@ -58,15 +40,9 @@ class GameBoard extends HTMLElement {
             console.error("Error while loading the component:", err)
         }
 
-        this.boardSize = this._computeBoardSize();
-
-        this.canvas = this.shadowRoot.querySelector('#gameCanvas');
-        this.canvas.width = this.boardSize;
-        this.canvas.height = this.boardSize;
-
-        this.ctx = this.canvas.getContext("2d");
-
-        this.renderer = new Renderer(this.ctx, this.boardSize);
+        /** @type {HTMLDivElement} */
+        const boardDiv = this.shadowRoot.querySelector('#board');
+        this.renderer = new BoardRenderer(boardDiv);
 
         try {
             await this._initializeBoard();
@@ -74,22 +50,15 @@ class GameBoard extends HTMLElement {
             console.error("Error while initializing the board:", err)
         }
 
+        this.renderer.setCanvasResolution();
+        // TODO ?: Uncomment the line below if one day we decide to support bigger than 10×10 grid
+        // this.renderer.setBoardLen(this.grid.length);
+        await this.renderer.drawEmptyGrid();
+        // TODO : Uncomment the line below once the `/api/init-board` has been patched
+        // await this.renderer.drawBoard(this.grid);
+
         // TODO : To remove once it's not needed anymore
         await this._runDemo();
-    }
-
-
-    /**
-     * @private
-     */
-    _computeBoardSize() {
-        const X_PADDING = 40;
-        const Y_PADDING = 30;
-
-        const availableWidth = window.innerWidth - X_PADDING;
-        const availableHeight = window.innerHeight - Y_PADDING;
-
-        return Math.min(availableWidth, availableHeight);
     }
 
 
@@ -110,8 +79,6 @@ class GameBoard extends HTMLElement {
             }
         }
 
-        this.renderer.drawGrid(this.grid);
-
         // REVIEW : It might be better to move the "turn logic" out of `GameBoard`
         const turnUpdatedEvent = new CustomEvent('turn-updated', {
             detail: { player: initialState.currentPlayer },
@@ -122,21 +89,10 @@ class GameBoard extends HTMLElement {
     }
 
 
-    _renderBoard = () => {
-        // REVIEW : It's probably useless
-        if (!this.renderer || !this.grid) return;
-
-        // DEBUG::
-        console.log("Grid data:", this.grid);
-
-        this.renderer.render(this.grid, this._renderBoard);
-    };
-
-
     /**
      * @private
      *
-     * Place a piece on the board at the given position.
+     * Places a piece on the board at the given position.
      * Updates the board states & launch a re-rendering.
      *
      * @param {Piece} piece - The piece to place
@@ -152,20 +108,30 @@ class GameBoard extends HTMLElement {
             body: JSON.stringify({
                 method: "place",
                 args: {
-                    // REVIEW : Passing `piece` is clearer
-                    owner: piece.owner,
-                    type: piece.type,
-                    orientation: piece.orientation,
+                    owner: piece.toDTO().owner,
+                    type: piece.toDTO().type,
+                    orientation: piece.toDTO().orientation,
 
                     x: pos.x,
                     y: pos.y,
                 }
+                // REVIEW : I propose the following `args`
+                // args: {
+                //     piece: piece.toDTO(),
+                //     pos: pos,
+                // }
             }),
         });
 
         const updatedBoardState = await placeResponse.json();
-        this.grid = updatedBoardState.grid;
-        this._renderBoard();
+        const gridDTO = updatedBoardState.grid;
+        for (let i = 0; i < gridDTO.length; i++) {
+            this.grid[i] = [];
+            for (let j = 0; j < gridDTO[0].length; j++) {
+                this.grid[i][j] = Cell.fromDTO(gridDTO[i][j]);
+            }
+        }
+        this.renderer.drawPieceAt(piece, pos);
 
         return updatedBoardState;
     }
@@ -174,7 +140,7 @@ class GameBoard extends HTMLElement {
     /**
      * @private
      *
-     * Move a piece on the board to the given position.
+     * Moves a piece on the board to the given position.
      * Updates the board states & launch a re-rendering.
      *
      * @param {Piece} piece
@@ -191,20 +157,33 @@ class GameBoard extends HTMLElement {
             body: JSON.stringify({
                 method: "move",
                 args: {
-                    // REVIEW : Passing `piece` should be OK & is clearer
-                    owner: piece.owner,
+                    owner: piece.toDTO().owner,
 
                     fromX: from.x,
                     fromY: from.y,
                     toX: to.x,
                     toY: to.y,
                 }
+                // REVIEW : I propose the following `args`
+                // args: {
+                //     piece: piece.toDTO(),
+                //     from: from,
+                //     to: to,
+                // }
             })
         });
 
         const updatedBoardState = await moveResponse.json();
-        this.grid = updatedBoardState.grid;
-        this._renderBoard();
+        const gridDTO = updatedBoardState.grid;
+        for (let i = 0; i < gridDTO.length; i++) {
+            this.grid[i] = [];
+            for (let j = 0; j < gridDTO[0].length; j++) {
+                this.grid[i][j] = Cell.fromDTO(gridDTO[i][j]);
+            }
+        }
+
+        await this.renderer.clearPieceAt(from);
+        await this.renderer.drawPieceAt(piece, to)
 
         return updatedBoardState;
     }
@@ -220,12 +199,11 @@ class GameBoard extends HTMLElement {
         // 1. Place a sphinx at Coord[4, 4]
         // 2. Move the sphinx at Coord[6, 6]
 
-        const sphinxPiece = {
+        const sphinxPiece = Piece.fromDTO({
             type: "Anubis",
             owner: 1,
             orientation: "N",
-            image: "anubis.png",
-        };
+        });
 
         await this._placePiece(sphinxPiece, {x: 4, y: 4});
         await this._movePiece(sphinxPiece, {x: 4, y: 4}, {x: 6, y: 6});
