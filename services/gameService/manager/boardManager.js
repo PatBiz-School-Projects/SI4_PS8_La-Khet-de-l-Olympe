@@ -2,6 +2,7 @@ const Board = require('../entities/board');
 const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
 const{fire} =require("./laserService");
+const StartingPositions = require("./startingPositions");
 
 
 class BoardManager {
@@ -11,11 +12,14 @@ class BoardManager {
 
     initBoard() {
         this.board = new Board();
+        const sp = new StartingPositions(10);
+        const result = sp.generateAndApply(this.board);
 
-        // TODO : Generating the initial position of the pieces
-        return {
-            grid : this.board.grid
+        if (!result.ok) {
+            return { ok: false, detail: result.detail, error: result.error };
         }
+        // TODO : Generating the initial position of the pieces*/
+        return this.board.toDTO()
     }
 
     placePiece(pieceDto,x,y) {
@@ -36,8 +40,8 @@ class BoardManager {
                 detail : "PIECE_ALR_AT_COORDS"
             }
         }
-        this.board.addPiece(x,y,pieceDto);
-        return { ok: true, detail: "PIECE_PLACED", grid:this.board.grid };
+        this.board.addPiece(x,y,result);
+        return { ok: true, detail: "PIECE_PLACED", grid:this.board.toDTO() };
     }
 
     movePiece(fromX, fromY, toX, toY) {
