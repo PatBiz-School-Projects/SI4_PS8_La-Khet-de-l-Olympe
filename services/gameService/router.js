@@ -10,6 +10,9 @@ const routes = {
     },
     '/api/board/piece' : (req, res) => {
         handler.getPiece(req, res);
+    },
+    '/api/board' : (req, res) => {
+        handler.getBoard(req, res);
     }
 };
 
