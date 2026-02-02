@@ -13,28 +13,30 @@ class BoardManager {
         this.board = new Board();
 
         // TODO : Generating the initial position of the pieces
-
-        this.currentPlayer = 1;
-        console.log("Nouvelle partie générée sur le serveur.");
         return {
-            board: this.board,
-            currentPlayer: 1
+            grid : this.board.grid
         }
     }
 
-    placePiece(piece) {
+    placePiece(pieceDto,x,y) {
         if(!this.board) return {
             ok : false,
             detail : "BOARD_NOT_INITIALIZED"
         }
-        const result = createPieceFromDto(piece);
-        if(this.board.getPiece(result.x,result.y)){
+        const result = createPieceFromDto(pieceDto);
+        if(!result){
+            return {
+                ok : false,
+                detail : "INVALID_ARGS"
+            }
+        }
+        if(this.board.getPiece(x,y)){
             return {
                 ok : false,
                 detail : "PIECE_ALR_AT_COORDS"
             }
         }
-        this.board.grid[result.x][result.y].addPiece(result);
+        this.board.addPiece(x,y,pieceDto);
         return { ok: true, detail: "PIECE_PLACED", grid:this.board.grid };
     }
 
@@ -46,11 +48,9 @@ class BoardManager {
             detail: "NO_PIECE_AT_COORDS"
         };
 
-        this.board.grid[fromX][fromY].reset();
-        this.board.grid[toX][toY].addPiece(piece);
-
-        piece.move(toX, toY);
-        fire(getCurrentPlayer());// after a move the sphinx fires the laser (not sure where to put it)
+        this.board.removePiece(fromX,fromY);
+        this.board.addPiece(toX, toY, piece);
+        //fire(getCurrentPlayer());// after a move the sphinx fires the laser (not sure where to put it)
         return {
             ok : true,
             detail: "PIECE_MOVED",
@@ -59,9 +59,8 @@ class BoardManager {
     }
 
     removePiece(x,y) {
-        const cell = this.board.grid[y][x];
-        const piece = cell.getPiece();
-        cell.removePiece(piece);
+        const cell = this.board.grid[x][y];
+        cell.removePiece();
         return {
             ok : true,
             detail: "PIECE_REMOVED",
@@ -99,6 +98,13 @@ class BoardManager {
         } : {
             ok : false,
             detail : "PIECE_NOT_FOUND"
+        }
+    }
+
+    getBoard(){
+        return {
+            ok : true,
+            board : this.board
         }
     }
 

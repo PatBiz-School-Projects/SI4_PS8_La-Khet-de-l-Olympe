@@ -46,7 +46,9 @@ const ACTIONS = {
         return boardManager.switch(fromX,fromY,toX,toY);
     },
     place : (boardManager,{args}) => {
-        return boardManager.placePiece(args);
+        const { type, owner, x, y, orientation } = args;
+        const pieceDto = { type, owner, orientation };
+        return boardManager.placePiece(pieceDto,x,y);
     },
     rotate : (boardManager,{args}) => {
         const { x, y, turns } = args;
