@@ -14,7 +14,8 @@ function rotateTurns(dir, turns) {
     return DIR_ORDER[(i + t) % 4];
 }
 
-const LaserImpact = require('laser');
+const LaserImpact = require('./laser');
+
 
 class Piece {
     constructor(owner, x, y, orientation, image) {

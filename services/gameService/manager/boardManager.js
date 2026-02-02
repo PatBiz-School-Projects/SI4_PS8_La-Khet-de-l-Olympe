@@ -1,7 +1,9 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
-const{fire} =require("laserService");
+const{fire} =require("./laserService");
+
+
 class BoardManager {
     constructor() {
         this.board = null;

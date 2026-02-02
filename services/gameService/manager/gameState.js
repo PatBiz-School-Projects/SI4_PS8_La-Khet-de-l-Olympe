@@ -1,4 +1,5 @@
-const {removePiece} = require("boardManager");
+const {removePiece} = require("./boardManager");
+
 
 class GameState {
     constructor(players = [1,2]){

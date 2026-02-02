@@ -5,8 +5,10 @@ const DIRECTIONS =  {
     "W": {dx:-1,dy:0},
 
 }
-const {checkLaserImpact} = require("gameState");
-class LaserService{
+const {checkLaserImpact} = require("./gameState");
+
+
+class LaserService {
     constructor(board){
         this.board = board;
     }
