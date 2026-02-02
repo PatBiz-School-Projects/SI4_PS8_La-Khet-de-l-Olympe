@@ -1,7 +1,6 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
-const{fire} =require("./laserService");
 
 
 class BoardManager {
@@ -50,7 +49,6 @@ class BoardManager {
         this.board.grid[toX][toY].addPiece(piece);
 
         piece.move(toX, toY);
-        fire(getCurrentPlayer());// after a move the sphinx fires the laser (not sure where to put it)
         return {
             ok : true,
             detail: "PIECE_MOVED",

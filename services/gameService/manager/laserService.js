@@ -5,15 +5,14 @@ const DIRECTIONS =  {
     "W": {dx:-1,dy:0},
 
 }
-const {checkLaserImpact} = require("./gameState");
-
 
 class LaserService {
-    constructor(board){
+    constructor(board,gameService){ //not sure
         this.board = board;
+        this.gameService = gameService;
     }
 
-    fire(currentPlayer){
+    fireLaser(currentPlayer){
         const path = [];
         const sphinx = this.board.getSphinxbyOwner(currentPlayer);//to implement
         let x = sphinx.x;
@@ -27,16 +26,15 @@ class LaserService {
             if(newX>=0 && newX<10 && newY>=0 &&newY<10){
                 const piece = this.board.grid[newY][newX].getPiece();
                 if(piece){
-                    const impact = piece.onLaserHit(); //to implement for every pieces
+                    const impact = piece.onLaserHit();
                     if(impact.type==="reflect"){
-                        orientation = impact.orientation;
+                        orientation = impact.outDir;
                     }
                     else if(impact.type==="absorb"){
                         path.push({x:newX.x,y:newY,hit:"absorbed"});
                     }
                     else if(impact.type==="destroy"){
-                        //remove a piece
-                        checkLaserImpact(piece);
+                        this.gameService.checkLaserImpact(piece);
                         path.push({x:newX.x,y:newY,hit:"destroyed",piece:piece.constructor.name});
                     }
                 }

@@ -156,10 +156,44 @@ export class BoardRenderer {
      * @param {Coord[]} coverage
      */
     async drawLaser(coverage) {
+        if (!coverage || coverage.length === 0) return;
+
         const laserCanvas = this.canvases["laser-canvas"];
         const ctx = laserCanvas.getContext("2d");
 
-        // TODO : ...
+        await this.clearLaserCanvas();
+
+        const startingX = coverage[0].x;
+        const startingY = coverage[0].y;
+        const startingPosition = {
+            x: (startingX + (1 / 2))*this.cellSize,
+            y: (startingY + (1 / 2))*this.cellSize,
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(startingPosition.x, startingPosition.y);
+        ctx.strokeStyle='red';
+        ctx.lineWidth = 3;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.shadowBlur = 10;
+
+        let i=1;
+
+        while(i<coverage.length) {
+            const newX = coverage[i].x;
+            const newY = coverage[i].y;
+            const newPosition = {
+                x: (newX + (1 / 2))*this.cellSize,
+                y: (newY + (1 / 2))*this.cellSize,
+            }
+            ctx.lineTo(newPosition.x, newPosition.y);
+            i++;
+
+            //maybe we should add a sleeping method so the laser seems realistic
+
+        }
+        ctx.stroke();
     }
 
 
