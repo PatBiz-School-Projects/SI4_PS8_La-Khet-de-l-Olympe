@@ -25,8 +25,8 @@ export class GameBoard extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("game-board/game-board.html"),
-                fetch("game-board/game-board.css"),
+                fetch("/components/game-board/game-board.html"),
+                fetch("/components/game-board/game-board.css"),
             ]);
 
             const html = await htmlResponse.text();
@@ -54,7 +54,6 @@ export class GameBoard extends HTMLElement {
         // TODO ?: Uncomment the line below if one day we decide to support bigger than 10×10 grid
         // this.renderer.setBoardLen(this.grid.length);
         await this.renderer.drawEmptyGrid();
-        // TODO : Uncomment the line below once the `/api/init-board` has been patched
         await this.renderer.drawBoard(this.grid);
 
         // TODO : To remove once it's not needed anymore
@@ -184,31 +183,10 @@ export class GameBoard extends HTMLElement {
         }
         const pathLaser = updatedGameState.laser;
 
-        await this.renderer.drawEmptyGrid();
-        await this.renderer.drawBoard(this.grid);
+        await this.renderer.clearPieceAt(from);
+        await this.renderer.drawPieceAt(piece, to);
 
         return updatedBoardState;
-    }
-
-
-    /**
-     * @private
-     *
-     * Run a sequence of action for debugging purposes.
-     */
-    async _runDemo() {
-        // Scenario:
-        // 1. Place a sphinx at Coord[4, 4]
-        // 2. Move the sphinx at Coord[6, 6]
-
-        const sphinxPiece = Piece.fromDTO({
-            type: "Anubis",
-            owner: 1,
-            orientation: "N",
-        });
-
-        await this._placePiece(sphinxPiece, {x: 0, y: 2});
-        await this._movePiece(sphinxPiece, {x: 0, y: 2}, {x: 6, y: 7});
     }
 }
 customElements.define('game-board', GameBoard);

@@ -18,8 +18,7 @@ class BoardManager {
         if (!result.ok) {
             return { ok: false, detail: result.detail, error: result.error };
         }
-        // TODO : Generating the initial position of the pieces*/
-        return this.board.toDTO();
+        return this.board.toDTO()
     }
 
     placePiece(pieceDto,x,y) {

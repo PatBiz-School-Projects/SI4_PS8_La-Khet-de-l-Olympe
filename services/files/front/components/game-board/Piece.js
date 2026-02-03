@@ -61,7 +61,7 @@ export class Piece {
 
     /** @type {string} */
     get image() {
-        return `assets/${this._type.toLowerCase()}.png`;
+        return `/assets/${this._type.toLowerCase()}.png`;
     }
 
 
