@@ -55,7 +55,7 @@ export class GameBoard extends HTMLElement {
         // this.renderer.setBoardLen(this.grid.length);
         await this.renderer.drawEmptyGrid();
         // TODO : Uncomment the line below once the `/api/init-board` has been patched
-        // await this.renderer.drawBoard(this.grid);
+        //await this.renderer.drawBoard(this.grid);
 
         // TODO : To remove once it's not needed anymore
         await this._runDemo();
@@ -182,8 +182,8 @@ export class GameBoard extends HTMLElement {
             }
         }
 
-        await this.renderer.clearPieceAt(from);
-        await this.renderer.drawPieceAt(piece, to)
+        await this.renderer.drawEmptyGrid();
+        await this.renderer.drawBoard(this.grid);
 
         return updatedBoardState;
     }
@@ -205,8 +205,8 @@ export class GameBoard extends HTMLElement {
             orientation: "N",
         });
 
-        await this._placePiece(sphinxPiece, {x: 4, y: 4});
-        await this._movePiece(sphinxPiece, {x: 4, y: 4}, {x: 6, y: 6});
+        await this._placePiece(sphinxPiece, {x: 0, y: 2});
+        await this._movePiece(sphinxPiece, {x: 0, y: 2}, {x: 6, y: 7});
     }
 }
 customElements.define('game-board', GameBoard);
