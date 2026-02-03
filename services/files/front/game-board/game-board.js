@@ -66,7 +66,7 @@ export class GameBoard extends HTMLElement {
      * @private
      */
     async _initializeBoard() {
-        const initResponse = await fetch("/api/init-board");
+        const initResponse = await fetch("/api/game-service/init-board");
         const initialState = await initResponse.json();
 
         /** @type {CellDTO[][]} */
@@ -102,7 +102,7 @@ export class GameBoard extends HTMLElement {
      * @throws {Error} If the API request fails
      */
     async _placePiece(piece, pos) {
-        const placeResponse = await fetch("/api/action", {
+        const placeResponse = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -151,7 +151,7 @@ export class GameBoard extends HTMLElement {
      * @throws An error if the API request fails
      */
     async _movePiece(piece, from, to) {
-        const moveResponse = await fetch("/api/action", {
+        const moveResponse = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

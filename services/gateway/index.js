@@ -18,8 +18,16 @@ http.createServer(function (request, response) {
     try {
         // If the URL starts by /api, then it's a REST request (you can change that if you want).
         if (filePath[1] === "api") {
-            console.log("-> Redirection vers GameService (8002)");
-            proxy.web(request, response, { target: "http://127.0.0.1:8002" });
+            switch(filePath[2]) {
+                case "game-service":
+                    console.log("-> Redirection vers GameService (8002)");
+                    proxy.web(request, response, { target: "http://127.0.0.1:8002" });
+                    break;
+                case "auth" :
+                    console.log("-> Redirection vers AuthService (8003)");
+                    proxy.web(request, response, { target: "http://127.0.0.1:8003" });
+                    break;
+            }
 
         // If it doesn't start by /api, then it's a request for a file.
         } else {
