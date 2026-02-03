@@ -1,7 +1,6 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
-const{fire} =require("./laserService");
 const StartingPositions = require("./startingPositions");
 
 
@@ -63,7 +62,7 @@ class BoardManager {
     }
 
     removePiece(x,y) {
-        const cell = this.board.grid[x][y];
+        const cell = this.board.grid[y][x];
         cell.removePiece();
         return {
             ok : true,

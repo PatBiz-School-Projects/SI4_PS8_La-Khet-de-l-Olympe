@@ -2,12 +2,13 @@ const {removePiece} = require("./boardManager");
 
 
 class GameState {
-    constructor(players = [1,2]){
+    constructor(players = [1,2],boardManager){//not sure
         this.players = players;
         this.turnIndex = 0; // 0 pour le 1 et 1 pour le 2
         this.turnCount = 1;
         this.status = gameStatus.RUNNING;
         this.winner=null;
+        this.boardManager = boardManager;
     }
 
     getCurrentPlayer() {
@@ -44,7 +45,7 @@ class GameState {
                 //add into the box of current Player
             }
             else{
-                removePiece(piece);
+                this.boardManager.removePiece(piece.x,piece.y);
             }
         }
     }
