@@ -8,8 +8,6 @@ class PieceFactory{
         }
         return new PieceClass(
             pieceDto.owner,
-            pieceDto.x,
-            pieceDto.y,
             pieceDto.orientation
         );
     }

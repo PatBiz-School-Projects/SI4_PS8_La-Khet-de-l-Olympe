@@ -13,19 +13,19 @@ class Cell {
         this.piece = piece;
     }
 
-    removePiece(piece) {
+    removePiece() {
         this.piece = null;
     }
 
     getPiece(){
         return this.piece;
     }
-
-    reset(){
-        this.piece = null;
-    }
-    getPiece(){
-        return this.piece;
+    toDTO(){
+        return {
+            x: this.x,
+            y: this.y,
+            piece: this.piece ? this.piece.toDTO() : null
+        }
     }
 }
 

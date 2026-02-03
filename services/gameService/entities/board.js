@@ -13,7 +13,7 @@ class Board {
     }
 
     getPiece(x,y){
-        return this.grid[y][x].getPiece();
+        return this.grid[x][y].getPiece();
     }
 
     getSphinxbyOwner(owner){
@@ -23,18 +23,19 @@ class Board {
     toDTO() {
         return {
             grid: this.grid.map(row =>
-                row.map(cell => ({
-                    x: cell.x,
-                    y: cell.y,
-                    piece: cell.piece ? {
-                        owner: cell.piece.owner,
-                        orientation: cell.piece.orientation,
-                        image: cell.piece.image,
-                        type: cell.piece.constructor.name,
-                    } : null
-                }))
+                row.map(cell => (
+                    cell.toDTO()
+                ))
             )
         };
+    }
+
+    addPiece(x,y,piece){
+        this.grid[x][y].addPiece(piece)
+    }
+
+    removePiece(x,y){
+        this.grid[x][y].removePiece()
     }
 }
 module.exports = Board;

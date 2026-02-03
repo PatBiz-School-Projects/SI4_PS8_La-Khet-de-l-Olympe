@@ -1,6 +1,7 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
 const {createPieceFromDto} = require("../factory/pieceFactory");
+const StartingPositions = require("./startingPositions");
 
 
 class BoardManager {
@@ -10,31 +11,36 @@ class BoardManager {
 
     initBoard() {
         this.board = new Board();
+        const sp = new StartingPositions(10);
+        const result = sp.generateAndApply(this.board);
 
-        // TODO : Generating the initial position of the pieces
-
-        this.currentPlayer = 1;
-        console.log("Nouvelle partie générée sur le serveur.");
-        return {
-            board: this.board,
-            currentPlayer: 1
+        if (!result.ok) {
+            return { ok: false, detail: result.detail, error: result.error };
         }
+        // TODO : Generating the initial position of the pieces*/
+        return this.board.toDTO()
     }
 
-    placePiece(piece) {
+    placePiece(pieceDto,x,y) {
         if(!this.board) return {
             ok : false,
             detail : "BOARD_NOT_INITIALIZED"
         }
-        const result = createPieceFromDto(piece);
-        if(this.board.getPiece(result.x,result.y)){
+        const result = createPieceFromDto(pieceDto);
+        if(!result){
+            return {
+                ok : false,
+                detail : "INVALID_ARGS"
+            }
+        }
+        if(this.board.getPiece(x,y)){
             return {
                 ok : false,
                 detail : "PIECE_ALR_AT_COORDS"
             }
         }
-        this.board.grid[result.x][result.y].addPiece(result);
-        return { ok: true, detail: "PIECE_PLACED", grid:this.board.grid };
+        this.board.addPiece(x,y,result);
+        return { ok: true, detail: "PIECE_PLACED", grid:this.board.toDTO() };
     }
 
     movePiece(fromX, fromY, toX, toY) {
@@ -45,10 +51,9 @@ class BoardManager {
             detail: "NO_PIECE_AT_COORDS"
         };
 
-        this.board.grid[fromX][fromY].reset();
-        this.board.grid[toX][toY].addPiece(piece);
-
-        piece.move(toX, toY);
+        this.board.removePiece(fromX,fromY);
+        this.board.addPiece(toX, toY, piece);
+        //fire(getCurrentPlayer());// after a move the sphinx fires the laser (not sure where to put it)
         return {
             ok : true,
             detail: "PIECE_MOVED",
@@ -58,8 +63,7 @@ class BoardManager {
 
     removePiece(x,y) {
         const cell = this.board.grid[y][x];
-        const piece = cell.getPiece();
-        cell.removePiece(piece);
+        cell.removePiece();
         return {
             ok : true,
             detail: "PIECE_REMOVED",
@@ -97,6 +101,13 @@ class BoardManager {
         } : {
             ok : false,
             detail : "PIECE_NOT_FOUND"
+        }
+    }
+
+    getBoard(){
+        return {
+            ok : true,
+            board : this.board
         }
     }
 

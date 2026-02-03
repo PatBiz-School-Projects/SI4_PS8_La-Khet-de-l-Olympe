@@ -18,10 +18,8 @@ const LaserImpact = require('./laser');
 
 
 class Piece {
-    constructor(owner, x, y, orientation, image) {
+    constructor(owner,orientation, image) {
         this.owner = owner;
-        this.x = x;
-        this.y = y;
         this.orientation = orientation;
         this.image = image;
     }
@@ -46,10 +44,10 @@ class Piece {
     onLaserHit() {
         return LaserImpact.destroy();
     }
-    toDto(){
+    toDTO(){
         return{
-            x:this.x,
-            y:this.y,
+            owner : this.owner,
+            type : this.constructor.name,
             orientation : this.orientation
         }
     }
@@ -66,11 +64,6 @@ const Rotatable = (Base) => class extends Base {
 
 const Moveable = (Base) => class extends Base {
     canMove() { return true; }
-    move(x, y) {
-        this.x = x;
-        this.y = y;
-        return { x, y };
-    }
 };
 
 const Reflective = (Base) => class extends Base {
@@ -95,14 +88,14 @@ const Reflective = (Base) => class extends Base {
 };
 
 class Pharaoh extends Piece {
-    constructor(owner,x,y,orientation) {
-        super(owner,x,y,orientation,"pharaoh.png");
+    constructor(owner,orientation) {
+        super(owner,orientation,"pharaoh.png");
     }
 }
 
 class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
-    constructor(owner,x,y,orientation,isFromReserve) {
-        super(owner,x,y,orientation,"pyramid.jpg");
+    constructor(owner,orientation,isFromReserve) {
+        super(owner,orientation,"pyramid.jpg");
         this.isFromReserve = isFromReserve;
     }
     buildReflectiveSides() {
@@ -114,8 +107,8 @@ class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
 }
 
 class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
-    constructor(owner,x,y,orientation) {
-        super(owner,x,y,orientation,"scarab.png");
+    constructor(owner,orientation) {
+        super(owner,orientation,"scarab.png");
     }
     buildReflectiveSides() {
         return {
@@ -129,8 +122,8 @@ class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
 }
 
 class Anubis extends Reflective(Moveable(Rotatable(Piece))) {
-    constructor(owner,x,y,orientation) {
-        super(owner,x,y,orientation,"anubis.png");
+    constructor(owner,orientation) {
+        super(owner,orientation,"anubis.png");
     }
     buildReflectiveSides() {
         return {
@@ -140,8 +133,8 @@ class Anubis extends Reflective(Moveable(Rotatable(Piece))) {
 }
 
 class Sphinx extends Rotatable(Piece) {
-    constructor(owner,x,y,orientation) {
-        super(owner,x,y,orientation,"sphinx.png");
+    constructor(owner,orientation) {
+        super(owner,orientation,"sphinx.png");
     }
     hitLaser(){
         return {
@@ -152,4 +145,4 @@ class Sphinx extends Rotatable(Piece) {
     }
 }
 
-module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharaoh,Dir};
+module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharaoh,Dir,Piece};
