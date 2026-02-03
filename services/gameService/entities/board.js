@@ -10,13 +10,29 @@ class Board {
             }
             this.grid.push(row);
         }
+
+        this.sphinxes={
+            1:null,
+            2:null
+        }
     }
 
     getPiece(x,y){
         return this.grid[x][y].getPiece();
     }
 
-    getSphinxbyOwner(owner){
+    findAndCacheSphinxes(){
+        for(let i = 0; i < 10; i++){
+            for(let j = 0; j < 10; j++){
+                let piece = this.grid.getPiece(i,j)
+                if(piece.constructor.name==="Sphinx"){
+
+                }
+            }
+        }
+    }
+
+    getSphinxByOwner(owner){
         //TODO
     }
 
