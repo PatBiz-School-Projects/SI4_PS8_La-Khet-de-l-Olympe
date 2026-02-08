@@ -42,6 +42,7 @@ services:
 
   mongo:
     image : mongo:latest
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
     networks:
       - internal
 
