@@ -55,7 +55,6 @@ export class GameBoard extends HTMLElement {
         // this.renderer.setBoardLen(this.grid.length);
         await this.renderer.drawEmptyGrid();
         // TODO : Uncomment the line below once the `/api/init-board` has been patched
-        console.log(this.grid);
         await this.renderer.drawBoard(this.grid);
 
         // TODO : To remove once it's not needed anymore
