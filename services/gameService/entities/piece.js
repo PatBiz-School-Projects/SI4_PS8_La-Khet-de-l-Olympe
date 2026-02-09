@@ -22,6 +22,7 @@ class Piece {
         this.owner = owner;
         this.orientation = orientation;
         this.image = image;
+        this.type=this.constructor.name;
     }
 
     getLocalImpactSide(globalDir) {
@@ -136,12 +137,9 @@ class Sphinx extends Rotatable(Piece) {
     constructor(owner,orientation) {
         super(owner,orientation,"sphinx.png");
     }
-    hitLaser(){
-        return {
-            originX: this.x,
-            originY: this.y,
-            direction: this.orientation,
-        };
+
+    onLaserHit(){
+        return LaserImpact.absorb();
     }
 }
 

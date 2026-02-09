@@ -1,15 +1,17 @@
 const readJsonBody = require("../helpers/parser");
 const BoardManager = require("./manager/boardManager");
-const GameState = require("./manager/gameState");
+const Game = require("./manager/game");
+const LaserService = require("./manager/laserService")
 const boardManager = new BoardManager();
-const gameState = new GameState();
+const laserService = new LaserService(boardManager.getBoard().board);
+const game = new Game([1,2],boardManager,laserService);
 const ACTIONS = require("./action");
 
 async function action(req,res){
     try{
         const body = await readJsonBody(req);
         const { method, args } = body ?? {};
-        const methodToCall = ACTIONS[method]
+        const methodToCall = ACTIONS[method];
         if (!methodToCall) {
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ ok: false, error: "INVALID_METHOD" }));
@@ -19,7 +21,8 @@ async function action(req,res){
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ ok: false, error: "MISSING_OWNER" }));
         }
-        if (!gameState.isPlayersTurn(owner)) {
+        if (!game.isPlayersTurn(owner)) {
+            console.log(game.getCurrentPlayer());
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ ok: false, error: "NOT_YOUR_TURN" }));
         }
@@ -28,9 +31,21 @@ async function action(req,res){
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify(result));
         }
-        if(!method==="place")gameState.addTurn();
+        if(methodToCall==="switch"){
+            game.addTurn();
+            res.writeHead(200, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify(result));
+        }
+        const laserResult=game.proceedLaserHit();
+
+        const finalResult = {
+            grid:result.grid,
+            laser: laserResult.path
+        };
+
+        game.addTurn();
         res.writeHead(200, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify(result));
+        return res.end(JSON.stringify(finalResult));
     } catch (e) {
         console.log(e)
         res.writeHead(400, { "Content-Type": "application/json" });

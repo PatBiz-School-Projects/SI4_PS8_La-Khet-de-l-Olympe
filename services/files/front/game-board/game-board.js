@@ -55,10 +55,11 @@ export class GameBoard extends HTMLElement {
         // this.renderer.setBoardLen(this.grid.length);
         await this.renderer.drawEmptyGrid();
         // TODO : Uncomment the line below once the `/api/init-board` has been patched
-        // await this.renderer.drawBoard(this.grid);
+        console.log(this.grid);
+        await this.renderer.drawBoard(this.grid);
 
         // TODO : To remove once it's not needed anymore
-        await this._runDemo();
+        //await this._runDemo();
     }
 
 
@@ -124,6 +125,7 @@ export class GameBoard extends HTMLElement {
         });
 
         const updatedBoardState = await placeResponse.json();
+        console.log(updatedBoardState);
         const gridDTO = updatedBoardState.grid;
         for (let i = 0; i < gridDTO.length; i++) {
             this.grid[i] = [];
@@ -173,17 +175,19 @@ export class GameBoard extends HTMLElement {
             })
         });
 
-        const updatedBoardState = await moveResponse.json();
-        const gridDTO = updatedBoardState.grid;
+        const updatedGameState = await moveResponse.json();
+        const gridDTO = updatedGameState.grid;
         for (let i = 0; i < gridDTO.length; i++) {
             this.grid[i] = [];
             for (let j = 0; j < gridDTO[0].length; j++) {
                 this.grid[i][j] = Cell.fromDTO(gridDTO[i][j]);
             }
         }
+        const pathLaser = updatedGameState.laser;
 
         await this.renderer.clearPieceAt(from);
         await this.renderer.drawPieceAt(piece, to)
+        await this.renderer.drawLaser(pathLaser)
 
         return updatedBoardState;
     }
@@ -206,7 +210,7 @@ export class GameBoard extends HTMLElement {
         });
 
         await this._placePiece(sphinxPiece, {x: 4, y: 4});
-        await this._movePiece(sphinxPiece, {x: 4, y: 4}, {x: 6, y: 6});
+        //await this._movePiece(sphinxPiece, {x: 4, y: 4}, {x: 6, y: 6});
     }
 }
 customElements.define('game-board', GameBoard);

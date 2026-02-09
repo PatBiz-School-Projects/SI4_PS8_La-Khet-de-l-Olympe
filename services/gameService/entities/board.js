@@ -24,16 +24,19 @@ class Board {
     findAndCacheSphinxes(){
         for(let i = 0; i < 10; i++){
             for(let j = 0; j < 10; j++){
-                let piece = this.grid.getPiece(i,j)
-                if(piece.constructor.name==="Sphinx"){
-
+                let piece = this.getPiece(i,j)
+                if(piece) {
+                    if (piece.type === "Sphinx") {
+                        this.sphinxes[piece.owner] = {x: i, y: j, orientation: piece.orientation};
+                    }
                 }
             }
         }
+        console.log(this.sphinxes);
     }
 
     getSphinxByOwner(owner){
-        //TODO
+        return this.sphinxes[owner];
     }
 
     toDTO() {

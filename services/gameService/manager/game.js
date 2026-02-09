@@ -1,14 +1,15 @@
 const {removePiece} = require("./boardManager");
 
 
-class GameState {
-    constructor(players = [1,2],boardManager){//not sure
+class Game {
+    constructor(players = [1,2],boardManager,laserService){//not sure
         this.players = players;
         this.turnIndex = 0; // 0 pour le 1 et 1 pour le 2
         this.turnCount = 1;
         this.status = gameStatus.RUNNING;
         this.winner=null;
         this.boardManager = boardManager;
+        this.laserService = laserService;
     }
 
     getCurrentPlayer() {
@@ -16,6 +17,7 @@ class GameState {
     }
 
     isPlayersTurn(pieceOwner){
+        console.log(this.getCurrentPlayer());
         return this.status===gameStatus.RUNNING && pieceOwner===this.getCurrentPlayer();
     }
 
@@ -25,23 +27,37 @@ class GameState {
     }
 
     isGameFinished(){
-        return this.status===gameStatus.GAME_OVER;
+        return this.status===gameStatus.GAME_OVER||this.status===gameStatus.DRAW;
     }
 
-    checkLaserImpact(piece){
-        if(piece.constructor.name==="Pharaoh"){
+    proceedLaserHit(){
+        const {path,destroyedPieces} = this.laserService.fireLaser(this.getCurrentPlayer());
+        destroyedPieces.forEach(piece => {
+            this.handleImpact(piece);
+        })
+
+        return {
+            path : path,
+        };
+    }
+
+    handleImpact(piece){
+        if(piece.type==="Pharaoh"){
             this.status=gameStatus.GAME_OVER;
-            if(piece.owner!==this.getCurrentPlayer()){
+            if(this.winner!=null){
+                this.status=gameStatus.DRAW;
+                this.winner=null;
+            }
+            else if(piece.owner!==this.getCurrentPlayer()){
                 this.winner=this.getCurrentPlayer();
             }
-            //Draw case
             else{
                 this.winner=piece.owner;
             }
 
         }
         else{
-            if(piece.constructor.name==="Pyramid" && piece.owner!==this.getCurrentPlayer()){
+            if(piece.type==="Pyramid" && piece.owner!==this.getCurrentPlayer()){
                 //add into the box of current Player
             }
             else{
@@ -62,4 +78,4 @@ const gameStatus ={
     PAUSED:"PAUSED"
 }
 
-module.exports = GameState;
+module.exports = Game;
