@@ -1,33 +1,18 @@
-const Board = require('./entities/board');
-const BoardManager = require('./manager/boardManager')
-const readJsonBody= require('../helpers/parser.js');
-
-const boardManager = new BoardManager();
+const handler = require('./handler.js');
 
 const routes = {
-    '/api/init-board': (req, res) => {boardManager.initBoard(req, res)},
-    '/api/place' : async (req,res) => {
-        try {
-            const { x, y, piece } = await readJsonBody(req);
-            const result = boardManager.placePiece(x, y, piece);
-
-            res.writeHead(result.ok ? 200 : 400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify(result));
-        } catch (e) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: "INVALID_JSON" }));
-        }
+    '/api/init-board': (req, res) => {
+        //méthode du middleWare
+        handler.initBoard(req, res);
     },
-    '/api/move' : async (req,res) => {
-        try{
-            const { x,y,owner,fromX,fromY} = await readJsonBody(req);
-            const result = boardManager.movePiece(x,y,fromX,fromY);
-            res.writeHead(result.ok ? 200 : 400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify(result));
-        } catch (e) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ ok: false, error: "INVALID_JSON" }));
-        }
+    '/api/action' : (req, res) => {
+        handler.action(req, res);
+    },
+    '/api/board/piece' : (req, res) => {
+        handler.getPiece(req, res);
+    },
+    '/api/board' : (req, res) => {
+        handler.getBoard(req, res);
     }
 };
 

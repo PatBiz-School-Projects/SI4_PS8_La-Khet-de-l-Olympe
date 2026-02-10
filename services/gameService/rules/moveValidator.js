@@ -1,5 +1,4 @@
-const {Anubis, Pharao, Pyramid, Scarab, Sphinx} = require("../entities/piece");
-const Board = require("../entities/board");
+const {Anubis, Pyramid, Scarab} = require("../entities/piece");
 
 
 class MoveValidator {
@@ -18,37 +17,35 @@ class MoveValidator {
         switch(piece.type){
             case Anubis : this.checkMoveAnubis(move);
                             break;
-            case Pharao : this.checkMovePharao(move);
+            case Pyramid : this.checkMovePyramid(move);
                             break;
-            case Pyramid : //TODO
-            case Scarab: //TODO
-            case Sphinx : //TODO
+            case Scarab: this.checkMoveScarab(move);
+                            break;
             default: {
-                throw new Error('What is this piece?');
+                throw new Error('This piece cannot move');
             }
         }
     }
 
     checkMoveAnubis(move){
-        return this.checkOrthagonalMove(move);
-    }
-
-    checkMovePharao(move){
-        return this.checkOrthagonalMove(move);
+        return this.checkOrthogonalMove(move);
     }
 
     checkMovePyramid(move){
-        const board = new Board();
-        //const pyramid =
+        const pyramid = move.piece;
+        if(!pyramid.isFromReserve){
+            return this.checkOrthogonalMove(move);
+        }
+        else {
+            return this.checkOrthogonalPieces(move);
+        }
     }
     checkMoveScarab(move){
-        //TODO
-    }
-    checkMoveSphinx(move){
-        //TODO
+        if(this.checkOrthogonalMove(move))return true;
+        else return this.checkSwapPosition(move);
     }
 
-    checkOrthagonalMove(move){
+    checkOrthogonalMove(move){
         if(this.checkIfTheresPiece(move)===false) return false;
         const previousX = move.piece.x;
         const previousY = move.piece.y;
@@ -69,8 +66,46 @@ class MoveValidator {
     }
 
     checkIfTheresPiece(move){
-        const board = new Board();
-        return !board[move.x][move.y].piece;
+        const piece = this.board[move.x][move.y].piece;
+        if(move.piece.type!=="Scarab")return !piece;
+        else{
+            return (piece.type === "Sphinx" || piece.type === "Pharaoh") && piece.owner === move.owner;
+        }
 
+    }
+
+    checkOrthogonalPieces(move){
+        if(this.checkIfTheresPiece(move)===false) return false;
+        const previousX = move.piece.x;
+        const previousY = move.piece.y;
+
+        const directions = [
+            { x: previousX + 1, y: previousY },
+            { x: previousX - 1, y: previousY },
+            { x: previousX, y: previousY + 1 },
+            { x: previousX, y: previousY - 1 }
+        ];
+
+        for(let d in directions){
+            const piece = this.board[d.x][d.y].piece;
+            if(piece.type==="Pharaoh" && piece.owner === move.piece.owner){
+                return false
+            }
+            if(piece.type==="Sphinx"){
+                return false;
+            }
+
+        }
+        return true;
+    }
+
+    checkSwapPosition(move){
+        const piece = move.piece;
+        if(piece.owner===this.board[move.x][move.y].piece.owner){
+            if(piece.type==="Sphinx" || piece.type==="Pharaoh"){
+                return true;
+            }
+        }
+        return false;
     }
 }

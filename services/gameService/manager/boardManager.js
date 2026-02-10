@@ -1,50 +1,114 @@
 const Board = require('../entities/board');
 const Piece = require('../entities/piece');
+const {createPieceFromDto} = require("../factory/pieceFactory");
+const StartingPositions = require("./startingPositions");
+
+
 class BoardManager {
     constructor() {
         this.board = null;
-        this.currentPlayer = 1;
-        this.gameStatus = "playing";
     }
 
-    initBoard(req,res) {
+    initBoard() {
         this.board = new Board();
-        this.currentPlayer = 1;
+        const sp = new StartingPositions(10);
+        const result = sp.generateAndApply(this.board);
+        this.board.findAndCacheSphinxes();
 
-        res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ status: "success", detail: "Board initialisée", grid: this.board.grid, currentPlayer:this.currentPlayer }));
-
-        console.log("Nouvelle partie générée sur le serveur.");
+        if (!result.ok) {
+            return { ok: false, detail: result.detail, error: result.error };
+        }
+        // TODO : Generating the initial position of the pieces*/
+        return this.board.toDTO();
     }
 
-    placePiece(x,y,pieceDTO) {
-        // place où faudrait un middleWare pour checker le move
-        const piece = {
-            owner: pieceDTO.owner,
-            x: x,
-            y: y,
-            orientation: pieceDTO.orientation,
-            image: pieceDTO.image,
-            move(nx, ny) { this.x = nx; this.y = ny}
+    placePiece(pieceDto,x,y) {
+        if(!this.board) return {
+            ok : false,
+            detail : "BOARD_NOT_INITIALIZED"
         }
-        this.board.grid[y][x].addPiece(piece);
-        return { ok: true, detail: "PIECE_PLACED", grid:this.board.grid };
-
+        const result = createPieceFromDto(pieceDto);
+        if(!result){
+            return {
+                ok : false,
+                detail : "INVALID_ARGS"
+            }
+        }
+        if(this.board.getPiece(x,y)){
+            return {
+                ok : false,
+                detail : "PIECE_ALR_AT_COORDS"
+            }
+        }
+        this.board.addPiece(x,y,result);
+        return { ok: true, detail: "PIECE_PLACED", grid:this.board.toDTO() };
     }
 
     movePiece(fromX, fromY, toX, toY) {
-        // précède par des middleware qui diront si le coup est légal (bon tour, bon move...)
-        const piece = this.board.grid[fromY][fromX].piece;
-        if (!piece) return false;
+        // prècédé par des middleware qui diront si le coup est légal (bon tour, bon move...)
+        const piece = this.board.getPiece(fromX, fromY);
+        if (!piece) return {
+            ok: false,
+            detail: "NO_PIECE_AT_COORDS"
+        };
 
-        this.board.grid[fromY][fromX].reset();
-        this.board.grid[toY][toX].addPiece(piece);
-
-        piece.move(toX, toY);
+        this.board.removePiece(fromX,fromY);
+        this.board.addPiece(toX, toY, piece);
+        //fire(getCurrentPlayer());// after a move the sphinx fires the laser (not sure where to put it)
         return {
             ok : true,
             detail: "PIECE_MOVED",
             grid:this.board.grid
+        }
+    }
+
+    removePiece(x,y) {
+        const cell = this.board.grid[y][x];
+        cell.removePiece();
+        return {
+            ok : true,
+            detail: "PIECE_REMOVED",
+            grid:this.board.grid
+        };
+    }
+
+    rotatePiece(x,y,turns){
+        try {
+            const piece = this.board.getPiece(x,y);
+
+            if(!piece) return {
+                ok : false,
+                detail : "PIECE_NOT_FOUND"
+            }
+            const newOrientation = piece.rotate(turns);
+            return {
+                ok : true,
+                detail : "PIECE_ROTATED",
+                orientation : newOrientation
+            }
+        }
+        catch (err) {
+            return {
+                ok : false,
+                detail : "PIECE_NOT_ROTATABLE"
+            }
+        }
+    }
+
+    getPiece(x,y){
+        return this.board.getPiece(x,y) ? {
+            ok : true,
+            piece : this.board.getPiece(x,y)
+        } : {
+            ok : false,
+            detail : "PIECE_NOT_FOUND"
+        }
+    }
+
+    getBoard(){
+        return {
+            ok : true,
+            board : this.board
         }
     }
 

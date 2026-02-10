@@ -10,22 +10,51 @@ class Board {
             }
             this.grid.push(row);
         }
+
+        this.sphinxes={
+            1:null,
+            2:null
+        }
     }
+
+    getPiece(x,y){
+        return this.grid[x][y].getPiece();
+    }
+
+    findAndCacheSphinxes(){
+        for(let i = 0; i < 10; i++){
+            for(let j = 0; j < 10; j++){
+                let piece = this.getPiece(i,j)
+                if(piece) {
+                    if (piece.type === "Sphinx") {
+                        this.sphinxes[piece.owner] = {x: i, y: j, orientation: piece.orientation};
+                    }
+                }
+            }
+        }
+        console.log(this.sphinxes);
+    }
+
+    getSphinxByOwner(owner){
+        return this.sphinxes[owner];
+    }
+
     toDTO() {
         return {
             grid: this.grid.map(row =>
-                row.map(cell => ({
-                    x: cell.x,
-                    y: cell.y,
-                    piece: cell.piece ? {
-                        owner: cell.piece.owner,
-                        orientation: cell.piece.orientation,
-                        image: cell.piece.image,
-                        type: cell.piece.constructor.name,
-                    } : null
-                }))
+                row.map(cell => (
+                    cell.toDTO()
+                ))
             )
         };
+    }
+
+    addPiece(x,y,piece){
+        this.grid[x][y].addPiece(piece)
+    }
+
+    removePiece(x,y){
+        this.grid[x][y].removePiece()
     }
 }
 module.exports = Board;
