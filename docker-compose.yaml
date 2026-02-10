@@ -35,7 +35,7 @@ services:
     networks:
       - internal
     environment:
-      DB_PORT: mongodb://mongo:27017
+      DB_URL: mongodb://mongo:27017
       DB_NAME : ps8
     depends_on:
       - mongo
