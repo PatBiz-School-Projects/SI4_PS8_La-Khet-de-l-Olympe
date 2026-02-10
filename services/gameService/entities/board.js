@@ -18,19 +18,39 @@ class Board {
         }
 
         this.sphinxes = {};
+        this.pharaohs = {};
     }
 
     init() {
         const sp = new StartingPositions(Board.GRID_LEN);
         sp.generateAndApply(this);
 
-        // Finding and caching the sphinxes
+        this._findAndCacheSphinxes();
+        this._findAndCachePharaohs();
+    }
+
+    _findAndCacheSphinxes() {
         for (let x = 0; x < Board.GRID_LEN; x++) {
             for (let y = 0; y < Board.GRID_LEN; y++) {
                 if (this.hasPieceAt({x, y})) {
                     const piece = this.getPieceAt({x, y});
                     if (piece.type === "Sphinx") {
                         this.sphinxes[piece.owner] = {
+                            x: x, y: y, orientation: piece.orientation
+                        };
+                    }
+                }
+            }
+        }
+    }
+
+    _findAndCachePharaohs() {
+        for (let x = 0; x < Board.GRID_LEN; x++) {
+            for (let y = 0; y < Board.GRID_LEN; y++) {
+                if (this.hasPieceAt({x, y})) {
+                    const piece = this.getPieceAt({x, y});
+                    if (piece.type === "Pharaoh") {
+                        this.pharaohs[piece.owner] = {
                             x: x, y: y, orientation: piece.orientation
                         };
                     }
@@ -85,6 +105,10 @@ class Board {
 
     getSphinxByOwner(owner) {
         return this.sphinxes[owner];
+    }
+
+    getPharaohByOwner(owner){
+        return this.pharaohs[owner];
     }
 
 

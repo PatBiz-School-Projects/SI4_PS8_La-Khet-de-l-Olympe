@@ -12,6 +12,7 @@ const { ActionValidator } = require("./ActionValidator");
  */
 const GameID = undefined;
 
+
 /**
  * @enum {typeof GameState[keyof typeof GameState]} GameState
  */
@@ -23,8 +24,17 @@ const GameState = Object.freeze({
 });
 
 
+/**
+ * @enum {typeof GameMode[keyof typeof GameMode]} GameMode
+ */
+const GameMode = Object.freeze({
+    LOCAL: "LOCAL",
+    VS_AI: "VS_AI"
+});
+
+
 class Game {
-    constructor(gameId, players) {
+    constructor(gameId, players, mode) {
         /** @private @type {GameID} */
         this._gameId = gameId;
 
@@ -33,6 +43,9 @@ class Game {
 
         /** @private @type {GameState} */
         this._state = GameState.RUNNING;
+
+        /** @private @type {GameMode} */
+        this._mode = mode;
 
         /** @private @type {number} */
         this._turnCount = 1;
@@ -98,6 +111,20 @@ class Game {
     /** @type {GameState} */
     get state() {
         return this._state;
+    }
+
+    /**
+     * @deprecated This method will be removed. Use {@link state} getter.
+     *
+     * @returns {GameState}
+     */
+    getGameStatus(){
+        return this._state;
+    }
+
+    /** @type {GameMode} */
+    get mode() {
+        return this._mode;
     }
 
 

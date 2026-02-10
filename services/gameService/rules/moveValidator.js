@@ -66,7 +66,7 @@ class MoveValidator {
     }
 
     checkIfTheresPiece(move){
-        const piece = this.board[move.x][move.y].piece;
+        const piece = this.board.getPiece(move.x,move.y);
         if(move.piece.type!=="Scarab")return !piece;
         else{
             return (piece.type === "Sphinx" || piece.type === "Pharaoh") && piece.owner === move.owner;
@@ -76,8 +76,8 @@ class MoveValidator {
 
     checkOrthogonalPieces(move){
         if(this.checkIfTheresPiece(move)===false) return false;
-        const previousX = move.piece.x;
-        const previousY = move.piece.y;
+        const previousX = move.x;
+        const previousY = move.y;
 
         const directions = [
             { x: previousX + 1, y: previousY },
@@ -87,7 +87,7 @@ class MoveValidator {
         ];
 
         for(let d in directions){
-            const piece = this.board[d.x][d.y].piece;
+            const piece = this.board.getPiece(d.x,d.y);
             if(piece.type==="Pharaoh" && piece.owner === move.piece.owner){
                 return false
             }

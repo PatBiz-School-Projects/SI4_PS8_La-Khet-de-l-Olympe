@@ -15,4 +15,9 @@ class Box{
     removePyramid(pyramid){
         //maybe we should add an id for the pieces
     }
+    getNbOfPyramids(){
+        let cpt = 0;
+        this.pieces.filter(piece => {if(piece) cpt++;})
+        return cpt;
+    }
 }

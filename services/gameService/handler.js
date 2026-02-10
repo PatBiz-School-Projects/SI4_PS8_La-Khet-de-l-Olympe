@@ -8,6 +8,7 @@ const { PlayersManager } = require("./PlayersManager");
 // HTTP
 //
 
+
 exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
     try {
         const { userId, userToken } = parseCookies(req.headers.cookie);
