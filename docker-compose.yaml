@@ -25,13 +25,15 @@ services:
 
   game-service:
     build:
-      context: ./services/gameService
+      context: ./services
+      dockerfile: ./gameService/Dockerfile
     networks:
       - internal
 
   auth-service:
     build:
-      context: ./services/auth
+      context: ./services
+      dockerfile: ./auth/Dockerfile
     networks:
       - internal
     environment:
