@@ -1,17 +1,17 @@
 const handler = require('./handler.js');
 
 const routes = {
-    '/api/init-board': (req, res) => {
+    '/api/game-service/init-board': (req, res) => {
         //méthode du middleWare
         handler.initBoard(req, res);
     },
-    '/api/action' : (req, res) => {
+    '/api/game-service/action' : (req, res) => {
         handler.action(req, res);
     },
-    '/api/board/piece' : (req, res) => {
+    '/api/game-service/board/piece' : (req, res) => {
         handler.getPiece(req, res);
     },
-    '/api/board' : (req, res) => {
+    '/api/game-service/board' : (req, res) => {
         handler.getBoard(req, res);
     }
 };

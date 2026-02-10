@@ -1,4 +1,4 @@
-const readJsonBody = require("../helpers/parser");
+const {readJsonBody,sendJson} = require("./helpers/parser");
 const BoardManager = require("./manager/boardManager");
 const Game = require("./manager/game");
 const LaserService = require("./manager/laserService")
@@ -13,13 +13,11 @@ async function action(req,res){
         const { method, args } = body ?? {};
         const methodToCall = ACTIONS[method];
         if (!methodToCall) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ ok: false, error: "INVALID_METHOD" }));
+            return sendJson(res,400,{ ok: false, error: "INVALID_METHOD" });
         }
         const owner = args?.owner;
         if (owner == null) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ ok: false, error: "MISSING_OWNER" }));
+            return sendJson(res,400,{ ok: false, error: "MISSING_OWNER" });
         }
         if (!game.isPlayersTurn(owner)) {
             console.log(game.getCurrentPlayer());
@@ -28,8 +26,7 @@ async function action(req,res){
         }
         const result = methodToCall(boardManager,{args});
         if(!result.ok){
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify(result));
+            return sendJson(res,200,result);
         }
         if(methodToCall==="switch"){
             game.addTurn();
@@ -48,8 +45,7 @@ async function action(req,res){
         return res.end(JSON.stringify(finalResult));
     } catch (e) {
         console.log(e)
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ ok: false, error: "INVALID_JSON" }));
+        return sendJson(res,400,e);
     }
 }
 

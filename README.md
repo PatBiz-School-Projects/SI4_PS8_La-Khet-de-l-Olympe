@@ -17,6 +17,16 @@ In each project, run `node index.js` so the server will start listening to reque
 
 ---
 
+## Docker Compose
+
+Use Docker Compose to run all services together (gateway + file service + game service + auth service + MongoDB):
+
+```bash
+docker compose up --build
+```
+
+The gateway is exposed on `http://localhost:8000` and forwards requests to the other services inside the Docker network. The other services (including MongoDB) are only reachable by other containers.
+
 ## Architecture
 
 In the `services/` folder you will find all the projects that makes your website. Each subfolder is a node.js project

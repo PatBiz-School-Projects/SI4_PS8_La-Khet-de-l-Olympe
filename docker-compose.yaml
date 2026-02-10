@@ -1,0 +1,57 @@
+services:
+  gateway:
+    build:
+      context:
+        ./services/gateway
+    ports:
+      - "8000:8000"
+    environment:
+      GAME_SERVICE_URL: http://game-service:8002
+      FILE_SERVICE_URL: http://files-service:8001
+      AUTH_SERVICE_URL: http://auth-service:8003
+    depends_on:
+      - game-service
+      - auth-service
+      - files-service
+    networks:
+      - internal
+      - public
+
+  files-service:
+    build:
+      context: ./services/files
+    networks:
+      - internal
+
+  game-service:
+    build:
+      context: ./services
+      dockerfile: ./gameService/Dockerfile
+    networks:
+      - internal
+
+  auth-service:
+    build:
+      context: ./services
+      dockerfile: ./auth/Dockerfile
+    networks:
+      - internal
+    environment:
+      DB_URL: mongodb://mongo:27017
+      DB_NAME : ps8
+    depends_on:
+      - mongo
+
+  mongo:
+    image : mongo:latest
+    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+    networks:
+      - internal
+
+networks:
+  public:
+  internal:
+    internal: true
+
+
+
