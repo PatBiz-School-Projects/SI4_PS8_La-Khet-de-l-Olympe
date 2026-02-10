@@ -2,18 +2,10 @@ const handler = require('./handler.js');
 
 const routes = {
     "/api/auth/login" : (req, res) => {
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        return res.end(JSON.stringify({
-            ok : true,
-            token : 2
-        }));
+        handler.login(req, res);
     },
     "/api/auth/signup" : (req, res) => {
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        return res.end(JSON.stringify({
-            ok : true,
-            token : 2
-        }));
+        handler.register(req, res);
     }
 };
 

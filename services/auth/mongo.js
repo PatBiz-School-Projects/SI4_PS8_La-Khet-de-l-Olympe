@@ -6,7 +6,7 @@ const dbName = process.env.DB_NAME || 'ps8';
 let client;
 let db;
 
-async function run(){
+async function getDb(){
     if(db){
         return db;
     }
@@ -16,4 +16,4 @@ async function run(){
     return db;
 }
 
-module.exports = run;
+module.exports = getDb;
