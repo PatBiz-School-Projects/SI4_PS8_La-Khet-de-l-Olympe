@@ -7,36 +7,41 @@ const DIRECTIONS =  {
 }
 
 class LaserService {
-    constructor(board,gameService){ //not sure
+    constructor(board){ //not sure
         this.board = board;
-        this.gameService = gameService;
     }
 
     fireLaser(currentPlayer){
         const path = [];
-        const sphinx = this.board.getSphinxbyOwner(currentPlayer);//to implement
+        const sphinx = this.board.getSphinxByOwner(currentPlayer);
         let x = sphinx.x;
         let y = sphinx.y;
         let orientation= sphinx.orientation;
+        const pieceDestroyed = []
+        path.push({x:x,y:y});
         while(x>=0 && x<10 && y>=0 &&y<10){
-            path.push({x:x,y:y});
             const variation = DIRECTIONS[orientation];
             const newX = x+variation.dx;
             const newY = y+variation.dy;
             if(newX>=0 && newX<10 && newY>=0 &&newY<10){
-                const piece = this.board.grid[newY][newX].getPiece();
+                const piece = this.board.getPiece(newX,newY);
                 if(piece){
-                    const impact = piece.onLaserHit();
+                    const impact = piece.onLaserHit(orientation);
                     if(impact.type==="reflect"){
                         orientation = impact.outDir;
+                        console.log(orientation);
+                        path.push({x:newX,y:newY,hit:"reflected"});
                     }
                     else if(impact.type==="absorb"){
-                        path.push({x:newX.x,y:newY,hit:"absorbed"});
+                        path.push({x:newX,y:newY,hit:"absorbed"});
                     }
                     else if(impact.type==="destroy"){
-                        this.gameService.checkLaserImpact(piece);
-                        path.push({x:newX.x,y:newY,hit:"destroyed",piece:piece.constructor.name});
+                        pieceDestroyed.push(piece);
+                        path.push({x:newX,y:newY,hit:"destroyed",piece:piece.type});
                     }
+                }
+                else{
+                    path.push({x:newX,y:newY});
                 }
             }
             x=newX;
@@ -44,7 +49,9 @@ class LaserService {
 
         }
 
-        return path;
+        return {path,pieceDestroyed};
 
     }
 }
+
+module.exports = LaserService;
