@@ -1,4 +1,4 @@
-const MongoClient = require("mongodb")
+const {MongoClient} = require("mongodb")
 
 const mongoUrl = process.env.DB_URL || 'mongodb://127.0.0.1:27017';
 const dbName = process.env.DB_NAME || 'ps8';
@@ -16,4 +16,4 @@ async function getDb(){
     return db;
 }
 
-module.exports = getDb;
+module.exports = {getDb};

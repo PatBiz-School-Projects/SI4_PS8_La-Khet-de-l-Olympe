@@ -1,15 +1,16 @@
-const getDb = require('./mongo')
-const hash = require('./sha256')
-const {readJsonBody,sendJson} = require('./parser')
-
+const {getDb} = require('./mongo')
+const hash = require("js-sha256")
+const {readJsonBody,sendJson} = require('../helpers/parser');
+let db;
 async function register(req, res) {
     try {
-        const {username, password} = readJsonBody(req);
-
+        const {username, password} = await readJsonBody(req);
         if (!username || !password) {
             return sendJson(res, 401, {ok: false, error: 'MISSING_FIELDS'})
         }
-        const db = await getDb();
+        db = await getDb();
+        console.log("Coucou")
+        console.log(db);
         const users = db.collection("users");
         const existing = users.findOne({username: username});
         if (existing) {
@@ -20,10 +21,11 @@ async function register(req, res) {
         return sendJson(res, 200, result);
     }
     catch (error) {
+        console.log(error)
         return sendJson(res, 401, {ok: false, error: error});
     }
     finally {
-        db.close();
+        await db.close();
     }
 }
 
