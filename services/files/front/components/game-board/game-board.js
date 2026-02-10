@@ -55,9 +55,6 @@ export class GameBoard extends HTMLElement {
         // this.renderer.setBoardLen(this.grid.length);
         await this.renderer.drawEmptyGrid();
         await this.renderer.drawBoard(this.grid);
-
-        // TODO : To remove once it's not needed anymore
-        //await this._runDemo();
     }
 
 
@@ -77,14 +74,6 @@ export class GameBoard extends HTMLElement {
                 this.grid[i][j] = Cell.fromDTO(initialGrid[i][j])
             }
         }
-
-        // REVIEW : It might be better to move the "turn logic" out of `GameBoard`
-        const turnUpdatedEvent = new CustomEvent('turn-updated', {
-            detail: { player: initialState.currentPlayer },
-            bubbles: true,
-            composed: true,
-        });
-        this.dispatchEvent(turnUpdatedEvent);
     }
 
 
