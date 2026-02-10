@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Connexion</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fauna+One&display=swap" rel="stylesheet">
+    <link href="/auth/auth.css" rel="stylesheet" />
+</head>
+<body>
+<main class="auth-card">
+    <h1>Connexion</h1>
+    <p>Accédez à votre compte</p>
+
+    <form data-endpoint="/api/auth/login" data-button="Se connecter">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="username" placeholder="AbcdLeBG" required />
+
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" placeholder="********" required />
+
+        <button type="submit">Se connecter</button>
+        <p class="status" data-status></p>
+    </form>
+
+    <p class="helper">
+        Pas encore de compte ? <a href="/auth/signup.html">Créer un compte</a>
+    </p>
+</main>
+
+<script src="/auth/auth.js"></script>
+</body>
+</html>
