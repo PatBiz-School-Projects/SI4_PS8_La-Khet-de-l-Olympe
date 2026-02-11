@@ -10,14 +10,20 @@
 <body>
 <main class="auth-card">
     <h1>Inscription</h1>
-    <p>Créez un compte pour accéder aux fonctionnalités.</p>
+    <p>Créez un compte et définissez votre question secrète une seule fois.</p>
 
     <form data-endpoint="/api/auth/signup" data-button="Créer le compte">
         <label for="username">Username</label>
-        <input id="username" name="username" type="username" placeholder="abcdLEBG" required />
+        <input id="username" name="username" placeholder="nom_prenom" required />
 
         <label for="password">Mot de passe</label>
         <input id="password" name="password" type="password" placeholder="********" required />
+
+        <label for="question">Question secrète</label>
+        <input id="question" name="question" type="text" placeholder="Ex: nom de mon premier animal ?" required />
+
+        <label for="answer">Réponse secrète</label>
+        <input id="answer" name="answer" type="text" placeholder="Votre réponse" required />
 
         <button type="submit">Créer le compte</button>
         <p class="status" data-status></p>
