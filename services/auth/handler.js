@@ -9,13 +9,14 @@ const tokenExpiry = process.env.TOKEN_EXPIRY || '12h';
 async function register(req, res) {
     try {
         const body = await readJsonBody(req);
-        const { username, password } = body;
+        const { username, password,question,answer } = body;
 
-        if (!username || !password) {
+        if (!username || !password || !question || !answer) {
             return sendJson(res, 400, { ok: false, error: "MISSING_FIELDS" });
         }
         const db = await getDb();
         const users = db.collection("users");
+        const questions = db.collection("questions");
         const existing = await users.findOne({ username });
         if (existing) {
             return sendJson(res, 409, { ok: false, error: "ALREADY_EXISTS" });
@@ -27,9 +28,16 @@ async function register(req, res) {
             password: hashedPassword,
         });
 
+        await questions.insertOne({
+            userId: result.insertedId,
+            question: question,
+            answer: answer
+        })
+
         return sendJson(res, 201, {
             ok: true,
             id: result.insertedId,
+            detail : "Compte créé avec succès"
         });
     } catch (error) {
         return sendJson(res, 500, {
@@ -61,11 +69,11 @@ async function login(req, res) {
         const token = jwt.sign({ sub: user._id.toString(), username: user.username }, jwtSecret, {
             expiresIn: tokenExpiry
         });
-        return sendJson(res, 200, { ok: true, token });
+        return sendJson(res, 200, { ok: true, token , detail : "Vous êtes connecté ! :)"});
     } catch (error) {
         return sendJson(res, 500, {
             ok: false,
-            error: String(error?.message ?? error),
+            error: String(error?.message ?? error)
         });
     }
 }
@@ -107,7 +115,7 @@ async function renewToken(req, res) {
         }
 
         const payload = jwt.verify(token, jwtSecret);
-        const newToken = jwt.sign({ sub: payload.sub, email: payload.email }, jwtSecret, {
+        const newToken = jwt.sign({ sub: payload.sub, username: payload.username }, jwtSecret, {
             expiresIn: tokenExpiry
         });
         return sendJson(res, 200, { ok: true, token: newToken });
@@ -116,5 +124,59 @@ async function renewToken(req, res) {
     }
 }
 
+async function getQuestion(req, res) {
+    try{
+        const {username} = await readJsonBody(req);
+        const db = await getDb();
+        const users = db.collection("users");
+        const questions = db.collection("questions");
+        const user = await users.findOne({ username });
+        if (!user) {
+            return sendJson(401, { ok: false, error: "USERNAME_NOT_FOUND" });
+        }
+        const question = await questions.findOne({userId:user._id});
+        if (!question) {
+            return sendJson(res, 401, {ok: false, error: "QUESTION_NOT_FOUND" });
+        }
+        return sendJson(res, 200, { ok: true, question : question.question });
+    }
+    catch(error) {
+        return sendJson(res, 500, {ok: false,error: String(error?.message ?? error)});
+    }
+}
 
-module.exports = { register, login, checkToken, renewToken };
+async function resetPassword(req,res){
+    try{
+        const {username,answer,password} = await readJsonBody(req);
+        if (!username || !answer || !password) {
+            return sendJson(res, 400, { ok: false, error: 'MISSING_FIELDS' });
+        }
+        const db = await getDb();
+        const users = db.collection("users");
+        const questions = db.collection("questions");
+        const user = await users.findOne({ username });
+        if (!user) {
+            return sendJson(401, { ok: false, error: "USERNAME_NOT_FOUND" });
+        }
+        const dbQuestion = await questions.findOne({userId:user._id});
+        const isAnswerOK = dbQuestion.answer === answer;
+        if (!isAnswerOK) {
+            return sendJson(401, { ok: false, error: "INVALID_ANSWER" });
+        }
+        const hashedPassword = hash(password);
+        await users.updateOne(
+            {_id: user._id},
+            {
+                $set: {
+                    password: hashedPassword,
+                }
+            }
+        );
+        return sendJson(res, 200, { ok: true, detail : "PASSWORD_RESET" });
+    }
+    catch(error) {
+        return sendJson(res,500, {ok: false, error: String(error?.message ?? error)});
+    }
+}
+
+module.exports = { register, login, checkToken, renewToken, getQuestion,resetPassword };
