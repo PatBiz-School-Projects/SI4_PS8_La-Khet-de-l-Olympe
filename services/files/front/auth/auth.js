@@ -16,9 +16,16 @@ async function handleSubmit(event) {
     const username = form.elements.username.value.trim();
     const password = form.elements.password.value;
     const endpoint = form.dataset.endpoint;
+    const questionInput = form.elements.question;
+    const answerInput = form.elements.answer;
 
     if (!username || !password) {
         setStatus('Veuillez renseigner un nom d utilisateur et un mot de passe.', 'error');
+        return;
+    }
+
+    if ((questionInput && !questionInput.value.trim()) || (answerInput && !answerInput.value.trim())) {
+        setStatus('Veuillez renseigner votre question et votre réponse secrète.', 'error');
         return;
     }
 
@@ -27,12 +34,17 @@ async function handleSubmit(event) {
     button.textContent = 'Envoi...';
 
     try {
+        const body = {username: username, password: password};
+        if (questionInput && answerInput) {
+            body.question = questionInput.value.trim();
+            body.answer = answerInput.value.trim();
+        }
         const response = await fetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ username: username, password })
+            body: JSON.stringify(body)
         });
 
         const payload = await response.json().catch(() => ({}));
@@ -44,10 +56,10 @@ async function handleSubmit(event) {
         }
 
         if (payload.token) {
-            localStorage.setItem('ps8_token', payload.token);
+            localStorage.setItem('userToken', payload.token);
         }
-
-        setStatus('Succès ! Votre compte a été créé.', 'ok');
+        console.log(payload.detail + "paylod");
+        setStatus(payload.detail, 'ok');
     } catch (error) {
         setStatus('Erreur réseau. Réessayez plus tard.', 'error');
     } finally {
