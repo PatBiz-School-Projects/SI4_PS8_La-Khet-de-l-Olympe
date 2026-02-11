@@ -12,6 +12,12 @@ const routes = {
     },
     "api/auth/check" : (req, res) => {
         handler.checkToken(req, res);
+    },
+    "/api/auth/forgot-password" : (req, res) => {
+        handler.resetPassword(req, res);
+    },
+    "/api/auth/forgot-password/question" : (req, res) => {
+        handler.getQuestion(req, res);
     }
 };
 
