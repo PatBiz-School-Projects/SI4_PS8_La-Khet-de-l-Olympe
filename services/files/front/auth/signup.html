@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Inscription</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fauna+One&display=swap" rel="stylesheet">
+    <link href="/auth/auth.css" rel="stylesheet" />
+</head>
+<body>
+<main class="auth-card">
+    <h1>Inscription</h1>
+    <p>Créez un compte et définissez votre question secrète une seule fois.</p>
+
+    <form data-endpoint="/api/auth/signup" data-button="Créer le compte">
+        <label for="username">Username</label>
+        <input id="username" name="username" placeholder="nom_prenom" required />
+
+        <label for="password">Mot de passe</label>
+        <input id="password" name="password" type="password" placeholder="********" required />
+
+        <label for="question">Question secrète</label>
+        <input id="question" name="question" type="text" placeholder="Ex: nom de mon premier animal ?" required />
+
+        <label for="answer">Réponse secrète</label>
+        <input id="answer" name="answer" type="text" placeholder="Votre réponse" required />
+
+        <button type="submit">Créer le compte</button>
+        <p class="status" data-status></p>
+    </form>
+
+    <p class="helper">
+        Déjà un compte ? <a href="/auth/index.html">Se connecter</a>
+    </p>
+</main>
+
+<script src="/auth/auth.js"></script>
+</body>
+</html>

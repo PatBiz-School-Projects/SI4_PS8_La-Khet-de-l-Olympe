@@ -4,8 +4,20 @@ const routes = {
     "/api/auth/login" : (req, res) => {
         handler.login(req, res);
     },
-    "api/auth/signup" : (req, res) => {
-        handler.signup(req, res);
+    "/api/auth/signup" : (req, res) => {
+        handler.register(req, res);
+    },
+    "api/auth/renew" : (req, res) => {
+        handler.renewToken(req, res);
+    },
+    "api/auth/check" : (req, res) => {
+        handler.checkToken(req, res);
+    },
+    "/api/auth/forgot-password" : (req, res) => {
+        handler.resetPassword(req, res);
+    },
+    "/api/auth/forgot-password/question" : (req, res) => {
+        handler.getQuestion(req, res);
     }
 };
 
