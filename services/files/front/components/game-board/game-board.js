@@ -76,10 +76,23 @@ export class GameBoard extends HTMLElement {
         }
     }
 
+    /** @type {number} */
+    get length() {
+        return this.grid.length;
+    }
+
 
     /**
-     * @private
+     * @param {Coord} pos
      *
+     * @returns {Cell}
+     */
+    getCellAt(pos) {
+        return this.grid[pos.x][pos.y];
+    }
+
+
+    /**
      * Places a piece on the board at the given position.
      * Updates the board states & launch a re-rendering.
      *
@@ -127,8 +140,6 @@ export class GameBoard extends HTMLElement {
 
 
     /**
-     * @private
-     *
      * Moves a piece on the board to the given position.
      * Updates the board states & launch a re-rendering.
      *
