@@ -98,21 +98,6 @@ export class GamePageStateMachine {
     notifyListenersOf(gameAction) {
         this._listeners
             .filter(listener => listener.triggers.includes(gameAction.type))
-            .forEach(listener => listener.callback(gameAction));
+            .forEach(listener => listener.callback(gameAction.payload));
     }
 }
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Exemple d'utilisation
-
-const stateMachine = new GamePageStateMachine();
-
-const listener = stateMachine.subscribe([], (action) => {
-    console.log('Nouvel action:', action.type);
-});
-
-stateMachine.on({ type: 'START_TURN' });
-
-listener.free();

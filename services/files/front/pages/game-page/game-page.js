@@ -32,17 +32,14 @@ const clickHandler = new GamePageClickHandler(document);
 // });
 
 // TODO (in the backend) : Dispatching "start-turn" socket event only to the client (aka player) that can play
-socket.on("start-turn", payload => {
-    stateMachine.on(
-        { type: GamePageActionType.START_TURN, payload: { ...payload } }
-    )
-});
+socket.on("start-turn", payload => stateMachine.on(
+    { type: GamePageActionType.START_TURN, payload: payload }
+));
 
 // TODO (in the backend) : Dispatching "end-turn" socket event only to the player that cannot play
-socket.on("end-turn", _ => {
-    stateMachine.on({ type: GamePageActionType.END_TURN });
-
-});
+socket.on("end-turn", _ => stateMachine.on(
+    { type: GamePageActionType.END_TURN }
+));
 
 onclick = (event) => stateMachine.on(
     clickHandler.computePageAction(event)

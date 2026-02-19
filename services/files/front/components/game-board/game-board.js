@@ -102,7 +102,7 @@ export class GameBoard extends HTMLElement {
      * @returns {Promise<Object>} A promise resolving to the updated state of the board
      * @throws {Error} If the API request fails
      */
-    async _placePiece(piece, pos) {
+    async placePiece(piece, pos) {
         const placeResponse = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -150,7 +150,7 @@ export class GameBoard extends HTMLElement {
      * @returns {Promise<Object>} A promise resolving to the updated state of the board
      * @throws An error if the API request fails
      */
-    async _movePiece(piece, from, to) {
+    async movePiece(piece, from, to) {
         const moveResponse = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -186,7 +186,7 @@ export class GameBoard extends HTMLElement {
         await this.renderer.clearPieceAt(from);
         await this.renderer.drawPieceAt(piece, to);
 
-        return updatedBoardState;
+        return updatedGameState;
     }
 }
 customElements.define('game-board', GameBoard);

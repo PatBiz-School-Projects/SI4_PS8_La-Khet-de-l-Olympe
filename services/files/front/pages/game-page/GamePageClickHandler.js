@@ -22,12 +22,16 @@ export class GamePageClickHandler {
         if (clickEvent.target === board) {
             const boardRect = board.getBoundingClientRect();
 
-            const relativeX = (clickEvent.y - boardRect.top) / boardRect.height;
-            const relativeY = (clickEvent.x - boardRect.left) / boardRect.width;
+            // Note:
+            // - `clientY` := the vertical position of the mouse
+            // - `clientX` := the horizontal position of the mouse
+
+            const relativeX = (clickEvent.clientY - boardRect.bottom) / boardRect.width;
+            const relativeY = (clickEvent.clientX - boardRect.left) / boardRect.height;
 
             const pos = {
-                x: Math.floor(relativeX * gridSize),
-                y: Math.floor(relativeY * gridSize),
+                x: Math.floor(relativeX * board.length),
+                y: Math.floor(relativeY * board.length),
             };
 
             const selectedCell = board.getCellAt(pos);
