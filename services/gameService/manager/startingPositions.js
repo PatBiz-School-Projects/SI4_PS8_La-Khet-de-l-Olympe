@@ -1,6 +1,6 @@
 // manager/startingPositions.js
 
-const { createPieceFromDto } = require("../factory/pieceFactory");
+const { Piece } = require("../entities/piece");
 
 const ORIENTATIONS = ["N", "E", "S", "W"];
 
@@ -125,7 +125,7 @@ class StartingPositions {
 
     _safeAdd(board, pieceDto) {
         // On transforme le DTO en vraie Piece (comme ton placePiece le fait)
-        const piece = createPieceFromDto(pieceDto);
+        const piece = Piece.fromDTO(pieceDto);
         if (!piece) throw new Error("Invalid piece DTO: " + JSON.stringify(pieceDto));
 
         if (board.getPiece(pieceDto.x, pieceDto.y)) {

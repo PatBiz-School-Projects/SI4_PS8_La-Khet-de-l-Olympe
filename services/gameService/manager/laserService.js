@@ -7,50 +7,67 @@ const DIRECTIONS =  {
 }
 
 class LaserService {
-    constructor(board){ //not sure
+    constructor(board) {
         this.board = board;
     }
 
-    fireLaser(currentPlayer){
+    fireLaser(currentPlayer) {
         const path = [];
         const sphinx = this.board.getSphinxByOwner(currentPlayer);
+
         let x = sphinx.x;
         let y = sphinx.y;
-        let orientation= sphinx.orientation;
-        const pieceDestroyed = []
-        path.push({x:x,y:y});
-        while(x>=0 && x<10 && y>=0 &&y<10){
+
+        let orientation = sphinx.orientation;
+
+        const destroyedPieces = [];
+
+        path.push({x, y});
+        while (0<=x && x<10 && 0<=y && y<10) {
             const variation = DIRECTIONS[orientation];
-            const newX = x+variation.dx;
-            const newY = y+variation.dy;
-            if(newX>=0 && newX<10 && newY>=0 &&newY<10){
-                const piece = this.board.getPiece(newX,newY);
-                if(piece){
-                    const impact = piece.onLaserHit(orientation);
-                    if(impact.type==="reflect"){
-                        orientation = impact.outDir;
-                        console.log(orientation);
-                        path.push({x:newX,y:newY,hit:"reflected"});
+
+            const newX = x + variation.dx;
+            const newY = y + variation.dy;
+
+            if (newX>=0 && newX<10 && newY>=0 && newY<10) {
+                const piece = this.board.getPieceAt(newX, newY);
+                if (piece) {
+                    const impactReaction = piece.onLaserHit(orientation);
+                    switch (impactReaction.type) {
+                        case "reflect":
+                            orientation = impactReaction.outDir;
+                            path.push({
+                                x:newX,
+                                y:newY,
+                                hit:"reflected",
+                            });
+
+                        case "absorb":
+                            path.push({
+                                x:newX,
+                                y:newY,
+                                hit:"absorbed",
+                            });
+
+                        case "destroy":
+                            destroyedPieces.push(piece);
+                            path.push({
+                                x:newX,
+                                y:newY,
+                                hit:"destroyed",
+                                piece:piece.type,
+                            });
                     }
-                    else if(impact.type==="absorb"){
-                        path.push({x:newX,y:newY,hit:"absorbed"});
-                    }
-                    else if(impact.type==="destroy"){
-                        pieceDestroyed.push(piece);
-                        path.push({x:newX,y:newY,hit:"destroyed",piece:piece.type});
-                    }
-                }
-                else{
-                    path.push({x:newX,y:newY});
+                } else {
+                    path.push({x:newX, y:newY});
                 }
             }
-            x=newX;
-            y=newY;
 
+            x = newX;
+            y = newY;
         }
 
-        return {path,pieceDestroyed};
-
+        return {path, destroyedPieces};
     }
 }
 
