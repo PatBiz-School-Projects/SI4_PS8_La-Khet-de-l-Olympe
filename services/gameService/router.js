@@ -1,8 +1,27 @@
+const { sendJson } = require("./helpers/parser");
+
 const handler = require('./handler.js');
 
-const routes = {
+const ROUTES = {
+    //
+    // Outside a game
+    //
+
+    '/api/game-service/start-solo-game': (req, res) => {
+        handler.startSoloGame(req, res);
+    },
+    '/api/game-service/start-local-multiplayer-game': (req, res) => {
+        handler.startLocalMultiplayerGame(req, res);
+    },
+    '/api/game-service/join-multiplayer-game': (req, res) => {
+        handler.joinMultiplayerGame(req, res);
+    },
+
+    //
+    // Inside a game
+    //
+
     '/api/game-service/init-board': (req, res) => {
-        //méthode du middleWare
         handler.initBoard(req, res);
     },
     '/api/game-service/action' : (req, res) => {
@@ -13,18 +32,14 @@ const routes = {
     },
     '/api/game-service/board' : (req, res) => {
         handler.getBoard(req, res);
-    }
+    },
 };
 
-async function manage(request,response){
-    const url = request.url;
-    if(routes[url]){
-        await routes[url](request, response);
-    }
-    else{
-        response.writeHead(404, {'Content-Type': 'text/plain'});
-        response.end(JSON.stringify({error: 'Not Found'}));
+exports.manage = async (req,res) => {
+    const url = req.url;
+    if(ROUTES[url]){
+        await ROUTES[url](req, res);
+    } else {
+        sendJson(res, 404, {ok: false, error: 'Not Found'})
     }
 }
-
-module.exports = {manage};

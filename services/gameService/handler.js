@@ -1,13 +1,56 @@
-const { readJsonBody, sendJson } = require("./helpers/parser");
+const { readJsonBody, sendJson, parseCookies } = require("./helpers/parser");
 
-const { Game } = require("./manager/game");
+const { GamesManager } = require("./GamesManager");
+const { Player } = require("./Player");
 
 
-const game = new Game([1,2]);
+exports.startSoloGame = async (req, res) => {
+    // TODO : Implement once the AI has been implemented
+}
+
+
+exports.startLocalMultiplayerGame = async (req, res) => {
+    let player1, player2;
+    try {
+        const { playerId1, playerId2 } = await readJsonBody(req);
+        player1 = new Player(playerId1);
+        player2 = new Player(playerId2);
+    } catch (err) {
+        console.error(err)
+        sendJson(res, 400, { ok: false, error: err });
+        return;
+    }
+
+    const gameId = GamesManager.newGame();
+    GamesManager.registerPlayerInRoom(player1, gameId);
+    GamesManager.registerPlayerInRoom(player2, gameId);
+
+    sendJson(res, 200, { ok:true, gameId });
+}
+
+
+exports.joinMultiplayerGame = async (req, res) => {
+    let player;
+    try {
+        const { playerId } = await readJsonBody(req);
+        player = new Player(playerId);
+    } catch (err) {
+        console.error(err)
+        sendJson(res, 400, { ok: false, error: err });
+        return;
+    }
+
+    const gameId = GamesManager.findRoomFor(player);
+
+    sendJson(res, 200, { ok:true, gameId });
+}
 
 
 exports.action = async (req, res) => {
     try {
+        const { gameId } = parseCookies(req.headers.cookie);
+        const game = GamesManager.getGameById(gameId);
+
         const actionBody = await readJsonBody(req);
         const { method, args } = actionBody ?? {};
 
@@ -31,7 +74,7 @@ exports.action = async (req, res) => {
 
         if(method === "switch"){
             game.nextTurn();
-            sendJson(res, 200, actionResult);
+            sendJson(res, 200, { ok:true, ...actionResult });
             return;
         }
 
@@ -43,7 +86,7 @@ exports.action = async (req, res) => {
         };
 
         game.nextTurn();
-        sendJson(res, 200, finalResult);
+        sendJson(res, 200, { ok:true, ...finalResult });
     } catch (err) {
         console.error(err)
         sendJson(res, 400, { ok: false, error: err });
@@ -52,18 +95,24 @@ exports.action = async (req, res) => {
 
 
 exports.initBoard = (req, res) => {
+    const { gameId } = parseCookies(req.headers.cookie);
+    const game = GamesManager.getGameById(gameId);
+
     game.board.init();
     sendJson(res, 201, game.board.toDTO());
 }
 
 
 exports.getPiece = async (req, res) => {
+    const { gameId } = parseCookies(req.headers.cookie);
+    const game = GamesManager.getGameById(gameId);
+
     const body = await readJsonBody(req);
     const {x, y} = body;
 
     try {
         const piece = game.board.getPieceAt({x, y});
-        sendJson(res, 200, piece.toDTO());
+        sendJson(res, 200, { ok:true, ...piece.toDTO() });
     } catch (err) {
         console.error(err);
         sendJson(res, 400, { ok: false, error: err });
@@ -72,5 +121,8 @@ exports.getPiece = async (req, res) => {
 
 
 exports.getBoard = async (req, res) => {
-    sendJson(res, 200, game.board.toDTO());
+    const { gameId } = parseCookies(req.headers.cookie);
+    const game = GamesManager.getGameById(gameId);
+
+    sendJson(res, 200, { ok:true, ...game.board.toDTO() });
 }
