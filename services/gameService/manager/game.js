@@ -1,81 +1,106 @@
-const {removePiece} = require("./boardManager");
+const { Board } = require("../entities/board");
+const { Piece } = require("../entities/piece");
+const LaserService = require("./laserService");
+
+
+/**
+ * @enum {typeof GameState[keyof typeof GameState]} GameState
+ */
+const GameState = Object.freeze({
+    RUNNING: "RUNNING",
+    GAME_OVER: "GAME_OVER",
+    DRAW : "DRAW",
+    PAUSED: "PAUSED",
+});
 
 
 class Game {
-    constructor(players = [1,2],boardManager,laserService){//not sure
+    constructor(players){
+        this.board = new Board();
+        this.laserService = new LaserService(this.board);
+
         this.players = players;
-        this.turnIndex = 0; // 0 pour le 1 et 1 pour le 2
+
+        this.state = GameState.RUNNING;
         this.turnCount = 1;
-        this.status = gameStatus.RUNNING;
-        this.winner=null;
-        this.boardManager = boardManager;
-        this.laserService = laserService;
-    }
+        this.currActivePlayer = players[0];
+        this.winner = null;
 
-    getCurrentPlayer() {
-        return this.players[this.turnIndex];
-    }
+        this.ACTIONS = {
+            move: ({piece, from, to}) => {
+                // DEBUG::
+                console.log("Moving piece: ", piece, "from:", from, "to:", to);
 
-    isPlayersTurn(pieceOwner){
-        console.log(this.getCurrentPlayer());
-        return this.status===gameStatus.RUNNING && pieceOwner===this.getCurrentPlayer();
-    }
+                this.board.movePiece(Piece.fromDTO(piece), from, to);
+                return this.board.toDTO();
+            },
+            place: ({piece, pos}) => {
+                // DEBUG::
+                console.log("Placing piece:", piece, "at:", pos);
 
-    addTurn(){
-        this.turnIndex = 1 - this.turnIndex
-        if(this.turnIndex===1)this.turnCount++;
-    }
+                this.board.placePiece(Piece.fromDTO(piece), pos);
+                return this.board.toDTO();
+            },
+            rotate: ({piece, pos, rotation}) => {
+                // DEBUG::
+                console.log("Rotating piece:", piece, "at:", pos, "to the", rotation);
 
-    isGameFinished(){
-        return this.status===gameStatus.GAME_OVER||this.status===gameStatus.DRAW;
-    }
+                this.board.rotatePiece(Piece.fromDTO(piece), pos, rotation);
+                return this.board.toDTO();
+            },
+            switch: ({piece1, pos1, piece2, pos2}) => {
+                // DEBUG::
+                console.log("Switching piece: ", piece1, "at:", pos1, "with piece:", piece2, "at: ", pos2);
 
-    proceedLaserHit(){
-        const {path,destroyedPieces} = this.laserService.fireLaser(this.getCurrentPlayer());
-        destroyedPieces.forEach(piece => {
-            this.handleImpact(piece);
-        })
-
-        return {
-            path : path,
-        };
-    }
-
-    handleImpact(piece){
-        if(piece.type==="Pharaoh"){
-            this.status=gameStatus.GAME_OVER;
-            if(this.winner!=null){
-                this.status=gameStatus.DRAW;
-                this.winner=null;
-            }
-            else if(piece.owner!==this.getCurrentPlayer()){
-                this.winner=this.getCurrentPlayer();
-            }
-            else{
-                this.winner=piece.owner;
-            }
-
-        }
-        else{
-            if(piece.type==="Pyramid" && piece.owner!==this.getCurrentPlayer()){
-                //add into the box of current Player
-            }
-            else{
-                this.boardManager.removePiece(piece.x,piece.y);
-            }
+                this.board.switchPieces(Piece.fromDTO(piece1), pos1, Piece.fromDTO(piece2), pos2);
+                return this.board.toDTO();
+            },
         }
     }
 
-    getGameStatus(){
-        return this.status;
+
+    isRunning() {
+        return this.state === GameState.RUNNING;
+    }
+
+    isFinished() {
+        return this.state === GameState.GAME_OVER || this.state === GameState.DRAW;
+    }
+
+    playerCanPlay(player) {
+        return this.isRunning() && player === this.currActivePlayer;
+    }
+
+    nextTurn() {
+        this.turnCount++;
+        this.currActivePlayer = this.players[(this.turnCount-1)%2];
+    }
+
+    processLaserHit() {
+        const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
+
+        for (const piece of destroyedPieces) {
+            if(piece.type === "Pharaoh"){
+                this.state = GameState.GAME_OVER;
+                if (this.winner !== null) {
+                    this.state = GameState.DRAW;
+                    this.winner = null;
+                } else if (piece.owner !== this.currActivePlayer) {
+                    this.winner = this.currActivePlayer;
+                } else {
+                    this.winner = piece.owner;
+                }
+            } else {
+                if (piece.type === "Pyramid" && piece.owner !== this.currActivePlayer) {
+                    // TODO : Adding the pyramid into the inventory of the current player
+                } else {
+                    this.board.removePiece(piece.x, piece.y);
+                }
+            }
+        }
+
+        return { path };
     }
 }
 
-const gameStatus ={
-    RUNNING:"RUNNING",
-    GAME_OVER:"GAME_OVER",
-    DRAW : "DRAW",
-    PAUSED:"PAUSED"
-}
-
-module.exports = Game;
+module.exports = { Game }

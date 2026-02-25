@@ -1,75 +1,76 @@
-const {readJsonBody,sendJson} = require("./helpers/parser");
-const BoardManager = require("./manager/boardManager");
-const Game = require("./manager/game");
-const LaserService = require("./manager/laserService")
-const boardManager = new BoardManager();
-const laserService = new LaserService(boardManager.getBoard().board);
-const game = new Game([1,2],boardManager,laserService);
-const ACTIONS = require("./action");
+const { readJsonBody, sendJson } = require("./helpers/parser");
 
-async function action(req,res){
-    try{
-        const body = await readJsonBody(req);
-        const { method, args } = body ?? {};
-        const methodToCall = ACTIONS[method];
-        if (!methodToCall) {
-            return sendJson(res,400,{ ok: false, error: "INVALID_METHOD" });
+const { Game } = require("./manager/game");
+
+
+const game = new Game([1,2]);
+
+
+exports.action = async (req, res) => {
+    try {
+        const actionBody = await readJsonBody(req);
+        const { method, args } = actionBody ?? {};
+
+        if (!game.ACTIONS.hasAttribute(method)) {
+            throw new Error(`Unknown action method: ${method}`);
         }
         const owner = args?.owner;
-        if (owner == null) {
-            return sendJson(res,400,{ ok: false, error: "MISSING_OWNER" });
+        if (owner === null) {
+            throw new Error("Missing 'owner' in action");
         }
-        if (!game.isPlayersTurn(owner)) {
-            console.log(game.getCurrentPlayer());
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ ok: false, error: "NOT_YOUR_TURN" }));
+        if (!game.playerCanPlay(owner)) {
+            throw new Error("Player cannot play");
         }
-        const result = methodToCall(boardManager,{args});
-        if(!result.ok){
-            return sendJson(res,200,result);
-        }
-        if(methodToCall==="switch"){
-            game.addTurn();
-            res.writeHead(200, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify(result));
-        }
-        const laserResult=game.proceedLaserHit();
 
+        // TODO : Calling an "action validator" to check whether the action is legal
+        if (false) {
+            throw new Error(`Invalid action: ${JSON.stringify(actionBody)}`);
+        }
+
+        const actionResult = game.ACTIONS[method]({args});
+
+        if(method === "switch"){
+            game.nextTurn();
+            sendJson(res, 200, actionResult);
+            return;
+        }
+
+        //const laserResult = game.processLaserHit();
+        console.log(`grid: ${actionResult.grid}`);
         const finalResult = {
-            grid:result.grid,
-            laser: laserResult.path
+            grid: actionResult.grid,
+            //laser: laserResult.path,
         };
 
-        game.addTurn();
-        res.writeHead(200, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify(finalResult));
-    } catch (e) {
-        console.log(e)
-        return sendJson(res,400,e);
+        game.nextTurn();
+        sendJson(res, 200, finalResult);
+    } catch (err) {
+        console.error(err)
+        sendJson(res, 400, { ok: false, error: err });
     }
 }
 
-function initBoard(req,res){
-    const result = boardManager.initBoard();
-    res.writeHead(201, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ status: "success", detail: "Board initialisée", grid: result.grid}));
+
+exports.initBoard = (req, res) => {
+    game.board.init();
+    sendJson(res, 201, game.board.toDTO());
 }
 
-async function getPiece(req,res){
+
+exports.getPiece = async (req, res) => {
     const body = await readJsonBody(req);
-    const { x,y } = body;
-    const result = boardManager.getPiece(x,y);
-    if(!result.ok){
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify(result));
+    const {x, y} = body;
+
+    try {
+        const piece = game.board.getPieceAt({x, y});
+        sendJson(res, 200, piece.toDTO());
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 400, { ok: false, error: err });
     }
-    res.writeHead(201, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify(result));
 }
 
-async function getBoard(req,res){
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(boardManager.getBoard()));
-}
 
-module.exports = {initBoard,action,getPiece,getBoard};
+exports.getBoard = async (req, res) => {
+    sendJson(res, 200, game.board.toDTO());
+}
