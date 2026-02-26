@@ -67,18 +67,13 @@ export class GameBoard extends HTMLElement {
      * @private
      */
     async _initializeBoard() {
-        // REVIEW : The front shouldn't have the responsability to make this call
-        // TODO : Remove `init-board` endpoint (in back) & call (in front)
-        const initResponse = await fetch("/api/game-service/init-board");
-        const initialState = await initResponse.json();
+        const boardResponse = await fetch("/api/game-service/board");
+        const { grid } = await boardResponse.json();
 
-        /** @type {CellDTO[][]} */
-        const initialGrid = initialState.grid;
-
-        for (let i=0; i<initialGrid.length; i++) {
+        for (let i=0; i<grid.length; i++) {
             this.grid[i] = [];
-            for (let j=0; j<initialGrid[0].length; j++) {
-                this.grid[i][j] = Cell.fromDTO(initialGrid[i][j])
+            for (let j=0; j<grid[0].length; j++) {
+                this.grid[i][j] = Cell.fromDTO(grid[i][j])
             }
         }
     }
@@ -184,7 +179,7 @@ export class GameBoard extends HTMLElement {
      * @throws An error if the API request fails
      */
     async movePiece(piece, from, to) {
-        // TODO : Moving API call out of the component 
+        // TODO : Moving API call out of the component
         const moveResponse = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },

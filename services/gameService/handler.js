@@ -94,15 +94,6 @@ exports.action = async (req, res) => {
 }
 
 
-exports.initBoard = (req, res) => {
-    const { gameId } = parseCookies(req.headers.cookie);
-    const game = GamesManager.getGameById(gameId);
-
-    game.board.init();
-    sendJson(res, 201, game.board.toDTO());
-}
-
-
 exports.getPiece = async (req, res) => {
     const { gameId } = parseCookies(req.headers.cookie);
     const game = GamesManager.getGameById(gameId);

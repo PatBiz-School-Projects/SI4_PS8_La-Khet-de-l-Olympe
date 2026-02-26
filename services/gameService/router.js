@@ -21,11 +21,6 @@ const ROUTES = {
     // Inside a game
     //
 
-    // REVIEW : The front shouldn't have the responsability to make this call
-    // TODO : Remove `init-board` endpoint (in back) & call (in front)
-    '/api/game-service/init-board': (req, res) => {
-        handler.initBoard(req, res);
-    },
     '/api/game-service/action' : (req, res) => {
         handler.action(req, res);
     },

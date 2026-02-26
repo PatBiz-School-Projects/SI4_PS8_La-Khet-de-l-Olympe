@@ -15,8 +15,10 @@ const GameState = Object.freeze({
 
 
 class Game {
-    constructor(players){
+    constructor(players) {
         this.board = new Board();
+        this.board.init();
+
         this.laserService = new LaserService(this.board);
 
         this.players = players;
@@ -71,10 +73,12 @@ class Game {
         return this.isRunning() && player === this.currActivePlayer;
     }
 
+
     nextTurn() {
         this.turnCount++;
         this.currActivePlayer = this.players[(this.turnCount-1)%2];
     }
+
 
     processLaserHit() {
         const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
