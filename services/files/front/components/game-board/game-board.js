@@ -1,5 +1,5 @@
 import { BoardRenderer } from "./BoardRenderer.js";
-import { Cell, CellDTO } from "./Cell.js";
+import { Cell } from "./Cell.js";
 import { Coord } from "./Coord.js"
 import { Piece } from "./Piece.js";
 
@@ -120,102 +120,32 @@ export class GameBoard extends HTMLElement {
 
 
     /**
-     * Places a piece on the board at the given position.
-     * Updates the board states & launch a re-rendering.
+     * Moves the given piece to the given position
+     * & updates the board rendering.
      *
-     * @param {Piece} piece - The piece to place
-     * @param {Coord} pos - The position where to place the piece
-     *
-     * @returns {Promise<Object>} A promise resolving to the updated state of the board
-     * @throws {Error} If the API request fails
-     */
-    async placePiece(piece, pos) {
-        // TODO : Moving API call out of the component
-        const placeResponse = await fetch("/api/game-service/action", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                method: "place",
-                args: {
-                    owner: piece.toDTO().owner,
-                    type: piece.toDTO().type,
-                    orientation: piece.toDTO().orientation,
-
-                    x: pos.x,
-                    y: pos.y,
-                }
-                // REVIEW : I propose the following `args`
-                // args: {
-                //     piece: piece.toDTO(),
-                //     pos: pos,
-                // }
-            }),
-        });
-
-        const updatedBoardState = await placeResponse.json();
-        console.log(updatedBoardState);
-        const gridDTO = updatedBoardState.grid;
-        for (let i = 0; i < gridDTO.length; i++) {
-            this.grid[i] = [];
-            for (let j = 0; j < gridDTO[0].length; j++) {
-                this.grid[i][j] = Cell.fromDTO(gridDTO[i][j]);
-            }
-        }
-        this.renderer.drawPieceAt(piece, pos);
-
-        return updatedBoardState;
-    }
-
-
-    /**
-     * Moves a piece on the board to the given position.
-     * Updates the board states & launch a re-rendering.
-     *
-     * @param {Piece} piece
+     * @param {Piece} piece - The piece to move
      * @param {Coord} from - Current position of the piece
      * @param {Coord} to - Desired new position of the piece
-     *
-     * @returns {Promise<Object>} A promise resolving to the updated state of the board
-     * @throws An error if the API request fails
      */
     async movePiece(piece, from, to) {
-        // TODO : Moving API call out of the component
-        const moveResponse = await fetch("/api/game-service/action", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                method: "move",
-                args: {
-                    owner: piece.toDTO().owner,
-
-                    fromX: from.x,
-                    fromY: from.y,
-                    toX: to.x,
-                    toY: to.y,
-                }
-                // REVIEW : I propose the following `args`
-                // args: {
-                //     piece: piece.toDTO(),
-                //     from: from,
-                //     to: to,
-                // }
-            })
-        });
-
-        const updatedGameState = await moveResponse.json();
-        const gridDTO = updatedGameState.grid;
-        for (let i = 0; i < gridDTO.length; i++) {
-            this.grid[i] = [];
-            for (let j = 0; j < gridDTO[0].length; j++) {
-                this.grid[i][j] = Cell.fromDTO(gridDTO[i][j]);
-            }
-        }
-        // const pathLaser = updatedGameState.laser;
+        this.getCellAt(from).empty();
+        this.getCellAt(to).put(piece);
 
         await this.renderer.clearPieceAt(from);
         await this.renderer.drawPieceAt(piece, to);
+    }
 
-        return updatedGameState;
+    /**
+     * Places the given piece at the given position
+     * & updates the board rendering.
+     *
+     * @param {Piece} piece - The piece to place
+     * @param {Coord} pos - The position where to place the piece
+     */
+    async placePiece(piece, pos) {
+        this.grid[pos.x][pos.y].put(piece);
+
+        await this.renderer.drawPieceAt(piece, pos);
     }
 }
 customElements.define('game-board', GameBoard);

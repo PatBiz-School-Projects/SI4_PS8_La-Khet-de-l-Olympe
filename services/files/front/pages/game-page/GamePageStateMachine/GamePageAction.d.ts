@@ -18,7 +18,7 @@ export declare const GamePageActionType = {
 
 export type GamePageActionPayload<T extends GamePageActionType> =
     T extends typeof GamePageActionType.START_TURN
-        ? { playerId: number } :
+        ? { playerId: string } :
     T extends typeof GamePageActionType.END_TURN
         ? undefined :
     T extends typeof GamePageActionType.CLICKED_PIECE_IN_INVENTORY
