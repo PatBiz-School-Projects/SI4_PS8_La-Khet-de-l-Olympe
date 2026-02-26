@@ -4,6 +4,11 @@ const LaserService = require("./laserService");
 
 
 /**
+ * @typedef {string} GameID
+ */
+const GameID = undefined;
+
+/**
  * @enum {typeof GameState[keyof typeof GameState]} GameState
  */
 const GameState = Object.freeze({
@@ -107,4 +112,4 @@ class Game {
     }
 }
 
-module.exports = { Game }
+module.exports = { Game, GameID }

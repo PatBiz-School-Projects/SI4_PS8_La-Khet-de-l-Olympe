@@ -59,10 +59,10 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     await board.placePiece(piece, pos);
 });
 
-stateMachine.subscribe([GameActionType.ROTATE_PIECE], async (gameAction) => {
+stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {
     // TODO : To support
 });
 
-stateMachine.subscribe([GameActionType.SWITCH_PIECES], async (gameAction) => {
+stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, piece2, pos2}) => {
     // TODO : To support
 });

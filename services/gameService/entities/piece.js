@@ -190,7 +190,7 @@ const PieceConstructors = {
                     };
             }
 
-            if (reflectionMapping.hasAttribute(laserImpact)) {
+            if (laserImpact in reflectionMapping) {
                 return LaserImpact.reflect(reflectionMapping[laserImpact]);
             } else {
                 return LaserImpact.destroy();
@@ -244,7 +244,7 @@ const PieceConstructors = {
                     };
             }
 
-            if (reflectionMapping1.hasAttribute(laserImpact)) {
+            if (laserImpact in reflectionMapping1) {
                 return LaserImpact.reflect(reflectionMapping1[laserImpact]);
             } else {
                 return LaserImpact.reflect(reflectionMapping2[laserImpact]);

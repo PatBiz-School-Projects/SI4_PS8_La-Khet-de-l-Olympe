@@ -4,11 +4,6 @@ const { Player } = require('./Player');
 const { randomUUID } = require('node:crypto');
 
 
-/**
- * @typedef {string} GameID
- */
-
-
 // NOTE : Currently the games manager cannot manage more than one at a time.
 // TODO : Enable games multiplexing
 
@@ -62,7 +57,7 @@ class GamesManager {
 
 
     /**
-     * Create a new game in a waiting state
+     * Creates a new game in a waiting state.
      *
      *  @returns {GameID} The id of the game created (initially a waiting room)
      */
@@ -73,7 +68,7 @@ class GamesManager {
     }
 
     /**
-     * Start a game that was in a waiting state
+     * Starts a game that was in a waiting state
      *
      * @param {GameID} gameId
      */
@@ -88,7 +83,7 @@ class GamesManager {
     }
 
     /**
-     * Add a player inside an already existing waiting room
+     * Adds a player inside an already existing waiting room.
      *
      * @param {Player} player
      * @param {GameID} gameId
@@ -106,7 +101,7 @@ class GamesManager {
     }
 
     /**
-     * Find a waiting room for the given player
+     * Finds a waiting room for the given player.
      *
      * @param {Player} player
      */
@@ -129,6 +124,7 @@ class GamesManager {
 
     /**
      * @param {GameID} gameId
+     *
      * @returns {Game}
      */
     static getGameById(gameId) {
@@ -143,7 +139,7 @@ class GamesManager {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * End a given game
+     * Ends a given game.
      *
      * @param {GameID} gameId
      */

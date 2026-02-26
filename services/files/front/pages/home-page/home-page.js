@@ -3,8 +3,6 @@ import "/components/index.js"
 import { setCookie } from "/utils/cookie.js";
 
 
-// NOTE : Currently simulates the start of a local multiplayer game
-// TODO : Make a true home page
 
 async function startLocalMultiplayerGame() {
     try {
@@ -27,6 +25,9 @@ async function startLocalMultiplayerGame() {
         throw err;
     }
 }
+
+// NOTE : Currently simulates the start of a local multiplayer game
+// TODO : Make a true home page
 
 await startLocalMultiplayerGame();
 

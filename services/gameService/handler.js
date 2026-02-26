@@ -54,7 +54,7 @@ exports.action = async (req, res) => {
         const actionBody = await readJsonBody(req);
         const { method, args } = actionBody ?? {};
 
-        if (!game.ACTIONS.hasAttribute(method)) {
+        if (!(method in game.ACTIONS)) {
             throw new Error(`Unknown action method: ${method}`);
         }
         const owner = args?.owner;
@@ -70,9 +70,9 @@ exports.action = async (req, res) => {
             throw new Error(`Invalid action: ${JSON.stringify(actionBody)}`);
         }
 
-        const actionResult = game.ACTIONS[method]({args});
+        const actionResult = game.ACTIONS[method](args);
 
-        if(method === "switch"){
+        if (method === "switch") {
             game.nextTurn();
             sendJson(res, 200, { ok:true, ...actionResult });
             return;
