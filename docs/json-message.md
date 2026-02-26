@@ -1,15 +1,35 @@
-## Appel de méthode de game-service
+## Types de donné définis
 
+- `PlayerID`: alias de `string`
+- `PieceDTO`:
+    ```json
+    {
+        type: "Scarab" | "Sphinx" | "Pharaoh" | "Pyramid" | "Anubis",
+        owner: string,
+        orientation: "N" | "E" | "W" | "S"
+    }
+    ```
+- `Coord`:
+    ```json
+    {
+        x: number,
+        y: number,
+    }
+    ```
+
+
+## Appel de méthode du game-service
 
 - Pour échanger un scarab à l'endpoint : '/api/game-service/action'
     ```json
     {
-        method: "switch", 
+        method: "switch",
         args: {
-            "fromX" : number,
-            "fromY" : number,
-            "toX" : number,
-            "toY" : number
+            playerId: PlayerID,
+            piece1: PieceDTO,
+            pos1: Coord,
+            piece2: PieceDTO,
+            pos2: Coord,
         }
     }
     ```
@@ -17,12 +37,12 @@
 - Pour déplacer une pièce qui peut bouger à l'endpoint : '/api/game-service/action'
     ```json
     {
-        method: "move", 
+        method: "move",
         args: {
-            "fromX" : number,
-            "fromY" : number,
-            "toX" : number,
-            "toY" : number
+            playerId: PlayerID,
+            piece: PieceDTO,
+            from: Coord,
+            to: Coord,
         }
     }
     ```
@@ -30,11 +50,12 @@
 - Pour faire tourner une pièce qui peut rotater à l'endpoint : '/api/game-service/action'
     ```json
     {
-        method: "rotate", 
+        method: "rotate",
         args: {
-            "x" : number,
-            "y" : number,
-            "orientation" : "N" | "E" | "S" | "W"
+            playerId: PlayerID,
+            piece: PieceDTO,
+            pos: Coord,
+            rotation : "left" | "right",
         }
     }
     ```
@@ -42,12 +63,11 @@
 - Pour placer une pièce depuis la réserve : '/api/game-service/action'
     ```json
     {
-        method: "place", 
+        method: "place",
         args: {
-            "type" : "Scarab" | "Sphinx" | "Pharaoh" | "Pyramid" | "Anubis",
-            "owner" : 1 | 2,
-            "orientation" : "N" | "E" | "S" | "W"
+            playerID: PlayerID,
+            piece: PieceDTO,
+            pos: Coord,
         }
     }
     ```
-
