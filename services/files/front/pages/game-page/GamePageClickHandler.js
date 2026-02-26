@@ -11,6 +11,33 @@ export class GamePageClickHandler {
 
 
     /**
+     * @private
+     *
+     * @param {PointerEvent} clickEvent
+     * @param {GameBoard} board
+     *
+     * @returns {{x: number, y: number}}
+     */
+    _getClickPosOnBoard(clickEvent, board) {
+        const posMod = (dividend, divisor) => (((dividend % divisor) + divisor) % divisor);
+
+        const boardRect = board.getBoundingClientRect();
+
+        // Note:
+        // - `clientY` := the vertical position of the mouse
+        // - `clientX` := the horizontal position of the mouse
+
+        const relativeX = (clickEvent.clientY - boardRect.bottom) / boardRect.width;
+        const relativeY = (clickEvent.clientX - boardRect.left) / boardRect.height;
+
+        return {
+            x: posMod(Math.floor(relativeX * board.length), board.length),
+            y: posMod(Math.floor(relativeY * board.length), board.length),
+        };
+    }
+
+
+    /**
      * @param {PointerEvent} clickEvent
      *
      * @returns {GamePageAction}
@@ -20,19 +47,7 @@ export class GamePageClickHandler {
         const board = this.dom.querySelector("game-board");
 
         if (clickEvent.target === board) {
-            const boardRect = board.getBoundingClientRect();
-
-            // Note:
-            // - `clientY` := the vertical position of the mouse
-            // - `clientX` := the horizontal position of the mouse
-
-            const relativeX = (clickEvent.clientY - boardRect.bottom) / boardRect.width;
-            const relativeY = (clickEvent.clientX - boardRect.left) / boardRect.height;
-
-            const pos = {
-                x: Math.floor(relativeX * board.length),
-                y: Math.floor(relativeY * board.length),
-            };
+            const pos = this._getClickPosOnBoard(clickEvent, board);
 
             const selectedCell = board.getCellAt(pos);
             if (selectedCell.isEmpty()) {
@@ -50,7 +65,7 @@ export class GamePageClickHandler {
 
         // TODO : Supporting clicks on inventory (once an inventory component is created)
 
-        // TODO : Supporting clicks on rotation arrows (once an inventory component is created)
+        // TODO : Supporting clicks on rotation arrows (once added to the game page)
 
         return { type: GamePageActionType.CANCEL };
     }
