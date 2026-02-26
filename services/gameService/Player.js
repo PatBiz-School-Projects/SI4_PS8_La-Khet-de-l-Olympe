@@ -1,15 +1,46 @@
-// CAUTION : This is a very minimal implementation to make the rest of the code works.
+const { Socket } = require('socket.io');
 
-// TODO : Making a true `Player` class and a player manager
+
+/**
+ * @typedef {string} PlayerID
+ */
+const PlayerID = undefined;
+
 
 class Player {
-    constructor(playerId) {
+    /**
+     * @param {PlayerID} playerId
+     * @param {UserID} userId
+     * @param {UserToken} userToken
+     */
+    constructor(playerId, userId, userToken) {
+        /** @private @type {PlayerID} */
         this._playerId = playerId;
+
+        /** @private @type {UserID} */
+        this._userId = userId;
+
+        /** @private @type {UserToken} */
+        this._userToken = userToken;
+
+        /** @public @type {Socket} */
+        this.socket;
     }
 
+    /** @type {PlayerID} */
     get playerId() {
         return this._playerId;
     }
+
+    /** @type {UserID} */
+    get userId() {
+        return this._userId;
+    }
+
+    /** @type {UserToken} */
+    get userToken() {
+        return this._userToken;
+    }
 }
 
-module.exports = { Player };
+module.exports = { Player, PlayerID };

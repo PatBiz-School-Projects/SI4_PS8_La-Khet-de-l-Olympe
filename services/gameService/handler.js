@@ -1,11 +1,38 @@
 const { readJsonBody, sendJson, parseCookies } = require("./helpers/parser");
 
 const { GamesManager } = require("./GamesManager");
-const { Player } = require("./Player");
+const { PlayersManager } = require("./PlayersManager");
+
+
+exports.newPlayer = async (req, res) => {
+    const { userId, userToken } = parseCookies(req.headers.cookie);
+    if (!userId) {
+        throw new Error("Missing 'userId' cookie");
+    }
+    if (!userToken) {
+        throw new Error("Missing 'userToken' cookie");
+    }
+
+    // TODO : Add other verification
+
+    const playerId = PlayersManager.newPlayer(userId, userToken);
+
+    sendJson(res, 200, { ok:true, playerId });
+}
 
 
 exports.startSoloGame = async (req, res) => {
-    // TODO : Implement once the AI has been implemented
+    let player;
+    try {
+        const { playerId } = await readJsonBody(req);
+        player = PlayersManager.getPlayerById(playerId);
+    } catch (err) {
+        console.error(err)
+        sendJson(res, 400, { ok: false, error: err });
+        return;
+    }
+
+    // TODO : Complete it once the AI has been implemented
 }
 
 
@@ -13,8 +40,8 @@ exports.startLocalMultiplayerGame = async (req, res) => {
     let player1, player2;
     try {
         const { playerId1, playerId2 } = await readJsonBody(req);
-        player1 = new Player(playerId1);
-        player2 = new Player(playerId2);
+        player1 = PlayersManager.getPlayerById(playerId1);
+        player2 = PlayersManager.getPlayerById(playerId2);
     } catch (err) {
         console.error(err)
         sendJson(res, 400, { ok: false, error: err });
@@ -33,7 +60,7 @@ exports.joinMultiplayerGame = async (req, res) => {
     let player;
     try {
         const { playerId } = await readJsonBody(req);
-        player = new Player(playerId);
+        player = PlayersManager.getPlayerById(playerId);
     } catch (err) {
         console.error(err)
         sendJson(res, 400, { ok: false, error: err });
@@ -57,12 +84,14 @@ exports.action = async (req, res) => {
         if (!(method in game.ACTIONS)) {
             throw new Error(`Unknown action method: ${method}`);
         }
-        const owner = args?.owner;
-        if (owner === null) {
-            throw new Error("Missing 'owner' in action");
+        const playerId = args?.playerId;
+        if (!playerId) {
+            throw new Error("Missing 'playerId' attribute in action");
         }
-        if (!game.playerCanPlay(owner)) {
-            throw new Error("Player cannot play");
+
+        const player = PlayersManager.getPlayerById(playerId);
+        if (!game.playerCanPlay(player)) {
+            throw new Error(`Player of id=${player.id} cannot play`);
         }
 
         // TODO : Calling an "action validator" to check whether the action is legal
@@ -116,4 +145,16 @@ exports.getBoard = async (req, res) => {
     const game = GamesManager.getGameById(gameId);
 
     sendJson(res, 200, { ok:true, ...game.board.toDTO() });
+}
+
+
+exports.getCurrActivePlayer = async (req, res) => {
+    const { gameId } = parseCookies(req.headers.cookie);
+    if (!gameId) {
+        throw new Error("Missing 'gameId' cookie");
+    }
+
+    const game = GamesManager.getGameById(gameId);
+
+    sendJson(res, 200, { ok:true, playerId: game.currActivePlayer.playerId });
 }

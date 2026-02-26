@@ -1,3 +1,5 @@
+const { Player } = require("../Player");
+
 const { Board } = require("../entities/board");
 const { Piece } = require("../entities/piece");
 const LaserService = require("./laserService");
@@ -20,18 +22,29 @@ const GameState = Object.freeze({
 
 
 class Game {
-    constructor(players) {
+    constructor(gameId, players) {
         this.board = new Board();
         this.board.init();
 
         this.laserService = new LaserService(this.board);
 
-        this.players = players;
+        /** @private @type {GameID} */
+        this._gameId = gameId;
 
-        this.state = GameState.RUNNING;
-        this.turnCount = 1;
-        this.currActivePlayer = players[0];
-        this.winner = null;
+        /** @private @type {Player[]} */
+        this._players = players;
+
+        /** @private @type {GameState} */
+        this._state = GameState.RUNNING;
+
+        /** @private @type {number} */
+        this._turnCount = 1;
+
+        /** @private @type {Player} */
+        this._currActivePlayer = players[0];
+
+        /** @private @type {Player|null} */
+        this._winner = null;
 
         this.ACTIONS = {
             move: ({piece, from, to}) => {
@@ -65,42 +78,67 @@ class Game {
         }
     }
 
+    /** @type {GameID} */
+    get id() {
+        return this._gameId;
+    }
+
+    /** @type {Player[]} */
+    get players() {
+        return [ ...this._players ];
+    }
+
+    /** @type {Player} */
+    get currActivePlayer() {
+        return this._currActivePlayer;
+    }
+
+    /** @type {GameState} */
+    get state() {
+        return this._state;
+    }
+
 
     isRunning() {
-        return this.state === GameState.RUNNING;
+        return this._state === GameState.RUNNING;
     }
 
     isFinished() {
-        return this.state === GameState.GAME_OVER || this.state === GameState.DRAW;
+        return this._state === GameState.GAME_OVER || this._state === GameState.DRAW;
     }
 
+    /**
+     * @param {Player} player
+     *
+     * @returns {boolean}
+     */
     playerCanPlay(player) {
-        return this.isRunning() && player === this.currActivePlayer;
+        return this.isRunning() && player.playerId === this._currActivePlayer.playerId;
     }
 
 
     nextTurn() {
-        this.turnCount++;
-        this.currActivePlayer = this.players[(this.turnCount-1)%2];
+        this._turnCount++;
+        this._currActivePlayer = this.players[(this._turnCount-1)%2];
     }
 
 
     processLaserHit() {
-        const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
+        const {path, destroyedPieces} = this.laserService.fireLaser(this._currActivePlayer);
 
         for (const piece of destroyedPieces) {
             if(piece.type === "Pharaoh"){
-                this.state = GameState.GAME_OVER;
-                if (this.winner !== null) {
-                    this.state = GameState.DRAW;
-                    this.winner = null;
-                } else if (piece.owner !== this.currActivePlayer) {
-                    this.winner = this.currActivePlayer;
+                this._state = GameState.GAME_OVER;
+                if (this._winner !== null) {
+                    this._state = GameState.DRAW;
+                    this._winner = null;
+                } else if (piece.owner !== this._currActivePlayer) {
+                    this._winner = this._currActivePlayer;
                 } else {
-                    this.winner = piece.owner;
+                    this._winner = piece.owner;
                 }
             } else {
-                if (piece.type === "Pyramid" && piece.owner !== this.currActivePlayer) {
+                if (piece.type === "Pyramid" && piece.owner !== this._currActivePlayer) {
                     // TODO : Adding the pyramid into the inventory of the current player
                 } else {
                     this.board.removePiece(piece.x, piece.y);

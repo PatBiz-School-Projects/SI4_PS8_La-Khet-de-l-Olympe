@@ -78,7 +78,7 @@ class GamesManager {
             throw new Error(`Game with id=${gameId} not found`);
         }
 
-        this._games[gameId] = new Game(waitingRoom.players);
+        this._games[gameId] = new Game(gameId, waitingRoom.players);
         delete this._waitingRooms[gameId];
     }
 

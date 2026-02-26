@@ -7,6 +7,9 @@ const ROUTES = {
     // Outside a game
     //
 
+    '/api/game-service/new-player': (req, res) => {
+        handler.newPlayer(req, res);
+    },
     '/api/game-service/start-solo-game': (req, res) => {
         handler.startSoloGame(req, res);
     },
@@ -29,6 +32,9 @@ const ROUTES = {
     },
     '/api/game-service/board' : (req, res) => {
         handler.getBoard(req, res);
+    },
+    '/api/game-service/curr-player': (req, res) => {
+        handler.getCurrActivePlayer(req, res);
     },
 };
 
