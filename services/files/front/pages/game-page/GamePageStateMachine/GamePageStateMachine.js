@@ -63,11 +63,17 @@ export class GamePageStateMachine {
      * @param {GamePageAction} pageAction
      */
     on(pageAction) {
+        // DEBUG::
+        console.log("Before page action:", pageAction, "state was:", this.state);
+
         const {newStateImpl, gameAction} = this._stateImpl.on(pageAction);
         this._stateImpl = newStateImpl;
         if (gameAction) {
             this.notifyListenersOf(gameAction);
         }
+
+        // DEBUG::
+        console.log("After page action:", pageAction, "state is:", this.state, "and game action is:", gameAction);
     }
 
 

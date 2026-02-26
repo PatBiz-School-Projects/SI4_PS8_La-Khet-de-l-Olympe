@@ -212,7 +212,7 @@ class GamePageState_Superstate_Impl {
                     newSuperstate: this._state,
                     newSubstate: newSubstate,
                     newContext: newContext,
-                    gameAction: undefined,
+                    gameAction: gameAction,
                 };
 
             case GamePageActionType.CLICKED_EMPTY_CELL:
@@ -220,7 +220,7 @@ class GamePageState_Superstate_Impl {
                     newSuperstate: this._state,
                     newSubstate: newSubstate,
                     newContext: newContext,
-                    gameAction: undefined,
+                    gameAction: gameAction,
                 };
 
             case GamePageActionType.CLICKED_ROTATE_ARROW:
@@ -228,7 +228,7 @@ class GamePageState_Superstate_Impl {
                     newSuperstate: this._state,
                     newSubstate: newSubstate,
                     newContext: newContext,
-                    gameAction: undefined,
+                    gameAction: gameAction,
                 };
 
             case GamePageActionType.CANCEL:
