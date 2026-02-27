@@ -118,8 +118,14 @@ class Game {
 
 
     nextTurn() {
+        this._currActivePlayer.socket.emit("end-turn", {});
+
         this._turnCount++;
         this._currActivePlayer = this.players[(this._turnCount-1)%2];
+
+        this._currActivePlayer.socket.emit("start-turn", {
+            playerId: this._currActivePlayer.playerId
+        });
     }
 
 

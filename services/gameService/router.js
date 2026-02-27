@@ -1,6 +1,6 @@
 const { sendJson } = require("./helpers/parser");
 
-const handler = require('./handler.js');
+const { HTTPHandler, SocketIOMiddelware, SocketIOHandler } = require('./handler.js');
 
 const ROUTES = {
     //
@@ -8,35 +8,36 @@ const ROUTES = {
     //
 
     '/api/game-service/new-player': (req, res) => {
-        handler.newPlayer(req, res);
+        HTTPHandler.newPlayer(req, res);
     },
     '/api/game-service/start-solo-game': (req, res) => {
-        handler.startSoloGame(req, res);
+        HTTPHandler.startSoloGame(req, res);
     },
     '/api/game-service/start-local-multiplayer-game': (req, res) => {
-        handler.startLocalMultiplayerGame(req, res);
+        HTTPHandler.startLocalMultiplayerGame(req, res);
     },
     '/api/game-service/join-multiplayer-game': (req, res) => {
-        handler.joinMultiplayerGame(req, res);
+        HTTPHandler.joinMultiplayerGame(req, res);
     },
 
     //
     // Inside a game
     //
 
-    '/api/game-service/action' : (req, res) => {
-        handler.action(req, res);
+    '/api/game-service/action': (req, res) => {
+        HTTPHandler.action(req, res);
     },
-    '/api/game-service/board/piece' : (req, res) => {
-        handler.getPiece(req, res);
+    '/api/game-service/board/piece': (req, res) => {
+        HTTPHandler.getPiece(req, res);
     },
-    '/api/game-service/board' : (req, res) => {
-        handler.getBoard(req, res);
+    '/api/game-service/board': (req, res) => {
+        HTTPHandler.getBoard(req, res);
     },
     '/api/game-service/curr-player': (req, res) => {
-        handler.getCurrActivePlayer(req, res);
+        HTTPHandler.getCurrActivePlayer(req, res);
     },
 };
+
 
 exports.manage = async (req,res) => {
     const url = req.url;
@@ -45,4 +46,15 @@ exports.manage = async (req,res) => {
     } else {
         sendJson(res, 404, {ok: false, error: 'Not Found'})
     }
+}
+
+
+exports.manageSocket = async (io, socket) => {
+    io.use(SocketIOMiddelware);
+
+    await SocketIOHandler.onConnection(io, socket);
+
+    // Add more if needed ...
+
+    socket.on("disconnect", SocketIOHandler.onDisconnection);
 }

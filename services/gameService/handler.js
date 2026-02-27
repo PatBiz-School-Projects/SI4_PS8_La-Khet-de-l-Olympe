@@ -4,157 +4,227 @@ const { GamesManager } = require("./GamesManager");
 const { PlayersManager } = require("./PlayersManager");
 
 
-exports.newPlayer = async (req, res) => {
-    const { userId, userToken } = parseCookies(req.headers.cookie);
-    if (!userId) {
-        throw new Error("Missing 'userId' cookie");
-    }
-    if (!userToken) {
-        throw new Error("Missing 'userToken' cookie");
-    }
-
-    // TODO : Add other verification
-
-    const playerId = PlayersManager.newPlayer(userId, userToken);
-
-    sendJson(res, 200, { ok:true, playerId });
-}
+//
+// HTTP
+//
 
 
-exports.startSoloGame = async (req, res) => {
-    let player;
-    try {
-        const { playerId } = await readJsonBody(req);
-        player = PlayersManager.getPlayerById(playerId);
-    } catch (err) {
-        console.error(err)
-        sendJson(res, 400, { ok: false, error: err });
-        return;
-    }
+exports.HTTPHandler = {
+    //
+    // Outside a game
+    //
 
-    // TODO : Complete it once the AI has been implemented
-}
-
-
-exports.startLocalMultiplayerGame = async (req, res) => {
-    let player1, player2;
-    try {
-        const { playerId1, playerId2 } = await readJsonBody(req);
-        player1 = PlayersManager.getPlayerById(playerId1);
-        player2 = PlayersManager.getPlayerById(playerId2);
-    } catch (err) {
-        console.error(err)
-        sendJson(res, 400, { ok: false, error: err });
-        return;
-    }
-
-    const gameId = GamesManager.newGame();
-    GamesManager.registerPlayerInRoom(player1, gameId);
-    GamesManager.registerPlayerInRoom(player2, gameId);
-
-    sendJson(res, 200, { ok:true, gameId });
-}
-
-
-exports.joinMultiplayerGame = async (req, res) => {
-    let player;
-    try {
-        const { playerId } = await readJsonBody(req);
-        player = PlayersManager.getPlayerById(playerId);
-    } catch (err) {
-        console.error(err)
-        sendJson(res, 400, { ok: false, error: err });
-        return;
-    }
-
-    const gameId = GamesManager.findRoomFor(player);
-
-    sendJson(res, 200, { ok:true, gameId });
-}
-
-
-exports.action = async (req, res) => {
-    try {
-        const { gameId } = parseCookies(req.headers.cookie);
-        const game = GamesManager.getGameById(gameId);
-
-        const actionBody = await readJsonBody(req);
-        const { method, args } = actionBody ?? {};
-
-        if (!(method in game.ACTIONS)) {
-            throw new Error(`Unknown action method: ${method}`);
+    newPlayer: async (req, res) => {
+        const { userId, userToken } = parseCookies(req.headers.cookie);
+        if (!userId) {
+            throw new Error("Missing 'userId' cookie");
         }
-        const playerId = args?.playerId;
-        if (!playerId) {
-            throw new Error("Missing 'playerId' attribute in action");
+        if (!userToken) {
+            throw new Error("Missing 'userToken' cookie");
         }
 
-        const player = PlayersManager.getPlayerById(playerId);
-        if (!game.playerCanPlay(player)) {
-            throw new Error(`Player of id=${player.id} cannot play`);
-        }
+        // TODO : Add other verification
 
-        // TODO : Calling an "action validator" to check whether the action is legal
-        if (false) {
-            throw new Error(`Invalid action: ${JSON.stringify(actionBody)}`);
-        }
+        const playerId = PlayersManager.newPlayer(userId, userToken);
 
-        const actionResult = game.ACTIONS[method](args);
+        sendJson(res, 200, { ok:true, playerId });
+    },
 
-        if (method === "switch") {
-            game.nextTurn();
-            sendJson(res, 200, { ok:true, ...actionResult });
+    startSoloGame: async (req, res) => {
+        let player;
+        try {
+            const { playerId } = await readJsonBody(req);
+            player = PlayersManager.getPlayerById(playerId);
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err });
             return;
         }
 
-        //const laserResult = game.processLaserHit();
-        console.log(`grid: ${actionResult.grid}`);
-        const finalResult = {
-            grid: actionResult.grid,
-            //laser: laserResult.path,
-        };
+        // TODO : Complete it once the AI has been implemented
+    },
 
-        game.nextTurn();
-        sendJson(res, 200, { ok:true, ...finalResult });
-    } catch (err) {
-        console.error(err)
-        sendJson(res, 400, { ok: false, error: err });
-    }
+    startLocalMultiplayerGame: async (req, res) => {
+        let player1, player2;
+        try {
+            const { playerId1, playerId2 } = await readJsonBody(req);
+            player1 = PlayersManager.getPlayerById(playerId1);
+            player2 = PlayersManager.getPlayerById(playerId2);
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err });
+            return;
+        }
+
+        const gameId = GamesManager.newGame();
+        GamesManager.registerPlayerInRoom(player1, gameId);
+        GamesManager.registerPlayerInRoom(player2, gameId);
+
+        sendJson(res, 200, { ok:true, gameId });
+    },
+
+    joinMultiplayerGame: async (req, res) => {
+        let player;
+        try {
+            const { playerId } = await readJsonBody(req);
+            player = PlayersManager.getPlayerById(playerId);
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err });
+            return;
+        }
+
+        const gameId = GamesManager.findRoomFor(player);
+
+        sendJson(res, 200, { ok:true, gameId });
+    },
+
+    //
+    // Inside a game
+    //
+
+    action: async (req, res) => {
+        try {
+            const { gameId } = parseCookies(req.headers.cookie);
+            if (!gameId) {
+                throw new Error("Missing 'gameId' cookie");
+            }
+
+            const game = GamesManager.getGameById(gameId);
+
+            const actionBody = await readJsonBody(req);
+            const { method, args } = actionBody ?? {};
+
+            if (!(method in game.ACTIONS)) {
+                throw new Error(`Unknown action method: ${method}`);
+            }
+            const playerId = args?.playerId;
+            if (!playerId) {
+                throw new Error("Missing 'playerId' attribute in action");
+            }
+
+            const player = PlayersManager.getPlayerById(playerId);
+            if (!game.playerCanPlay(player)) {
+                throw new Error(`Player of id=${player.id} cannot play`);
+            }
+
+            // TODO : Calling an "action validator" to check whether the action is legal
+            if (false) {
+                throw new Error(`Invalid action: ${JSON.stringify(actionBody)}`);
+            }
+
+            const actionResult = game.ACTIONS[method](args);
+
+            if (method === "switch") {
+                game.nextTurn();
+                sendJson(res, 200, { ok:true, ...actionResult });
+                return;
+            }
+
+            //const laserResult = game.processLaserHit();
+            const finalResult = {
+                grid: actionResult.grid,
+                //laser: laserResult.path,
+            };
+
+            game.nextTurn();
+            sendJson(res, 200, { ok:true, ...finalResult });
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err });
+        }
+    },
+
+    getPiece: async (req, res) => {
+        const { gameId } = parseCookies(req.headers.cookie);
+        if (!gameId) {
+            throw new Error("Missing 'gameId' cookie");
+        }
+
+        const game = GamesManager.getGameById(gameId);
+
+        const body = await readJsonBody(req);
+        const {x, y} = body;
+
+        try {
+            const piece = game.board.getPieceAt({x, y});
+            sendJson(res, 200, { ok:true, ...piece.toDTO() });
+        } catch (err) {
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err });
+        }
+    },
+
+    getBoard: async (req, res) => {
+        const { gameId } = parseCookies(req.headers.cookie);
+        if (!gameId) {
+            throw new Error("Missing 'gameId' cookie");
+        }
+
+        const game = GamesManager.getGameById(gameId);
+
+        sendJson(res, 200, { ok:true, ...game.board.toDTO() });
+    },
+
+    getCurrActivePlayer: async (req, res) => {
+        const { gameId } = parseCookies(req.headers.cookie);
+        if (!gameId) {
+            throw new Error("Missing 'gameId' cookie");
+        }
+
+        const game = GamesManager.getGameById(gameId);
+
+        sendJson(res, 200, { ok:true, playerId: game.currActivePlayer.playerId });
+    },
+};
+
+
+//
+// SocketIO
+//
+
+
+exports.SocketIOMiddelware = (socket, next) => {
+    let userId, userToken, gameId;
+        try {
+            ({ userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || ""));
+            if (!userId) {
+                throw new Error("Missing 'userId' cookie");
+            }
+            if (!userToken) {
+                throw new Error("Missing 'userToken' cookie");
+            }
+            if (!gameId) {
+                throw new Error("Missing 'gameId' cookie");
+            }
+        } catch (err) {
+            console.error("Rejected socket bcs:", err);
+            return next(err)
+        }
+
+        return next();
 }
 
+exports.SocketIOHandler = {
+    //
+    // Inside a game
+    //
 
-exports.getPiece = async (req, res) => {
-    const { gameId } = parseCookies(req.headers.cookie);
-    const game = GamesManager.getGameById(gameId);
+    onConnection: async (io, socket) => {
+        const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
 
-    const body = await readJsonBody(req);
-    const {x, y} = body;
+        const game = GamesManager.getGameById(gameId);
 
-    try {
-        const piece = game.board.getPieceAt({x, y});
-        sendJson(res, 200, { ok:true, ...piece.toDTO() });
-    } catch (err) {
-        console.error(err);
-        sendJson(res, 400, { ok: false, error: err });
-    }
-}
+        game.players
+            .filter(player => (
+                player.userId === userId && player.userToken === userToken
+            ))
+            .forEach(player => {
+                player.socket = socket;
+            });
+    },
 
+    // Add more if needed ...
 
-exports.getBoard = async (req, res) => {
-    const { gameId } = parseCookies(req.headers.cookie);
-    const game = GamesManager.getGameById(gameId);
-
-    sendJson(res, 200, { ok:true, ...game.board.toDTO() });
-}
-
-
-exports.getCurrActivePlayer = async (req, res) => {
-    const { gameId } = parseCookies(req.headers.cookie);
-    if (!gameId) {
-        throw new Error("Missing 'gameId' cookie");
-    }
-
-    const game = GamesManager.getGameById(gameId);
-
-    sendJson(res, 200, { ok:true, playerId: game.currActivePlayer.playerId });
-}
+    onDisconnection: async (io, socket) => {},
+};

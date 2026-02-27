@@ -1,18 +1,14 @@
-// The http module contains methods to handle http queries.
 const http = require('http');
 const httpProxy = require('http-proxy');
 
-// We will need a proxy to send requests to the other services.
+// We need a proxy to send requests to the other services.
 const proxy = httpProxy.createProxyServer();
 
 const gameServiceTarget = process.env.GAME_SERVICE_URL || "http://127.0.0.1:8002";
 const fileServiceTarget = process.env.FILE_SERVICE_URL || "http://127.0.0.1:8001";
 const authServiceTarget = process.env.AUTH_SERVICE_URL || "http://127.0.0.1:8003";
 
-/* The http module contains a createServer function, which takes one argument, which is the function that
-** will be called whenever a new request arrives to the server.
- */
-http.createServer(function (request, response) {
+const server = http.createServer(function (request, response) {
     // First, let's check the URL to see if it's a REST request or a file request.
     // We will remove all cases of "../" in the url for security purposes.
     let filePath = request.url.split("/").filter(function(elem) {
@@ -43,5 +39,23 @@ http.createServer(function (request, response) {
         response.statusCode = 400;
         response.end(`Something in your request (${request.url}) is strange...`);
     }
+});
+
+// Handle WebSocket upgrade requests
+server.on("upgrade", function (request, socket, head) {
+    let filePath = request.url.split("/").filter(function(elem) {
+        return elem !== "..";
+    });
+
+    if (filePath[1] === "api") {
+        switch(filePath[2]) {
+            case "game-service":
+                console.log("-> WS Upgrade vers GameService (8002)");
+                proxy.ws(request, socket, head, { target: gameServiceTarget });
+                break;
+        }
+    }
+});
+
 // For the server to be listening to request, it needs a port, which is set thanks to the listen function.
-}).listen(8000);
+server.listen(8000);
