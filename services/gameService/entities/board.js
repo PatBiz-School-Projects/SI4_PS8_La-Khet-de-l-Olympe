@@ -108,6 +108,9 @@ class Board {
         this.putPiece(piece, to);
     }
 
+    /**
+     * @throws If a piece is already at the given position
+     */
     placePiece(piece, pos) {
         // REVIEW : Shouldn't be needed as the action has been validated
         if (this.hasPieceAt(pos)) {

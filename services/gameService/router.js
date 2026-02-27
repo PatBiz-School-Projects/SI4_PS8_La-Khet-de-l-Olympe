@@ -58,12 +58,22 @@ exports.manage = async (req,res) => {
 }
 
 
-exports.manageSocket = async (io, socket) => {
-    io.use(SocketIOMiddelware);
+exports.manageSocket = async (io) => {
+    io = io.use(SocketIOMiddelware);
 
-    await SocketIOHandler.onConnection(io, socket);
+    io.on("connection", async (socket) => {
+        console.log("New socket connection");
 
-    // Add more if needed ...
+        await SocketIOHandler.onConnection(io, socket, undefined);
 
-    socket.on("disconnect", SocketIOHandler.onDisconnection);
+        // socket.on("<event>", async (msgPayload) => {
+        //     SocketIOHandler.<event handler>(io, socket, msgPayload);
+        // })
+
+        // Add more if needed ...
+
+        socket.on("disconnect", async (msgPayload) => {
+            SocketIOHandler.onDisconnection(io, socket, msgPayload);
+        })
+    });
 }

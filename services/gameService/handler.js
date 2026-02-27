@@ -42,6 +42,9 @@ exports.HTTPMiddelware_InsideGame = (handlerCb) => async (req, res) => {
         if (!gameId) {
             throw new Error("Missing 'gameId' cookie");
         }
+        if (!GamesManager.runningGamesId.includes(gameId)) {
+            throw new Error(`No running game with id=${gameId}`);
+        }
 
         // Add more verifications here (if needed)
 
@@ -236,24 +239,26 @@ exports.HTTPHandler = {
 
 
 exports.SocketIOMiddelware = (socket, next) => {
-    let userId, userToken, gameId;
-        try {
-            ({ userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || ""));
-            if (!userId) {
-                throw new Error("Missing 'userId' cookie");
-            }
-            if (!userToken) {
-                throw new Error("Missing 'userToken' cookie");
-            }
-            if (!gameId) {
-                throw new Error("Missing 'gameId' cookie");
-            }
-        } catch (err) {
-            console.error("Rejected socket bcs:", err);
-            return next(err)
+    try {
+        const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
+        if (!userId) {
+            throw new Error("Missing 'userId' cookie");
         }
+        if (!userToken) {
+            throw new Error("Missing 'userToken' cookie");
+        }
+        if (!gameId) {
+            throw new Error("Missing 'gameId' cookie");
+        }
+        if (!GamesManager.runningGamesId.includes(gameId)) {
+            throw new Error(`No running game with id=${gameId}`);
+        }
+    } catch (err) {
+        console.error("Rejected socket bcs:", err);
+        return next(err)
+    }
 
-        return next();
+    return next();
 }
 
 exports.SocketIOHandler = {
@@ -261,7 +266,7 @@ exports.SocketIOHandler = {
     // Inside a game
     //
 
-    onConnection: async (io, socket) => {
+    onConnection: async (io, socket, msgPayload) => {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
 
         const game = GamesManager.getGameById(gameId);
@@ -277,5 +282,5 @@ exports.SocketIOHandler = {
 
     // Add more if needed ...
 
-    onDisconnection: async (io, socket) => {},
+    onDisconnection: async (io, socket, msgPayload) => {},
 };

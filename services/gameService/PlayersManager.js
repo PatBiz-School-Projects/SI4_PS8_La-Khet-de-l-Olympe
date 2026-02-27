@@ -37,6 +37,7 @@ class PlayersManager {
      * @param {PlayerID} playerId
      *
      * @returns {Player}
+     * @throws If no match has been found
      */
     static getPlayerById(playerId) {
         const player = this._players[playerId];

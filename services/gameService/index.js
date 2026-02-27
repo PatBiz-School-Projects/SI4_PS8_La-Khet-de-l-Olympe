@@ -16,7 +16,4 @@ const io = new Server(server, {
     path: "/api/game-service/socket.io",
     cors: false,
 });
-io.on("connection", (socket) => {
-    console.log("New socket connection");
-    router.manageSocket(io, socket);
-});
+router.manageSocket(io);

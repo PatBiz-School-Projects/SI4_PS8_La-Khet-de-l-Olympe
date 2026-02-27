@@ -56,6 +56,17 @@ class GamesManager {
     static _games = {};
 
 
+    /** @type {GameID[]} */
+    static get waitingGamesId() {
+        return Object.keys(this._waitingRooms);
+    }
+
+    /** @type {GameID[]} */
+    static get runningGamesId() {
+        return Object.keys(this._games);
+    }
+
+
     /**
      * Creates a new game in a waiting state.
      *
@@ -71,6 +82,8 @@ class GamesManager {
      * Starts a game that was in a waiting state
      *
      * @param {GameID} gameId
+     *
+     * @throws If no waiting room have the given `gameId`
      */
     static startGame(gameId) {
         const waitingRoom = this._waitingRooms[gameId];
@@ -87,6 +100,8 @@ class GamesManager {
      *
      * @param {Player} player
      * @param {GameID} gameId
+     *
+     * @throws If no waiting room have the given `gameId`
      */
     static registerPlayerInRoom(player, gameId) {
         const waitingRoom = this._waitingRooms[gameId];
@@ -126,6 +141,7 @@ class GamesManager {
      * @param {GameID} gameId
      *
      * @returns {Game}
+     * @throws If no match has been found
      */
     static getGameById(gameId) {
         const game = this._games[gameId];

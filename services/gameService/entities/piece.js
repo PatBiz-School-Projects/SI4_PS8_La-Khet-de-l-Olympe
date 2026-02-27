@@ -36,6 +36,7 @@ class Piece {
      * @param {PieceDTO} pieceDTO
      *
      * @returns {Piece}
+     * @throws When the piece's type is unknown 
      */
     static fromDTO(pieceDTO) {
         const PieceClass = PieceConstructors[pieceDTO.type];
