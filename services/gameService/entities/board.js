@@ -59,6 +59,12 @@ class Board {
      * @returns {boolean}
      */
     hasPieceAt(pos) {
+        if (
+            pos.x < 0 || Board.GRID_LEN <= pos.x
+            || pos.y < 0 || Board.GRID_LEN <= pos.y
+        ) {
+            return false;
+        }
         return !this.grid[pos.x][pos.y].isEmpty();
     }
 

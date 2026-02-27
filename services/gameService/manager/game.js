@@ -2,7 +2,9 @@ const { Player } = require("../Player");
 
 const { Board } = require("../entities/board");
 const { Piece } = require("../entities/piece");
+
 const LaserService = require("./laserService");
+const { ActionValidator } = require("./ActionValidator");
 
 
 /**
@@ -23,11 +25,6 @@ const GameState = Object.freeze({
 
 class Game {
     constructor(gameId, players) {
-        this.board = new Board();
-        this.board.init();
-
-        this.laserService = new LaserService(this.board);
-
         /** @private @type {GameID} */
         this._gameId = gameId;
 
@@ -45,6 +42,11 @@ class Game {
 
         /** @private @type {Player|null} */
         this._winner = null;
+
+        this.board = new Board();
+        this.board.init();
+        this.laserService = new LaserService(this.board);
+        this.actionValidator = new ActionValidator(this);
 
         this.ACTIONS = {
             move: ({piece, from, to}) => {
@@ -116,16 +118,44 @@ class Game {
         return this.isRunning() && player.playerId === this._currActivePlayer.playerId;
     }
 
+    /**
+     * @param {Player} player
+     *
+     * @returns {boolean}
+     */
+    playerCanSwap(player) {
+        // TODO : implement cooldown
+        return true;
+    }
+
 
     nextTurn() {
         this._currActivePlayer.socket.emit("end-turn", {});
 
         this._turnCount++;
-        this._currActivePlayer = this.players[(this._turnCount-1)%2];
+        this._currActivePlayer = this._players[(this._turnCount-1)%2];
 
         this._currActivePlayer.socket.emit("start-turn", {
             playerId: this._currActivePlayer.playerId
         });
+    }
+
+
+    onAction(action) {
+        this.actionValidator.validate(action);
+
+        if (action.method === "switch" && action.args.piece2.type == "Sphinx") {
+            return {
+                actionRes: this.ACTIONS[action.method](action.args),
+                laserRes: undefined,
+            };
+        } else {
+            return {
+                actionRes: this.ACTIONS[action.method](action.args),
+                //laserRes: this.processLaserHit(),
+                laserRes: undefined, // Until the laser service is patched
+            };
+        }
     }
 
 

@@ -63,6 +63,19 @@ class Piece {
     }
 
     /**
+     * @param {unknown} other
+     *
+     * @returns {boolean}
+     */
+    equals(other) {
+        if (this.constructor !== other.constructor) return false;
+        if (this.type !== other.type) return false;
+        if (this.owner !== other.owner) return false;
+        if (this.orientation !== other.orientation) return false;
+        return true;
+    }
+
+    /**
      * @abstract
      *
      * @param {LaserDirection} laserDir

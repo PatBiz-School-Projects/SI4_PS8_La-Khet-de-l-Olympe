@@ -78,7 +78,7 @@ exports.HTTPHandler = {
             player = PlayersManager.getPlayerById(playerId);
         } catch (err) {
             console.error(err)
-            sendJson(res, 400, { ok: false, error: err });
+            sendJson(res, 400, { ok: false, error: err.message });
             return;
         }
 
@@ -93,7 +93,7 @@ exports.HTTPHandler = {
             player2 = PlayersManager.getPlayerById(playerId2);
         } catch (err) {
             console.error(err)
-            sendJson(res, 400, { ok: false, error: err });
+            sendJson(res, 400, { ok: false, error: err.message });
             return;
         }
 
@@ -111,7 +111,7 @@ exports.HTTPHandler = {
             player = PlayersManager.getPlayerById(playerId);
         } catch (err) {
             console.error(err)
-            sendJson(res, 400, { ok: false, error: err });
+            sendJson(res, 400, { ok: false, error: err.message });
             return;
         }
 
@@ -127,49 +127,16 @@ exports.HTTPHandler = {
     action: async (req, res) => {
         try {
             const { gameId } = parseCookies(req.headers.cookie);
-
             const game = GamesManager.getGameById(gameId);
 
-            const actionBody = await readJsonBody(req);
-            const { method, args } = actionBody ?? {};
-
-            if (!(method in game.ACTIONS)) {
-                throw new Error(`Unknown action method: ${method}`);
-            }
-            const playerId = args?.playerId;
-            if (!playerId) {
-                throw new Error("Missing 'playerId' attribute in action");
-            }
-
-            const player = PlayersManager.getPlayerById(playerId);
-            if (!game.playerCanPlay(player)) {
-                throw new Error(`Player of id=${player.id} cannot play`);
-            }
-
-            // TODO : Calling an "action validator" to check whether the action is legal
-            if (false) {
-                throw new Error(`Invalid action: ${JSON.stringify(actionBody)}`);
-            }
-
-            const actionResult = game.ACTIONS[method](args);
-
-            if (method === "switch") {
-                game.nextTurn();
-                sendJson(res, 200, { ok:true, ...actionResult });
-                return;
-            }
-
-            //const laserResult = game.processLaserHit();
-            const finalResult = {
-                grid: actionResult.grid,
-                //laser: laserResult.path,
-            };
+            const action = await readJsonBody(req);
+            const {actionRes, laserRes} = game.onAction(action);
+            sendJson(res, 200, { ok:true, ...actionRes, ...laserRes });
 
             game.nextTurn();
-            sendJson(res, 200, { ok:true, ...finalResult });
         } catch (err) {
             console.error(err)
-            sendJson(res, 400, { ok: false, error: err });
+            sendJson(res, 400, { ok: false, error: err.message });
         }
     },
 
@@ -186,7 +153,7 @@ exports.HTTPHandler = {
             sendJson(res, 200, { ok:true, ...piece.toDTO() });
         } catch (err) {
             console.error(err);
-            sendJson(res, 400, { ok: false, error: err });
+            sendJson(res, 400, { ok: false, error: err.message });
         }
     },
 
