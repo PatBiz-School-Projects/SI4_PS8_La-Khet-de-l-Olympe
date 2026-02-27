@@ -1,30 +1,79 @@
-const handler = require('./handler.js');
+const { sendJson } = require("./helpers/parser");
 
-const routes = {
-    '/api/game-service/init-board': (req, res) => {
-        //méthode du middleWare
-        handler.initBoard(req, res);
-    },
-    '/api/game-service/action' : (req, res) => {
-        handler.action(req, res);
-    },
-    '/api/game-service/board/piece' : (req, res) => {
-        handler.getPiece(req, res);
-    },
-    '/api/game-service/board' : (req, res) => {
-        handler.getBoard(req, res);
-    }
+const {
+    HTTPMiddelware_OutsideGame,
+    HTTPMiddelware_InsideGame,
+    HTTPHandler,
+    SocketIOMiddelware,
+    SocketIOHandler,
+} = require('./handler.js');
+
+const ROUTES = {
+    //
+    // Outside a game
+    //
+
+    '/api/game-service/new-player': HTTPMiddelware_OutsideGame(
+        HTTPHandler.newPlayer
+    ),
+    '/api/game-service/start-solo-game': HTTPMiddelware_OutsideGame(
+        HTTPHandler.startSoloGame
+    ),
+    '/api/game-service/start-local-multiplayer-game': HTTPMiddelware_OutsideGame(
+        HTTPHandler.startLocalMultiplayerGame
+    ),
+    '/api/game-service/join-multiplayer-game': HTTPMiddelware_OutsideGame(
+        HTTPHandler.joinMultiplayerGame
+    ),
+
+    //
+    // Inside a game
+    //
+
+    '/api/game-service/action': HTTPMiddelware_InsideGame(
+        HTTPHandler.action
+    ),
+    '/api/game-service/board/piece': HTTPMiddelware_InsideGame(
+        HTTPHandler.getPiece
+    ),
+    '/api/game-service/board': HTTPMiddelware_InsideGame(
+        HTTPHandler.getBoard
+    ),
+    '/api/game-service/active-player': HTTPMiddelware_InsideGame(
+        HTTPHandler.getCurrActivePlayer
+    ),
+    '/api/game-service/player': HTTPMiddelware_InsideGame(
+        HTTPHandler.getPlayerOfClient
+    ),
 };
 
-async function manage(request,response){
-    const url = request.url;
-    if(routes[url]){
-        await routes[url](request, response);
-    }
-    else{
-        response.writeHead(404, {'Content-Type': 'text/plain'});
-        response.end(JSON.stringify({error: 'Not Found'}));
+
+exports.manage = async (req,res) => {
+    const url = req.url;
+    if(ROUTES[url]){
+        await ROUTES[url](req, res);
+    } else {
+        sendJson(res, 404, {ok: false, error: 'Not Found'})
     }
 }
 
-module.exports = {manage};
+
+exports.manageSocket = async (io) => {
+    io = io.use(SocketIOMiddelware);
+
+    io.on("connection", async (socket) => {
+        console.log("New socket connection");
+
+        await SocketIOHandler.onConnection(io, socket, undefined);
+
+        // socket.on("<event>", async (msgPayload) => {
+        //     SocketIOHandler.<event handler>(io, socket, msgPayload);
+        // })
+
+        // Add more if needed ...
+
+        socket.on("disconnect", async (msgPayload) => {
+            SocketIOHandler.onDisconnection(io, socket, msgPayload);
+        })
+    });
+}

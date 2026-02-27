@@ -1,8 +1,8 @@
 #board {
     position: relative;
 
-    --x-padding: 320px;
-    --y-padding: 240px;
+    --x-padding: 8vw;
+    --y-padding: 16vh;
     --size: min(
         calc(100vw - var(--x-padding)),
         calc(100vh - var(--y-padding))

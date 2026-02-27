@@ -1,50 +1,59 @@
-const Dir = Object.freeze({
+const { LaserDirection, LaserImpact } = require('./laser');
+
+
+/**
+ * @enum {typeof PieceOrientation[keyof typeof PieceOrientation]}
+ */
+const PieceOrientation = Object.freeze({
     N: "N",
     E: "E",
     S: "S",
     W: "W",
 });
 
-const DIR_ORDER = [Dir.N, Dir.E, Dir.S, Dir.W];
 
-function rotateTurns(dir, turns) {
-    const i = DIR_ORDER.indexOf(dir);
-    if (i === -1) throw new Error("Direction invalide");
-    const t = ((turns % 4) + 4) % 4;
-    return DIR_ORDER[(i + t) % 4];
-}
+/**
+ * @typedef {Object} PieceDTO
+ *
+ * @property {number} owner
+ * @property {string} type
+ * @property {PieceOrientation} orientation
+ */
+const PieceDTO = undefined;
 
-const LaserImpact = require('./laser');
 
-
+/**
+ * @abstract
+ */
 class Piece {
-    constructor(owner,orientation, image) {
+    constructor(type, owner, orientation) {
+        this.type = type;
         this.owner = owner;
         this.orientation = orientation;
-        this.image = image;
-        this.type=this.constructor.name;
     }
 
-    getLocalImpactSide(globalDir) {
-        const turns = DIR_ORDER.indexOf(this.orientation);
-        return rotateTurns(globalDir, -turns);
+    /**
+     * @param {PieceDTO} pieceDTO
+     *
+     * @returns {Piece}
+     * @throws When the piece's type is unknown 
+     */
+    static fromDTO(pieceDTO) {
+        const PieceClass = PieceConstructors[pieceDTO.type];
+        if(!PieceClass){
+            throw new Error(`Unknown piece type: ${pieceDTO.type}`);
+        }
+
+        return new PieceClass(
+            pieceDTO.type,
+            pieceDTO.owner,
+            pieceDTO.orientation
+        );
     }
 
-    getGlobalDirection(localDir) {
-        const turns = DIR_ORDER.indexOf(this.orientation);
-        return rotateTurns(localDir, turns);
-    }
-
-    canRotate() { return false; }
-    canMove() { return false; }
-    canReflect() { return false; }
-
-    rotate(turns) { throw new Error("This piece cannot rotate."); }
-    move(x, y) { throw new Error("This piece cannot move."); }
-
-    onLaserHit() {
-        return LaserImpact.destroy();
-    }
+    /**
+     * @returns {PieceDTO}
+     */
     toDTO(){
         return{
             owner : this.owner,
@@ -52,95 +61,246 @@ class Piece {
             orientation : this.orientation
         }
     }
+
+    /**
+     * @abstract
+     *
+     * @param {LaserDirection} laserDir
+     */
+    onLaserHit(laserDir) {
+        throw new Error("Not implemented");
+    }
+
+    canRotate() { return false; }
+    canMove() { return false; }
+    // REVIEW : Useless (see note above `Reflective` mixin)
+    canReflect() { return false; }
+
+    /**
+     * @param {"left" | "right"} rotation
+     */
+    rotate(rotation) { throw new Error("This piece cannot rotate."); }
 }
+
+
+//
+// Piece's Mixins
+//
+
 
 const Rotatable = (Base) => class extends Base {
     canRotate() { return true; }
-    rotate(turns) {
-        this.orientation = rotateTurns(this.orientation, turns);
-        return this.orientation;
+
+    /**
+     * @param {"left" | "right"} rotation
+     */
+    rotate(rotation) {
+        const posMod = (dividend, divisor) => ((dividend % divisor) + divisor) % divisor;
+
+        const ORDERED_ORIENTATIONS = [PieceOrientation.N, PieceOrientation.E, PieceOrientation.S, PieceOrientation.W];
+
+        const currOrientationIdx = ORDERED_ORIENTATIONS.indexOf(this.orientation);
+        switch (rotation) {
+            case "left":
+                this.orientation = ORDERED_ORIENTATIONS[
+                    posMod(currOrientationIdx-1, ORDERED_ORIENTATIONS.length)
+                ];
+            case "right":
+                this.orientation = ORDERED_ORIENTATIONS[
+                    posMod(currOrientationIdx+1, ORDERED_ORIENTATIONS.length)
+                ];
+        }
     }
-    rotate90() { return this.rotate(1); }
 };
 
 const Moveable = (Base) => class extends Base {
     canMove() { return true; }
 };
 
+// REVIEW : Useless bcs the reflectiveness of a piece depends on the piece's type AND on the laser's impact
 const Reflective = (Base) => class extends Base {
     canReflect() { return true; }
-
-    buildReflectiveSides() {
-        throw new Error("Must be implemented");
-    }
-
-    onLaserHit(laserDirGlobal) {
-        const impactLocal = this.getLocalImpactSide(laserDirGlobal); //
-        const rules = this.buildReflectiveSides();
-        const rule = rules[impactLocal] ?? { action: "destroy" };
-
-        if (rule.action === "reflect") {
-            return LaserImpact.reflect(this.getGlobalDirection(rule.outRel));
-        }
-        return rule.action === "absorb"
-            ? LaserImpact.absorb()
-            : LaserImpact.destroy();
-    }
 };
 
-class Pharaoh extends Piece {
-    constructor(owner,orientation) {
-        super(owner,orientation,"pharaoh.png");
-    }
+
+//
+// Piece's Constructors
+//
+
+
+const PieceConstructors = {
+    Pharaoh: class extends Piece {
+        constructor(type, owner, orientation) {
+            super(type, owner, orientation);
+        }
+
+        /**
+         * @override
+         *
+         * @param {LaserDirection} laserDir
+         */
+        onLaserHit(laserDir) {
+            return LaserImpact.destroy();
+        }
+    },
+
+    Pyramid: class extends Reflective(Moveable(Rotatable(Piece))) {
+        constructor(type, owner, orientation, isFromReserve) {
+            super(type, owner, orientation);
+            this.isFromReserve = isFromReserve;
+        }
+
+        /**
+         * @override
+         *
+         * @param {LaserDirection} laserDir
+         */
+        onLaserHit(laserDir) {
+            const posMod = (dividend, divisor) => ((dividend % divisor) + divisor) % divisor;
+            const ORDERED_ORIENTATIONS = [PieceOrientation.N, PieceOrientation.E, PieceOrientation.S, PieceOrientation.W];
+
+            const laserDirIdx = ORDERED_ORIENTATIONS.indexOf(laserDir);
+
+            const laserImpact = ORDERED_ORIENTATIONS[posMod(laserDirIdx + 2, ORDERED_ORIENTATIONS.length)]
+
+            let reflectionMapping;
+            switch (this.orientation) {
+                case PieceOrientation.N :
+                    // Reflective side: NE
+                    reflectionMapping = {
+                        [LaserDirection.N]: LaserDirection.E,
+                        [LaserDirection.E]: LaserDirection.N,
+                    };
+                case PieceOrientation.E :
+                    // Reflective side: SE
+                    reflectionMapping = {
+                        [LaserDirection.S]: LaserDirection.E,
+                        [LaserDirection.E]: LaserDirection.S,
+                    };
+                case PieceOrientation.S :
+                    // Reflective side: SW
+                    reflectionMapping = {
+                        [LaserDirection.S]: LaserDirection.W,
+                        [LaserDirection.W]: LaserDirection.S,
+                    };
+                case PieceOrientation.W :
+                    // Reflective side: NW
+                    reflectionMapping = {
+                        [LaserDirection.N]: LaserDirection.W,
+                        [LaserDirection.W]: LaserDirection.N,
+                    };
+            }
+
+            if (laserImpact in reflectionMapping) {
+                return LaserImpact.reflect(reflectionMapping[laserImpact]);
+            } else {
+                return LaserImpact.destroy();
+            }
+        }
+    },
+
+    Scarab: class extends Reflective(Moveable(Rotatable(Piece))) {
+        constructor(type, owner, orientation) {
+            super(type, owner, orientation);
+        }
+
+        /**
+         * @override
+         *
+         * @param {LaserDirection} laserDir
+         */
+        onLaserHit(laserDir) {
+            const posMod = (dividend, divisor) => ((dividend % divisor) + divisor) % divisor;
+            const ORDERED_ORIENTATIONS = [PieceOrientation.N, PieceOrientation.E, PieceOrientation.S, PieceOrientation.W];
+
+            const laserDirIdx = ORDERED_ORIENTATIONS.indexOf(laserDir);
+
+            const laserImpact = ORDERED_ORIENTATIONS[posMod(laserDirIdx + 2, ORDERED_ORIENTATIONS.length)]
+
+            let reflectionMapping1;
+            let reflectionMapping2;
+            switch (this.orientation) {
+                case PieceOrientation.N :
+                case PieceOrientation.S :
+                    // Reflective side: NE & SW
+                    reflectionMapping1 = {
+                        [LaserDirection.N]: LaserDirection.E,
+                        [LaserDirection.E]: LaserDirection.N,
+                    };
+                    reflectionMapping2 = {
+                        [LaserDirection.S]: LaserDirection.W,
+                        [LaserDirection.W]: LaserDirection.S,
+                    };
+
+                case PieceOrientation.E :
+                case PieceOrientation.W :
+                    // Reflective side: NW & SE
+                    reflectionMapping1 = {
+                        [LaserDirection.N]: LaserDirection.W,
+                        [LaserDirection.W]: LaserDirection.N,
+                    };
+                    reflectionMapping2 = {
+                        [LaserDirection.S]: LaserDirection.E,
+                        [LaserDirection.E]: LaserDirection.S,
+                    };
+            }
+
+            if (laserImpact in reflectionMapping1) {
+                return LaserImpact.reflect(reflectionMapping1[laserImpact]);
+            } else {
+                return LaserImpact.reflect(reflectionMapping2[laserImpact]);
+            }
+        }
+    },
+
+    Anubis: class extends Reflective(Moveable(Rotatable(Piece))) {
+        constructor(type, owner,orientation) {
+            super(type, owner, orientation);
+        }
+
+        /**
+         * @override
+         *
+         * @param {LaserDirection} laserDir
+         */
+        onLaserHit(laserDir) {
+            const posMod = (dividend, divisor) => ((dividend % divisor) + divisor) % divisor;
+            const ORDERED_ORIENTATIONS = [PieceOrientation.N, PieceOrientation.E, PieceOrientation.S, PieceOrientation.W];
+
+            const laserDirIdx = ORDERED_ORIENTATIONS.indexOf(laserDir);
+
+            const laserImpact = ORDERED_ORIENTATIONS[posMod(laserDirIdx + 2, ORDERED_ORIENTATIONS.length)]
+
+            if (this.orientation == laserImpact) {
+                return LaserImpact.absorb();
+            } else {
+                return LaserImpact.destroy();
+            }
+        }
+    },
+
+    Sphinx: class extends Rotatable(Piece) {
+        constructor(type, owner,orientation) {
+            super(type, owner, orientation);
+        }
+
+        /**
+         * @override
+         *
+         * @param {LaserDirection} laserDir
+         */
+        onLaserHit(laserDir) {
+            return LaserImpact.absorb();
+        }
+    },
 }
 
-class Pyramid extends Reflective(Moveable(Rotatable(Piece))) {
-    constructor(owner,orientation,isFromReserve) {
-        super(owner,orientation,"pyramid.jpg");
-        this.isFromReserve = isFromReserve;
-    }
-    buildReflectiveSides() {
-        return {
-            [Dir.N]: { action: "reflect", outRel: Dir.E },
-            [Dir.E]: { action: "reflect", outRel: Dir.N },
-        };
-    }
-}
 
-class Scarab extends Reflective(Moveable(Rotatable(Piece))) {
-    constructor(owner,orientation) {
-        super(owner,orientation,"scarab.png");
-    }
-    buildReflectiveSides() {
-        return {
-            [Dir.N]: { action: "reflect", outRel: Dir.E },
-            [Dir.E]: { action: "reflect", outRel: Dir.N },
-            [Dir.S]: { action: "reflect", outRel: Dir.W },
-            [Dir.W]: { action: "reflect", outRel: Dir.S },
-        };
-    }
-    changeSides(){} // à implémenter + tard
-}
+module.exports = {
+    Piece,
+    PieceDTO,
+    PieceOrientation,
 
-class Anubis extends Reflective(Moveable(Rotatable(Piece))) {
-    constructor(owner,orientation) {
-        super(owner,orientation,"anubis.png");
-    }
-    buildReflectiveSides() {
-        return {
-            [Dir.N]: { action: "absorb" },
-        };
-    }
-}
-
-class Sphinx extends Rotatable(Piece) {
-    constructor(owner,orientation) {
-        super(owner,orientation,"sphinx.png");
-    }
-
-    onLaserHit(){
-        return LaserImpact.absorb();
-    }
-}
-
-module.exports = {Sphinx,Anubis,Scarab,Pyramid,Pharaoh,Dir,Piece};
+    /** @deprecated This alias is deprecated. Use {@link PieceOrientation}. */
+    Dir: PieceOrientation,
+};

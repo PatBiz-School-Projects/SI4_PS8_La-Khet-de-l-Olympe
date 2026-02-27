@@ -1,6 +1,6 @@
 // manager/startingPositions.js
 
-const { createPieceFromDto } = require("../factory/pieceFactory");
+const { Piece } = require("../entities/piece");
 
 const ORIENTATIONS = ["N", "E", "S", "W"];
 
@@ -13,22 +13,18 @@ class StartingPositions {
     /**
      * Génère et place toutes les pièces sur le board (P1 + P2 par symétrie centrale).
      * @param {Board} board
-     * @returns {{ ok: boolean, detail: string, pieces?: any[] }}
+     * @returns {any[]}
      */
     generateAndApply(board) {
-        try {
-            const piecesP1 = this._generateP1Pieces(board);
-            const piecesP2 = piecesP1.map(p => this._mirrorPieceDto(p, 2));
+        const piecesP1 = this._generateP1Pieces(board);
+        const piecesP2 = piecesP1.map(p => this._mirrorPieceDto(p, 2));
 
-            // Place P1 puis P2 sur le board
-            for (const dto of [...piecesP1, ...piecesP2]) {
-                this._safeAdd(board, dto);
-            }
-
-            return { ok: true, detail: "STARTING_POSITION_GENERATED", pieces: [...piecesP1, ...piecesP2] };
-        } catch (e) {
-            return { ok: false, detail: "STARTING_POSITION_FAILED", error: e.message };
+        // Place P1 puis P2 sur le board
+        for (const dto of [...piecesP1, ...piecesP2]) {
+            this._safeAdd(board, dto);
         }
+
+        return [...piecesP1, ...piecesP2];
     }
 
     // -----------------------------
@@ -75,7 +71,9 @@ class StartingPositions {
 
         const candidates = [];
         for (let y = 0; y < this.N; y++) {
-            if (!forbiddenCols.has(y) && !board.getPiece(x, y)) candidates.push(y);
+            if (!forbiddenCols.has(y) && !board.hasPieceAt({x, y})) {
+                candidates.push(y);
+            }
         }
         if (candidates.length === 0) {
             throw new Error("No valid Pharaoh placement on line 3 (constraints too strict / occupied).");
@@ -110,7 +108,9 @@ class StartingPositions {
 
         const candidates = [];
         for (let y = 0; y < this.N; y++) {
-            if (!board.getPiece(x, y)) candidates.push(y);
+            if (!board.hasPieceAt({x, y})) {
+                candidates.push(y);
+            }
         }
         if (candidates.length === 0) throw new Error("No valid Scarab placement on line 4 (occupied).");
 
@@ -125,19 +125,19 @@ class StartingPositions {
 
     _safeAdd(board, pieceDto) {
         // On transforme le DTO en vraie Piece (comme ton placePiece le fait)
-        const piece = createPieceFromDto(pieceDto);
+        const piece = Piece.fromDTO(pieceDto);
         if (!piece) throw new Error("Invalid piece DTO: " + JSON.stringify(pieceDto));
 
-        if (board.getPiece(pieceDto.x, pieceDto.y)) {
-            throw new Error(`Cell already occupied at (${pieceDto.x},${pieceDto.y})`);
-        }
+        this._assertFree(board, pieceDto.x, pieceDto.y, pieceDto.type);
 
         // IMPORTANT : ici on pose l'objet Piece (pas le dto), sinon tu risques des bugs
-        board.addPiece(pieceDto.x, pieceDto.y, piece);
+        board.putPiece(piece, {x: pieceDto.x, y: pieceDto.y});
     }
 
     _assertFree(board, x, y, name) {
-        if (board.getPiece(x, y)) throw new Error(`${name} target cell (${x},${y}) already occupied.`);
+        if (board.hasPieceAt({x, y})) {
+            throw new Error(`${name} target cell {x:${x}, y:${y}} already occupied.`);
+        }
     }
 
     // -----------------------------

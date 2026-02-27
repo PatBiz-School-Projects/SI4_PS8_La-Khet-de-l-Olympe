@@ -52,6 +52,13 @@ export class Cell {
         return this._content;
     }
 
+    /**
+     * @returns {boolean}
+     */
+    isEmpty() {
+        return this.content === null;
+    }
+
 
     /**
      * @param {CellDTO} cellDTO

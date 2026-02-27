@@ -7,50 +7,67 @@ const DIRECTIONS =  {
 }
 
 class LaserService {
-    constructor(board){ //not sure
+    constructor(board) {
         this.board = board;
     }
 
-    fireLaser(currentPlayer){
+    fireLaser(currentPlayer) {
         const path = [];
         const sphinx = this.board.getSphinxByOwner(currentPlayer);
-        let x = sphinx.x;
-        let y = sphinx.y;
-        let orientation= sphinx.orientation;
-        const pieceDestroyed = []
-        path.push({x:x,y:y});
-        while(x>=0 && x<10 && y>=0 &&y<10){
-            const variation = DIRECTIONS[orientation];
-            const newX = x+variation.dx;
-            const newY = y+variation.dy;
-            if(newX>=0 && newX<10 && newY>=0 &&newY<10){
-                const piece = this.board.getPiece(newX,newY);
-                if(piece){
-                    const impact = piece.onLaserHit(orientation);
-                    if(impact.type==="reflect"){
-                        orientation = impact.outDir;
-                        console.log(orientation);
-                        path.push({x:newX,y:newY,hit:"reflected"});
+
+        let laserPos = {x: sphinx.x, y: sphinx.y}; // fire the laser from the sphinx
+        let laserDir = sphinx.orientation;
+
+        const destroyedPieces = [];
+
+        path.push(laserPos);
+        while (
+            0<=laserPos.x && laserPos.x<Board.GRID_LEN
+            && 0<=laserPos.y && laserPos.y<Board.GRID_LEN
+        ) {
+            const variation = DIRECTIONS[laserDir];
+
+            const laserPos = {
+                x: laserPos.x + variation.dx,
+                y: laserPos.y + variation.dy,
+            };
+
+            if (
+                laserPos.x>=0 && laserPos.x<Board.GRID_LEN
+                && laserPos.y>=0 && laserPos.y<Board.GRID_LEN
+            ) {
+                if (this.board.hasPieceAt(laserPos)) {
+                    const piece = this.board.getPieceAt(laserPos);
+                    const impactReaction = piece.onLaserHit(laserDir);
+                    switch (impactReaction.type) {
+                        case "reflect":
+                            laserDir = impactReaction.outDir;
+                            path.push({
+                                ...laserPos,
+                                hit:"reflected",
+                            });
+
+                        case "absorb":
+                            path.push({
+                                ...laserPos,
+                                hit:"absorbed",
+                            });
+
+                        case "destroy":
+                            destroyedPieces.push(piece);
+                            path.push({
+                                ...laserPos,
+                                hit:"destroyed",
+                                piece:piece.type,
+                            });
                     }
-                    else if(impact.type==="absorb"){
-                        path.push({x:newX,y:newY,hit:"absorbed"});
-                    }
-                    else if(impact.type==="destroy"){
-                        pieceDestroyed.push(piece);
-                        path.push({x:newX,y:newY,hit:"destroyed",piece:piece.type});
-                    }
-                }
-                else{
-                    path.push({x:newX,y:newY});
+                } else {
+                    path.push(laserPos);
                 }
             }
-            x=newX;
-            y=newY;
-
         }
 
-        return {path,pieceDestroyed};
-
+        return {path, destroyedPieces};
     }
 }
 
