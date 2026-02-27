@@ -8,13 +8,8 @@ const { PlayersManager } = require("./PlayersManager");
 // HTTP
 //
 
-
-exports.HTTPHandler = {
-    //
-    // Outside a game
-    //
-
-    newPlayer: async (req, res) => {
+exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
+    try {
         const { userId, userToken } = parseCookies(req.headers.cookie);
         if (!userId) {
             throw new Error("Missing 'userId' cookie");
@@ -23,7 +18,50 @@ exports.HTTPHandler = {
             throw new Error("Missing 'userToken' cookie");
         }
 
-        // TODO : Add other verification
+        // Add more verifications here (if needed)
+
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 400, {ok: false, error: err.message});
+        return;
+    }
+
+    await handlerCb(req, res);
+};
+
+
+exports.HTTPMiddelware_InsideGame = (handlerCb) => async (req, res) => {
+    try {
+        const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
+        if (!userId) {
+            throw new Error("Missing 'userId' cookie");
+        }
+        if (!userToken) {
+            throw new Error("Missing 'userToken' cookie");
+        }
+        if (!gameId) {
+            throw new Error("Missing 'gameId' cookie");
+        }
+
+        // Add more verifications here (if needed)
+
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 400, {ok: false, error: err.message});
+        return;
+    }
+
+    await handlerCb(req, res);
+};
+
+
+exports.HTTPHandler = {
+    //
+    // Outside a game
+    //
+
+    newPlayer: async (req, res) => {
+        const { userId, userToken } = parseCookies(req.headers.cookie);
 
         const playerId = PlayersManager.newPlayer(userId, userToken);
 
@@ -86,9 +124,6 @@ exports.HTTPHandler = {
     action: async (req, res) => {
         try {
             const { gameId } = parseCookies(req.headers.cookie);
-            if (!gameId) {
-                throw new Error("Missing 'gameId' cookie");
-            }
 
             const game = GamesManager.getGameById(gameId);
 
@@ -137,9 +172,6 @@ exports.HTTPHandler = {
 
     getPiece: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
-        if (!gameId) {
-            throw new Error("Missing 'gameId' cookie");
-        }
 
         const game = GamesManager.getGameById(gameId);
 
@@ -157,9 +189,6 @@ exports.HTTPHandler = {
 
     getBoard: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
-        if (!gameId) {
-            throw new Error("Missing 'gameId' cookie");
-        }
 
         const game = GamesManager.getGameById(gameId);
 
@@ -168,9 +197,6 @@ exports.HTTPHandler = {
 
     getCurrActivePlayer: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
-        if (!gameId) {
-            throw new Error("Missing 'gameId' cookie");
-        }
 
         const game = GamesManager.getGameById(gameId);
 
@@ -179,15 +205,6 @@ exports.HTTPHandler = {
 
     getPlayerOfClient: async (req, res) => {
         const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
-        if (!gameId) {
-            throw new Error("Missing 'gameId' cookie");
-        }
 
         const game = GamesManager.getGameById(gameId);
 
