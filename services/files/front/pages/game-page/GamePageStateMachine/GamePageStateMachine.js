@@ -68,12 +68,13 @@ export class GamePageStateMachine {
 
         const {newStateImpl, gameAction} = this._stateImpl.on(pageAction);
         this._stateImpl = newStateImpl;
-        if (gameAction) {
-            this.notifyListenersOf(gameAction);
-        }
 
         // DEBUG::
         console.log("After page action:", pageAction, "state is:", this.state, "and game action is:", gameAction);
+
+        if (gameAction) {
+            this.notifyListenersOf(gameAction);
+        }
     }
 
 

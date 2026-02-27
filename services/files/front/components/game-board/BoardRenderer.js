@@ -3,6 +3,14 @@ import { Coord } from "./Coord.js"
 import { Piece } from "./Piece.js";
 
 
+/**
+ * @typedef {Object} CanvasCoord
+ *
+ * @prop {number} x
+ * @prop {number} y
+ */
+
+
 export class BoardRenderer {
     /**
      * @param {HTMLDivElement} boardDiv
@@ -64,6 +72,21 @@ export class BoardRenderer {
         });
     }
 
+    /**
+     * @private
+     *
+     * @param {Coord} coord
+     *
+     * @returns {CanvasCoord}
+     */
+    _convCoordToCanvasCoord(coord) {
+        // TODO : Fix it
+        return {
+            x: this.boardLen - coord.y - 1,
+            y: this.boardLen - coord.x - 1,
+        }
+    }
+
 
     /**
      * @private
@@ -112,6 +135,8 @@ export class BoardRenderer {
     async drawEmptyCellAt(pos) {
         const gridCanvas = this.canvases["grid-canvas"];
         const ctx = gridCanvas.getContext("2d");
+
+        // pos = this._convCoordToCanvasCoord(pos);
 
         ctx.fillStyle = "orange";
         ctx.fillRect(
@@ -187,7 +212,7 @@ export class BoardRenderer {
                 x: (newX + (1 / 2))*this.cellSize,
                 y: (newY + (1 / 2))*this.cellSize,
             }
-            ctx.lineTo(newPosition.x, newPosition.y);
+            ctx.lineTo(newPosition.y, newPosition.x);
             i++;
 
             //maybe we should add a sleeping method so the laser seems realistic
@@ -238,7 +263,14 @@ export class BoardRenderer {
         const piecesCanvas = this.canvases["pieces-canvas"];
         const ctx = piecesCanvas.getContext("2d");
 
-        ctx.clearRect(pos.x, pos.y, this.cellSize, this.cellSize);
+        // pos = this._convCoordToCanvasCoord(pos);
+
+        ctx.clearRect(
+            pos.x * this.cellSize,
+            pos.y * this.cellSize,
+            this.cellSize,
+            this.cellSize,
+        );
     }
 
     /**
@@ -248,6 +280,8 @@ export class BoardRenderer {
     async drawPieceAt(piece, pos) {
         const piecesCanvas = this.canvases["pieces-canvas"];
         const ctx = piecesCanvas.getContext("2d");
+
+        // pos = this._convCoordToCanvasCoord(pos);
 
         const angleMap = {
             N: 0,

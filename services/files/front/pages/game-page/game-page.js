@@ -85,6 +85,9 @@ onload = async (_) => {
 
 // TODO (in the backend) : Dispatching "start-turn" socket event only to the client (aka player) that can play
 socket.on("start-turn", payload => {
+    // DEBUG::
+    console.log(`Received 'start-turn' event for player with id=${payload.playerId}`);
+
     // It's important to update `PLAYER_ID` each time we get a `start-turn` event
     // for the case where we are in a local multiplayer game
     PLAYER_ID = payload.playerId;
@@ -94,6 +97,9 @@ socket.on("start-turn", payload => {
 
 // TODO (in the backend) : Dispatching "end-turn" socket event only to the player that cannot play
 socket.on("end-turn", _ => {
+    // DEBUG::
+    console.log(`Received 'end-turn' event for player with id=${PLAYER_ID}`);
+
     stateMachine.on({ type: GamePageActionType.END_TURN })
 });
 

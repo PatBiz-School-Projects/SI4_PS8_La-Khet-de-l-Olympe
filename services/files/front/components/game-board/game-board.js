@@ -60,6 +60,9 @@ export class GameBoard extends HTMLElement {
         // this.renderer.setBoardLen(this.grid.length);
         await this.renderer.drawEmptyGrid();
         await this.renderer.drawBoard(this.grid);
+
+        // DEBUG::
+        console.log("Rendered the whole grid.\nDoes it match the following grid ?\n" + this.gridRepr);
     }
 
 
@@ -84,13 +87,54 @@ export class GameBoard extends HTMLElement {
     }
 
 
+    /** @type {string} */
+    get gridRepr() { // DEBUG : Only for debug purposes
+        // TODO : Uncomment once the starting position (see `StartingPotion` in game-service) assign the correct owner to each piece
+        // let owner1, owner2;
+        // for (const row of this.grid) {
+        //     for (const cell of row) {
+        //         const piece = cell.content;
+        //         if (piece) {
+        //             if (!owner1) {
+        //                 owner1 = piece.owner;
+        //             } else if (piece.owner !== owner1) {
+        //                 owner2 = piece.owner;
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // }
+
+        let ret = "";
+        for (const row of this.grid) {
+            ret += "|";
+            for (const cell of row) {
+                const piece = cell.content;
+                if (piece) {
+                    ret += piece.type[0];
+                    if (piece.owner === 1/*owner1*/) {
+                        ret += '1';
+                    } else {
+                        ret += '2';
+                    }
+                } else {
+                    ret += "  ";
+                }
+                ret += "|"
+            }
+            ret += "\n";
+        }
+
+        return ret;
+    }
+
+
     /**
      * @param {Coord} pos
      *
      * @returns {Cell}
      */
     getCellAt(pos) {
-        console.log(pos)
         return this.grid[pos.x][pos.y];
     }
 
@@ -131,9 +175,17 @@ export class GameBoard extends HTMLElement {
         this.getCellAt(from).empty();
         this.getCellAt(to).put(piece);
 
-        await this.renderer.clearPieceAt(from);
-        await this.renderer.drawPieceAt(piece, to);
+        // TODO : Uncomment once `BoardRenderer::_convCoordToCanvasCoord` is fixed
+        // await this.renderer.clearPieceAt(from);
+        // await this.renderer.drawPieceAt(piece, to);
+
+        // NOTE : Temporary solution
+        await this.renderer.drawBoard(this.grid);
+
+        // DEBUG::
+        console.log("Rendered the whole grid.\nDoes it match the following grid ?\n" + this.gridRepr);
     }
+
 
     /**
      * Places the given piece at the given position
@@ -145,7 +197,14 @@ export class GameBoard extends HTMLElement {
     async placePiece(piece, pos) {
         this.grid[pos.x][pos.y].put(piece);
 
-        await this.renderer.drawPieceAt(piece, pos);
+        // TODO : Uncomment once `BoardRenderer::_convCoordToCanvasCoord` is fixed
+        // await this.renderer.drawPieceAt(piece, pos);
+
+        // NOTE : Temporary solution
+        await this.renderer.drawBoard(this.grid);
+
+        // DEBUG::
+        console.log("Rendered the whole grid.\nDoes it match the following grid ?\n" + this.gridRepr);
     }
 }
 customElements.define('game-board', GameBoard);

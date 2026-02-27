@@ -49,6 +49,9 @@ export class GamePageClickHandler {
         if (clickEvent.target === board) {
             const pos = this._getClickPosOnBoard(clickEvent, board);
 
+            // DEBUG::
+            console.log("Clicked on cell at:", pos);
+
             const selectedCell = board.getCellAt(pos);
             if (selectedCell.isEmpty()) {
                 return {
