@@ -8,7 +8,7 @@ import { GameActionType } from "./GamePageStateMachine/GameAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
 
-const socket = io("http://localhost:8000/");
+const socket = io({ path: "/api/game-service/socket.io" });
 
 
 /** @type { GameBoard } */
