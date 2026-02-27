@@ -176,6 +176,40 @@ exports.HTTPHandler = {
 
         sendJson(res, 200, { ok:true, playerId: game.currActivePlayer.playerId });
     },
+
+    getPlayerOfClient: async (req, res) => {
+        const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
+        if (!userId) {
+            throw new Error("Missing 'userId' cookie");
+        }
+        if (!userToken) {
+            throw new Error("Missing 'userToken' cookie");
+        }
+        if (!gameId) {
+            throw new Error("Missing 'gameId' cookie");
+        }
+
+        const game = GamesManager.getGameById(gameId);
+
+        let playerOfClient;
+        for (const player of game.players)
+            if (player.userId === userId && player.userToken == userToken) {
+                if (playerOfClient) {
+                    // If we already found one player corresponding to the user,
+                    // which only happens if we are in a local multiplayer game,
+                    // then we take the active one.
+                    playerOfClient = (
+                        (game.playerCanPlay(playerOfClient))
+                        ? playerOfClient
+                        : player
+                    );
+                } else {
+                    playerOfClient = player;
+                }
+            }
+
+        sendJson(res, 200, { ok:true, playerId: playerOfClient.playerId });
+    },
 };
 
 

@@ -33,8 +33,11 @@ const ROUTES = {
     '/api/game-service/board': (req, res) => {
         HTTPHandler.getBoard(req, res);
     },
-    '/api/game-service/curr-player': (req, res) => {
+    '/api/game-service/active-player': (req, res) => {
         HTTPHandler.getCurrActivePlayer(req, res);
+    },
+    '/api/game-service/player': (req, res) => {
+        HTTPHandler.getPlayerOfClient(req, res);
     },
 };
 

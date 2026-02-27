@@ -16,23 +16,57 @@ const board = document.querySelector("game-board");
 // TODO : Implementing an 'inventory' component and a 'turn indicator' component
 
 
-let ACTIVE_PLAYER_ID;
+let PLAYER_ID;
 const stateMachine = new GamePageStateMachine();
 const clickHandler = new GamePageClickHandler(document);
 
-onload = async (_) => {
+
+//
+// Reloads support
+//
+
+
+async function fetchPlayerId() {
     let playerId;
     try {
-        const currPlayerResponse = await fetch("/api/game-service/curr-player");
-        if (!currPlayerResponse.ok) {
-            throw moveResponse.error;
+        const playerResponse = await fetch("/api/game-service/player");
+        if (!playerResponse.ok) {
+            throw playerResponse.error;
         }
-        ({ playerId } = await currPlayerResponse.json());
+        ({ playerId } = await playerResponse.json());
     } catch (err) {
         throw err;
     }
 
-    ACTIVE_PLAYER_ID = playerId;
+    return playerId;
+}
+
+async function askWhoIsPlaying() {
+    let playerId;
+    try {
+        const activePlayerResponse = await fetch("/api/game-service/active-player");
+        if (!activePlayerResponse.ok) {
+            throw activePlayerResponse.error;
+        }
+        ({ playerId } = await activePlayerResponse.json());
+    } catch (err) {
+        throw err;
+    }
+
+    return playerId;
+}
+
+
+onload = async (_) => {
+    PLAYER_ID = await fetchPlayerId();
+
+    const playerCanPlay = (PLAYER_ID === (await askWhoIsPlaying()));
+    if (playerCanPlay) {
+        // DEBUG::
+        console.log(`Faked reception of 'start-turn' event for player with id=${PLAYER_ID}`);
+
+        stateMachine.on({ type: GamePageActionType.START_TURN, payload: {playerId: PLAYER_ID} });
+    }
 }
 
 
@@ -51,9 +85,9 @@ onload = async (_) => {
 
 // TODO (in the backend) : Dispatching "start-turn" socket event only to the client (aka player) that can play
 socket.on("start-turn", payload => {
-    // It's important to update `ACTIVE_PLAYER_ID` each time we get a `start-turn` event
+    // It's important to update `PLAYER_ID` each time we get a `start-turn` event
     // for the case where we are in a local multiplayer game
-    ACTIVE_PLAYER_ID = payload.playerId;
+    PLAYER_ID = payload.playerId;
 
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
 });
@@ -84,7 +118,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             body: JSON.stringify({
                 method: "move",
                 args: {
-                    playerId: ACTIVE_PLAYER_ID,
+                    playerId: PLAYER_ID,
                     piece: piece.toDTO(),
                     from: from,
                     to: to,
@@ -115,7 +149,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             body: JSON.stringify({
                 method: "place",
                 args: {
-                    playerId: ACTIVE_PLAYER_ID,
+                    playerId: PLAYER_ID,
                     piece: piece.toDTO(),
                     pos: pos,
                 },
