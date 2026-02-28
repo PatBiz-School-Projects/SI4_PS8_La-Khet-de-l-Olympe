@@ -1,11 +1,19 @@
-// manager/startingPositions.js
+const { Player } = require("../Player");
 
 const { Piece } = require("../entities/piece");
+
+const assert = require("assert");
 
 const ORIENTATIONS = ["N", "E", "S", "W"];
 
 class StartingPositions {
-    constructor(boardSize = 10) {
+    constructor(players, boardSize = 10) {
+        assert(players !== undefined);
+        assert(players.length === 2);
+
+        /** @type {Player[]} */
+        this._players = players;
+
         this.N = boardSize;
         if (this.N % 2 !== 0) throw new Error("Board size must be even for central symmetry.");
     }
@@ -17,7 +25,7 @@ class StartingPositions {
      */
     generateAndApply(board) {
         const piecesP1 = this._generateP1Pieces(board);
-        const piecesP2 = piecesP1.map(p => this._mirrorPieceDto(p, 2));
+        const piecesP2 = piecesP1.map(p => this._mirrorPieceDto(p, this._players[1].playerId));
 
         // Place P1 puis P2 sur le board
         for (const dto of [...piecesP1, ...piecesP2]) {
@@ -36,7 +44,7 @@ class StartingPositions {
         const sphinx1 = this._placeSphinxP1(board);
 
         // Sphinx P2 (pour la contrainte "colonne du sphinx adverse")
-        const sphinx2 = this._mirrorPieceDto(sphinx1, 2);
+        const sphinx2 = this._mirrorPieceDto(sphinx1, this._players[1].playerId);
 
         // 2) Pharaoh P1 (ligne 3, contraintes)
         const pharaoh1 = this._placePharaohP1(board, sphinx1, sphinx2);
@@ -61,7 +69,7 @@ class StartingPositions {
 
         const orientation = this._sphinxHorizontalOrientation(y);
 
-        return { type: "Sphinx", owner: 1, x, y, orientation };
+        return { type: "Sphinx", owner: this._players[0].playerId, x, y, orientation };
     }
 
     _placePharaohP1(board, sphinx1, sphinx2) {
@@ -82,7 +90,7 @@ class StartingPositions {
         const y = this._choice(candidates);
 
         // Orientation pas imposée par tes règles -> random
-        return { type: "Pharaoh", owner: 1, x, y, orientation: this._randOrientation() };
+        return { type: "Pharaoh", owner: this._players[0].playerId, x, y, orientation: this._randOrientation() };
     }
 
     _placeAnubis1P1(board, pharaoh1) {
@@ -91,7 +99,7 @@ class StartingPositions {
 
         this._assertFree(board, x, y, "Anubis1");
 
-        return { type: "Anubis", owner: 1, x, y, orientation: "S" }; // face adversaire
+        return { type: "Anubis", owner: this._players[0].playerId, x, y, orientation: "S" }; // face adversaire
     }
 
     _placeAnubis2P1(board, sphinx2) {
@@ -100,7 +108,7 @@ class StartingPositions {
 
         this._assertFree(board, x, y, "Anubis2");
 
-        return { type: "Anubis", owner: 1, x, y, orientation: "S" }; // face adversaire
+        return { type: "Anubis", owner: this._players[0].playerId, x, y, orientation: "S" }; // face adversaire
     }
 
     _placeScarabP1(board) {
@@ -116,7 +124,7 @@ class StartingPositions {
 
         const y = this._choice(candidates);
 
-        return { type: "Scarab", owner: 1, x, y, orientation: this._randOrientation() };
+        return { type: "Scarab", owner: this._players[0].playerId, x, y, orientation: this._randOrientation() };
     }
 
     // -----------------------------

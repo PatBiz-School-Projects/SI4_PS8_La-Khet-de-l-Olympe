@@ -1,3 +1,5 @@
+const {Player} = require('../Player');
+
 const { Cell } = require('./cell');
 const { Piece } = require('./piece');
 
@@ -7,7 +9,10 @@ const StartingPositions = require('../manager/startingPositions');
 class Board {
     static GRID_LEN = 10;
 
-    constructor() {
+    constructor(players) {
+        /** @type {Player[]} */
+        this._players = players;
+
         this.grid = [];
 
         for (let i = 0; i < Board.GRID_LEN; i++) {
@@ -22,7 +27,7 @@ class Board {
     }
 
     init() {
-        const sp = new StartingPositions(Board.GRID_LEN);
+        const sp = new StartingPositions(this._players, Board.GRID_LEN);
         sp.generateAndApply(this);
 
         this._findAndCacheSphinxes();

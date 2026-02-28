@@ -67,10 +67,9 @@ class ActionValidator {
         if (!piece.equals(this.board.getPieceAt(from))) {
             throw new ActionValidationError(`The given piece differs from the piece at its position`);
         }
-        // TODO : Uncomment once the owner truly corresponds to the playerId
-        // if (piece.owner !== playerId) {
-        //     throw new ActionValidationError(`The player doesn't own the piece to move`);
-        // }
+        if (piece.owner !== playerId) {
+            throw new ActionValidationError(`The player doesn't own the piece to move`);
+        }
         if (!piece.canMove()) {
             throw new ActionValidationError(`The piece to move cannot move`);
         }
@@ -103,10 +102,9 @@ class ActionValidator {
         }
 
         piece =  Piece.fromDTO(piece);
-        // TODO : Uncomment once the owner truly correseponds to the playerId.fromDTO(piece);
-        // if (piece.owner !== playerId) {
-        //     throw new ActionValidationError(`The player doesn't own the piece to place`);
-        // }
+        if (piece.owner !== playerId) {
+            throw new ActionValidationError(`The player doesn't own the piece to place`);
+        }
         if (piece.type !== "Pyramid") {
             // NOTE : Currently we are supposing that the player can only place pyramids.
             throw new ActionValidationError(`The piece to place isn't a pyramid`);
@@ -166,10 +164,9 @@ class ActionValidator {
         if (!piece.equals(this.board.getPieceAt(pos))) {
             throw new ActionValidationError(`The given piece differs from the piece at its position`);
         }
-        // TODO : Uncomment once the owner truly corresponds to the playerId
-        // if (piece.owner !== playerId) {
-        //     throw new ActionValidationError(`The player doesn't own the piece to rotate`);
-        // }
+        if (piece.owner !== playerId) {
+            throw new ActionValidationError(`The player doesn't own the piece to rotate`);
+        }
         if (!piece.canRotate()) {
             throw new ActionValidationError(`The piece to rotate cannot rotate`);
         }
@@ -207,10 +204,9 @@ class ActionValidator {
         if (!piece1.equals(this.board.getPieceAt(pos1))) {
             throw new ActionValidationError(`The 1st given piece differs from the piece at its position`);
         }
-        // TODO : Uncomment once the owner truly corresponds to the playerId
-        // if (piece1.owner !== playerId) {
-        //     throw new ActionValidationError(`The player doesn't own the 1st piece to swap`);
-        // }
+        if (piece1.owner !== playerId) {
+            throw new ActionValidationError(`The player doesn't own the 1st piece to swap`);
+        }
         if (piece1.type !== "Scarab") {
             throw new ActionValidationError(`The 1st piece to swap isn't a scarab`);
         }
@@ -219,10 +215,9 @@ class ActionValidator {
         if (!piece2.equals(this.board.getPieceAt(pos2))) {
             throw new ActionValidationError(`The 2nd given piece differs from the piece at its position`);
         }
-        // TODO : Uncomment once the owner truly corresponds to the playerId
-        // if (piece2.owner !== playerId) {
-        //     throw new ActionValidationError(`The player doesn't own the 2nd piece to swap`);
-        // }
+        if (piece2.owner !== playerId) {
+            throw new ActionValidationError(`The player doesn't own the 2nd piece to swap`);
+        }
         if (piece2.type !== "Sphinx" && piece2.type !== "Pharaoh") {
             throw new ActionValidationError(`The 2nd piece to swap isn't a sphinx nor a pharaoh`);
         }

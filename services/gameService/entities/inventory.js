@@ -35,7 +35,7 @@ class Inventory {
     pushPyramid() {
         this._pieces.push(Piece.fromDTO({
             type: "Pyramid",
-            owner: owner,
+            owner: this._owner,
             orientation: "N",
         }));
     }

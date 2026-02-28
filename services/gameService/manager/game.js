@@ -64,7 +64,7 @@ class Game {
         /** @private @type {Player|null} */
         this._winner = null;
 
-        this.board = new Board();
+        this.board = new Board(this._players);
         this.board.init();
         this.laserService = new LaserService(this.board);
         this.actionValidator = new ActionValidator(this);
@@ -192,8 +192,7 @@ class Game {
         } else {
             return {
                 actionRes: this.ACTIONS[action.method](action.args),
-                // laserRes: this.processLaserHit(),
-                laserRes: undefined, // Until the owner corresponds to the player's id
+                laserRes: this.processLaserHit(),
             };
         }
     }
