@@ -28,8 +28,9 @@ const GameState = Object.freeze({
  * @enum {typeof GameMode[keyof typeof GameMode]} GameMode
  */
 const GameMode = Object.freeze({
-    LOCAL: "LOCAL",
-    VS_AI: "VS_AI"
+    SOLO: "SOLO",
+    LOCAL_MULTIPLAYER: "LOCAL_MULTIPLAYER",
+    MULTIPLAYER: "MULTIPLAYER",
 });
 
 
@@ -187,7 +188,7 @@ class Game {
 
 
     processLaserHit() {
-        const {path, destroyedPieces} = this.laserService.fireLaser(this._currActivePlayer);
+        const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
 
         for (const piece of destroyedPieces) {
             if(piece.type === "Pharaoh"){
@@ -201,10 +202,10 @@ class Game {
                     this._winner = piece.owner;
                 }
             } else {
-                if (piece.type === "Pyramid" && piece.owner !== this._currActivePlayer) {
+                if (piece.type === "Pyramid" && piece.owner !== this._currActivePlayer.playerId) {
                     // TODO : Adding the pyramid into the inventory of the current player
                 } else {
-                    this.board.removePiece(piece.x, piece.y);
+                    this.board.removePiece({x:piece.x, y:piece.y});
                 }
             }
         }

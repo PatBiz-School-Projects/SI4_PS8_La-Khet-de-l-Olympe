@@ -1,9 +1,10 @@
-const DIRECTIONS =  {
-    "N": {dx:0,dy:-1},
-    "S": {dx:0,dy:1},
-    "E": {dx:1,dy:0},
-    "W": {dx:-1,dy:0},
+const {Board} = require("../entities/board");
 
+const DIRECTIONS =  { //need to see if it's correct
+    "N": {dx:-1,dy:0},
+    "S": {dx:1,dy:0},
+    "E": {dx:0,dy:1},
+    "W": {dx:0,dy:-1},
 }
 
 class LaserService {
@@ -13,7 +14,7 @@ class LaserService {
 
     fireLaser(currentPlayer) {
         const path = [];
-        const sphinx = this.board.getSphinxByOwner(currentPlayer);
+        const sphinx = this.board.getSphinxByOwner(currentPlayer.playerId);
 
         let laserPos = {x: sphinx.x, y: sphinx.y}; // fire the laser from the sphinx
         let laserDir = sphinx.orientation;
@@ -27,7 +28,7 @@ class LaserService {
         ) {
             const variation = DIRECTIONS[laserDir];
 
-            const laserPos = {
+            laserPos = {
                 x: laserPos.x + variation.dx,
                 y: laserPos.y + variation.dy,
             };
@@ -46,20 +47,27 @@ class LaserService {
                                 ...laserPos,
                                 hit:"reflected",
                             });
+                            break;
 
                         case "absorb":
                             path.push({
                                 ...laserPos,
                                 hit:"absorbed",
                             });
+                            break;
 
                         case "destroy":
-                            destroyedPieces.push(piece);
+                            destroyedPieces.push({
+                                ...laserPos,
+                                type: piece.type,
+                                owner:piece.owner,
+                            });
                             path.push({
                                 ...laserPos,
                                 hit:"destroyed",
                                 piece:piece.type,
                             });
+                            break;
                     }
                 } else {
                     path.push(laserPos);
