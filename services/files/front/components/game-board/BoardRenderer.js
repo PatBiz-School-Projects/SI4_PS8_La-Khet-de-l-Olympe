@@ -177,6 +177,7 @@ export class BoardRenderer {
         ctx.clearRect(0, 0, this.boardSize, this.boardSize);
     }
 
+    
     /**
      * @param {Coord[]} coverage
      */
@@ -212,13 +213,16 @@ export class BoardRenderer {
                 x: (newX + (1 / 2))*this.cellSize,
                 y: (newY + (1 / 2))*this.cellSize,
             }
-            ctx.lineTo(newPosition.y, newPosition.x);
+            ctx.lineTo(newPosition.x, newPosition.y);
             i++;
 
             //maybe we should add a sleeping method so the laser seems realistic
 
         }
         ctx.stroke();
+
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(50);
     }
 
 
