@@ -136,13 +136,13 @@ class GamesManager {
             .map(([gameId, val]) => ({gameId, openedAt: val.openedAt}))
             .sort((r1, r2) => r2.openedAt - r1.openedAt)[0];
 
-        let waitingRoom = oldestWaitingRoom;
-        if (!waitingRoom) {
+        let gameId = oldestWaitingRoom?.gameId;
+        if (!gameId) {
             // If a room hasn't been found then we create a new one
-            waitingRoom = this.newGame();
+            gameId = this.newGame();
         }
-        this.registerPlayerInRoom(player, waitingRoom.gameId);
-        return waitingRoom.gameId;
+        this.registerPlayerInRoom(player, gameId);
+        return gameId;
     }
 
     ////////////////////////////////////////////////////////////////////////////
