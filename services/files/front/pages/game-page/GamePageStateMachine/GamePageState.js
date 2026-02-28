@@ -1,5 +1,6 @@
 import { GamePageAction, GamePageActionType } from "./GamePageAction.js";
 import { GameAction, GameActionType } from "./GameAction.js";
+import { UIAction, UIActionType } from "./UIAction.js";
 
 
 /**
@@ -70,15 +71,20 @@ export class GamePageState_Impl {
     /**
      * @param {GamePageAction} pageAction
      *
-     * @return {{newState: GamePageState_Impl, gameAction: GameAction}}
+     * @return {{
+     *      newState: GamePageState_Impl,
+     *      gameAction: GameAction
+     *      uiAction: UIAction,
+     * }}
      */
     on(pageAction) {
-        const {newSuperstate, newSubstate, newContext, gameAction} = this._superstateImpl.on(
+        const {newSuperstate, newSubstate, newContext, gameAction, uiAction} = this._superstateImpl.on(
             pageAction, this._substateImpl.on(pageAction)
         );
         return {
             newStateImpl: new GamePageState_Impl({superstate: newSuperstate, substate: newSubstate}, newContext),
             gameAction: gameAction,
+            uiAction: uiAction,
         };
     }
 }
@@ -108,11 +114,12 @@ class GamePageState_Superstate_Impl {
      * @param {GamePageState_Substate_Impl} newSubstate
      *
      * @return {{
-     *     newSuperstate: GamePageState_Superstate,
-     *     newSubstate: GamePageState_Substate,
-     *     newContext: unknown,
+     *      newSuperstate: GamePageState_Superstate,
+     *      newSubstate: GamePageState_Substate,
+     *      newContext: unknown,
      *
-     *     gameAction: GameAction,
+     *      gameAction: GameAction,
+     *      uiAction: UIAction,
      * }}
      */
     on(pageAction, substateAns) {
@@ -125,7 +132,7 @@ class GamePageState_Superstate_Impl {
     }
 
     _onKnowing__SPECTATING(pageAction, substateAns) {
-        const {newSubstate, newContext, gameAction} = substateAns;
+        const {newSubstate, newContext, gameAction, uiAction} = substateAns;
 
         switch (pageAction.type) {
             case GamePageActionType.START_TURN:
@@ -134,6 +141,7 @@ class GamePageState_Superstate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: {},
                     gameAction: undefined,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.END_TURN:
@@ -144,7 +152,8 @@ class GamePageState_Superstate_Impl {
                     newSuperstate: this._state,
                     newSubstate: newSubstate,
                     newContext: newContext,
-                    gameAction: gameAction,
+                    gameAction: undefined,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:
@@ -152,7 +161,8 @@ class GamePageState_Superstate_Impl {
                     newSuperstate: this._state,
                     newSubstate: newSubstate,
                     newContext: newContext,
-                    gameAction: gameAction,
+                    gameAction: undefined,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.CLICKED_EMPTY_CELL:
@@ -160,7 +170,8 @@ class GamePageState_Superstate_Impl {
                     newSuperstate: this._state,
                     newSubstate: newSubstate,
                     newContext: newContext,
-                    gameAction: gameAction,
+                    gameAction: undefined,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.CLICKED_ROTATE_ARROW:
@@ -168,15 +179,8 @@ class GamePageState_Superstate_Impl {
                     newSuperstate: this._state,
                     newSubstate: newSubstate,
                     newContext: newContext,
-                    gameAction: gameAction,
-                };
-
-            case GamePageActionType.CANCEL:
-                return {
-                    newSuperstate: GamePageState.Superstate.SPECTATING,
-                    newSubstate: GamePageState.Substate.IDLE,
-                    newContext: {},
                     gameAction: undefined,
+                    uiAction: uiAction,
                 };
 
             default:
@@ -185,7 +189,7 @@ class GamePageState_Superstate_Impl {
     }
 
     _onKnowing__PLAYING(pageAction, substateAns) {
-        const {newSubstate, newContext, gameAction} = substateAns;
+        const {newSubstate, newContext, gameAction, uiAction} = substateAns;
 
         switch (pageAction.type) {
             case GamePageActionType.START_TURN:
@@ -197,6 +201,7 @@ class GamePageState_Superstate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: {},
                     gameAction: undefined,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.CLICKED_PIECE_IN_INVENTORY:
@@ -205,6 +210,7 @@ class GamePageState_Superstate_Impl {
                     newSubstate: newSubstate,
                     newContext: newContext,
                     gameAction: gameAction,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:
@@ -213,6 +219,7 @@ class GamePageState_Superstate_Impl {
                     newSubstate: newSubstate,
                     newContext: newContext,
                     gameAction: gameAction,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.CLICKED_EMPTY_CELL:
@@ -221,6 +228,7 @@ class GamePageState_Superstate_Impl {
                     newSubstate: newSubstate,
                     newContext: newContext,
                     gameAction: gameAction,
+                    uiAction: uiAction,
                 };
 
             case GamePageActionType.CLICKED_ROTATE_ARROW:
@@ -229,14 +237,6 @@ class GamePageState_Superstate_Impl {
                     newSubstate: newSubstate,
                     newContext: newContext,
                     gameAction: gameAction,
-                };
-
-            case GamePageActionType.CANCEL:
-                return {
-                    newSuperstate: GamePageState.Superstate.SPECTATING,
-                    newSubstate: GamePageState.Substate.IDLE,
-                    newContext: {},
-                    gameAction: undefined,
                 };
 
             default:
@@ -267,6 +267,14 @@ class GamePageState_Substate_Impl {
 
     /**
      * @param {GamePageAction} pageAction
+     *
+     * @returns {{
+     *      newSubstate: GamePageState_Substate,
+     *      newContext: unknown,
+     *
+     *      gameAction: GameAction,
+     *      uiAction: UIAction,
+     * }}
      */
     on(pageAction) {
         switch (this._state) {
@@ -291,6 +299,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.END_TURN:
@@ -298,6 +307,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: {},
                     gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.CLICKED_PIECE_IN_INVENTORY:
@@ -305,6 +315,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_IN_INVENTORY,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:
@@ -312,6 +323,10 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_ON_BOARD,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: {
+                        type: UIActionType.VISUALISE_LEGAL_ACTION,
+                        payload: { ...pageAction.payload },
+                    },
                 };
 
             case GamePageActionType.CLICKED_EMPTY_CELL:
@@ -319,6 +334,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: {},
                     gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.CLICKED_ROTATE_ARROW:
@@ -326,13 +342,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: {},
                     gameAction: undefined,
-                };
-
-            case GamePageActionType.CANCEL:
-                return {
-                    newSubstate: GamePageState.Substate.IDLE,
-                    newContext: {},
-                    gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             default:
@@ -352,6 +362,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
                 };
 
             case GamePageActionType.END_TURN:
@@ -359,6 +370,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: {},
                     gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
                 };
 
             case GamePageActionType.CLICKED_PIECE_IN_INVENTORY:
@@ -366,12 +378,13 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_IN_INVENTORY,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
                 };
 
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:
                 return {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_ON_BOARD,
-                    newContext: { ...pageAction.payload }, // In case the switch action is refused
+                    newContext: {},
                     gameAction: {
                         type: GameActionType.SWITCH_PIECES,
                         payload: {
@@ -381,6 +394,7 @@ class GamePageState_Substate_Impl {
                             pos2: pageAction.payload.pos,
                         },
                     },
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
                 };
 
             case GamePageActionType.CLICKED_EMPTY_CELL:
@@ -395,6 +409,7 @@ class GamePageState_Substate_Impl {
                             to: pageAction.payload.pos,
                         },
                     },
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
                 };
 
             case GamePageActionType.CLICKED_ROTATE_ARROW:
@@ -409,13 +424,7 @@ class GamePageState_Substate_Impl {
                             rotation: pageAction.payload.rotation,
                         },
                     },
-                };
-
-            case GamePageActionType.CANCEL:
-                return {
-                    newSubstate: GamePageState.Substate.IDLE,
-                    newContext: {},
-                    gameAction: undefined,
+                    uiAction: undefined, // Keep the visualisation alive
                 };
 
             default:
@@ -435,6 +444,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.END_TURN:
@@ -442,6 +452,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.IDLE,
                     newContext: {},
                     gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.CLICKED_PIECE_IN_INVENTORY:
@@ -449,6 +460,7 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_IN_INVENTORY,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:
@@ -456,6 +468,10 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_ON_BOARD,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
+                    uiAction: {
+                        type: UIActionType.VISUALISE_LEGAL_ACTION,
+                        payload: { ...pageAction.payload },
+                    },
                 };
 
             case GamePageActionType.CLICKED_EMPTY_CELL:
@@ -467,8 +483,9 @@ class GamePageState_Substate_Impl {
                         payload: {
                             piece: this._context.piece,
                             pos: pageAction.payload.pos,
-                        }
+                        },
                     },
+                    uiAction: undefined,
                 };
 
             case GamePageActionType.CLICKED_ROTATE_ARROW:
@@ -480,15 +497,9 @@ class GamePageState_Substate_Impl {
                         payload: {
                             piece: this._context.piece,
                             pos: pageAction.payload.pos,
-                        }
+                        },
                     },
-                };
-
-            case GamePageActionType.CANCEL:
-                return {
-                    newSubstate: GamePageState.Substate.IDLE,
-                    newContext: {},
-                    gameAction: undefined,
+                    uiAction: undefined,
                 };
 
             default:

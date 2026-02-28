@@ -5,6 +5,7 @@ import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
 import { GameActionType } from "./GamePageStateMachine/GameAction.js";
+import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
 
@@ -109,6 +110,21 @@ onclick = (event) => {
 
 
 //
+// Reacting to `UIAction`
+//
+
+
+stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos}) => {
+    // TODO : Call endpoint to get legal action for piece on board here (once the endpoint is added)
+    // TODO : Start visualisation on game-board here
+});
+
+stateMachine.subscribe([UIActionType.STOP_UI_ACTIONS], async () => {
+    // TODO : Stop visualisation on game-board here
+});
+
+
+//
 // Reacting to `GameAction`
 //
 
@@ -187,9 +203,85 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
 });
 
 stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {
-    // TODO : To support
+    // DEBUG::
+    console.log("Trying to rotate piece:", piece, "at:", pos, "to the:", rotation);
+
+    let actionRes, laserRes;
+    try {
+        const rotateResponse = await fetch("/api/game-service/action", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                method: "rotate",
+                args: {
+                    playerId: PLAYER_ID,
+                    piece: piece.toDTO(),
+                    pos: pos,
+                    rotation: rotation,
+                },
+            })
+        });
+        if (!rotateResponse.ok) {
+            throw rotateResponse.error;
+        }
+
+        ({actionRes, laserRes} = await rotateResponse.json());
+    } catch (err) {
+        throw err;
+    }
+
+    // DEBUG::
+    console.log("Rotation accepted");
+
+    await board.rotatePiece(piece, pos, rotation);
+    if (laserRes) {
+        await board.showLaserBeam(laserRes.path);
+    }
 });
 
 stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, piece2, pos2}) => {
-    // TODO : To support
+    // DEBUG::
+    console.log("Trying to switch piece:", piece1, "at:", pos1, "with piece:", piece2, "at:", pos2);
+
+    let actionRes, laserRes;
+    try {
+        const switchResponse = await fetch("/api/game-service/action", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                method: "switch",
+                args: {
+                    playerId: PLAYER_ID,
+                    piece1: piece1.toDTO(),
+                    pos1: pos1,
+                    piece2: piece2.toDTO(),
+                    pos2: pos2,
+                },
+            })
+        });
+        if (!switchResponse.ok) {
+            // Simulate click on `piece2` at `pos2` in case the switch action is refused
+            stateMachine.on({
+                type: GamePageActionType.CLICKED_PIECE_ON_BOARD,
+                payload: {
+                    pos: pos2,
+                    piece: piece2,
+                },
+            })
+
+            throw switchResponse.error;
+        }
+
+        ({actionRes, laserRes} = await switchResponse.json());
+    } catch (err) {
+        throw err;
+    }
+
+    // DEBUG::
+    console.log("Switch accepted");
+
+    await board.switchPieces(piece1, pos1, piece2, pos2);
+    if (laserRes) {
+        await board.showLaserBeam(laserRes.path);
+    }
 });
