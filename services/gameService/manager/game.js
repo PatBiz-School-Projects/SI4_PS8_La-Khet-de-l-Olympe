@@ -152,6 +152,41 @@ class Game {
         return this._playerInventories[playerId];
     }
 
+    getPossibleMoveForPiece(pos) {
+        const piece = this.board.getPieceAt(pos);
+        if (!piece) return { moves: [], rotations: [], switches: [] };
+
+        const possibleActions = {
+            moves: [],
+            rotations: ["left", "right"],
+            switches: []
+        };
+
+        const directions = [
+            {x: pos.x + 1, y: pos.y}, {x: pos.x - 1, y: pos.y},
+            {x: pos.x, y: pos.y + 1}, {x: pos.x, y: pos.y - 1}
+        ];
+
+        directions.forEach(targetPos => {
+            if (targetPos.x >= 0 && targetPos.x < Board.GRID_LEN &&
+                targetPos.y >= 0 && targetPos.y < Board.GRID_LEN) {
+                try {
+                    this.actionValidator.validate({
+                        method: "move",
+                        args: { playerId: this._currActivePlayer.playerId, piece: piece.toDTO(), from: pos, to: targetPos }
+                    });
+                    possibleActions.moves.push(targetPos);
+                } catch (e) {
+                    if (piece.type === "Scarab" && this.board.getPieceAt(targetPos)) {
+                        possibleActions.switches.push(targetPos);
+                    }
+                }
+            }
+        });
+
+        return possibleActions;
+    }
+
 
     isRunning() {
         return this._state === GameState.RUNNING;
@@ -196,7 +231,7 @@ class Game {
     onAction(action) {
         this.actionValidator.validate(action);
 
-        if (action.method === "switch" && action.args.piece2.type == "Sphinx") {
+        if (action.method === "switch" && action.args.piece2.type === "Sphinx") {
             return {
                 actionRes: this.ACTIONS[action.method](action.args),
                 laserRes: undefined,
