@@ -1,8 +1,7 @@
 const { PlayerID } = require("../Player");
+
 const { Board } = require("../entities/board");
 const { Inventory } = require("../entities/inventory");
-
-const MoveValidator = require('../rules/moveValidator');
 
 
 const AIActionGenerator = {

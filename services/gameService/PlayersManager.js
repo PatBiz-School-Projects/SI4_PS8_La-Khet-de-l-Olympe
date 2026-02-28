@@ -37,7 +37,7 @@ class PlayersManager {
      * @param {PlayerID} playerId
      *
      * @returns {Player}
-     * @throws If no match has been found
+     * @throws if no match has been found for the given player id
      */
     static getPlayerById(playerId) {
         const player = this._players[playerId];
@@ -47,6 +47,5 @@ class PlayersManager {
         return player;
     }
 }
-
 
 module.exports = { PlayersManager };

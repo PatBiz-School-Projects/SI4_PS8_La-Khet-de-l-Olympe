@@ -1,11 +1,14 @@
-const {Board} = require("../entities/board");
+const { Board } = require("../entities/board");
+const { LaserDirection } = require("../entities/laser");
 
-const DIRECTIONS =  { //need to see if it's correct
-    "N": {dx:-1,dy:0},
-    "S": {dx:1,dy:0},
-    "E": {dx:0,dy:1},
-    "W": {dx:0,dy:-1},
-}
+
+const VECTORIZED_LASER_DIRECTIONS =  Object.freeze({ //need to see if it's correct
+    [LaserDirection.N]: {dx:-1,dy:0},
+    [LaserDirection.S]: {dx:1,dy:0},
+    [LaserDirection.E]: {dx:0,dy:1},
+    [LaserDirection.W]: {dx:0,dy:-1},
+});
+
 
 class LaserService {
     constructor(board) {
@@ -26,7 +29,7 @@ class LaserService {
             0<=laserPos.x && laserPos.x<Board.GRID_LEN
             && 0<=laserPos.y && laserPos.y<Board.GRID_LEN
         ) {
-            const variation = DIRECTIONS[laserDir];
+            const variation = VECTORIZED_LASER_DIRECTIONS[laserDir];
 
             laserPos = {
                 x: laserPos.x + variation.dx,
@@ -79,4 +82,4 @@ class LaserService {
     }
 }
 
-module.exports = LaserService;
+module.exports = { LaserService };

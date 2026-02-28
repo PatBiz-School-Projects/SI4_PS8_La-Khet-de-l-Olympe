@@ -3,7 +3,7 @@ const {Player} = require('../Player');
 const { Cell } = require('./cell');
 const { Piece } = require('./piece');
 
-const StartingPositions = require('../manager/startingPositions');
+const { StartingPositions } = require('../manager/startingPositions');
 
 
 class Board {
@@ -97,7 +97,7 @@ class Board {
      * @param {{x: number, y: number}} pos
      *
      * @returns {Piece}
-     * @throws When there is no piece at the given position
+     * @throws when there is no piece at the given position
      */
     getPieceAt(pos) {
         const piece = this.grid[pos.x][pos.y].content;
@@ -117,16 +117,20 @@ class Board {
     }
 
 
+    /** @alias  {@link addPiece()} */
     putPiece(piece, pos) {
         this.grid[pos.x][pos.y].put(piece);
     }
+    /** @alias {@link putPiece()} */
     addPiece(piece, pos) {
         this.putPiece(piece, pos);
     }
 
+    /** @alias  {@link removePiece()} */
     emptyCell(pos) {
         this.grid[pos.x][pos.y].empty();
     }
+    /** @alias  {@link emptyCell()} */
     removePiece(pos) {
         this.emptyCell(pos);
     }
@@ -144,7 +148,7 @@ class Board {
     }
 
     /**
-     * @throws If a piece is already at the given position
+     * @throws if a piece is already at the given position
      */
     placePiece(piece, pos) {
         // REVIEW : Shouldn't be needed as the action has been validated

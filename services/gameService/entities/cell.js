@@ -68,41 +68,6 @@ class Cell {
     empty() {
         this._content = null;
     }
-
-
-    /**
-     * @deprecated This getter is deprecated & will be removed. Use {@link isEmpty()} instead.
-     *
-     * @type {boolean}
-     */
-    get isAvailabe() {
-        return this.isEmpty()
-    }
-
-    /**
-     * @deprecated This method is deprecated & will be removed. Use {@link put()} instead.
-     *
-     * @param {Piece} piece
-     */
-    addPiece(piece) {
-        this.put(piece);
-    }
-
-    /**
-     * @deprecated This method is deprecated & will be removed. Use {@link empty()} instead.
-     */
-    removePiece() {
-        this.empty();
-    }
-
-    /**
-     * @deprecated This method is deprecated & will be removed. Use {@link content} getter instead.
-     *
-     * @returns {Piece|null}
-     */
-    getPiece(){
-        return this.content;
-    }
 }
 
 module.exports = { Cell, CellDTO }

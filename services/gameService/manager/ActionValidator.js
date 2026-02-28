@@ -8,6 +8,7 @@ const { PlayersManager } = require("../PlayersManager");
 
 class ActionValidationError extends Error {}
 
+
 class ActionValidator {
     constructor(game) {
         /** @type {Game} */
@@ -43,7 +44,7 @@ class ActionValidator {
 
     _validateMove({playerId, piece, from, to}) {
         // DEBUG::
-        console.log("Validating movement of piece: ", piece, "from:", from, "to:", to);
+        console.log(`Validating movement by player (id=${playerId}) of piece: ${JSON.stringify(piece)} from: ${JSON.stringify(from)} to: ${JSON.stringify(to)}`);
 
         if (!playerId) {
             throw new ActionValidationError(`Missing 'playerId' argument`);
@@ -60,12 +61,12 @@ class ActionValidator {
 
         const player = PlayersManager.getPlayerById(playerId);
         if (!this.game.playerCanPlay(player)) {
-            throw new ActionValidationError(`Player of id=${player.id} cannot play`);
+            throw new ActionValidationError(`The player cannot play`);
         }
 
         piece = Piece.fromDTO(piece);
         if (!piece.equals(this.board.getPieceAt(from))) {
-            throw new ActionValidationError(`The given piece differs from the piece at its position`);
+            throw new ActionValidationError(`Given piece differs from the piece at its position`);
         }
         if (piece.owner !== playerId) {
             throw new ActionValidationError(`The player doesn't own the piece to move`);
@@ -84,7 +85,7 @@ class ActionValidator {
 
     _validatePlace({playerId, piece, pos}) {
         // DEBUG::
-        console.log("Validating placement of piece:", piece, "at:", pos);
+        console.log(`Validating placement by player (id=${playerId}) of piece: ${JSON.stringify(piece)} at: ${JSON.stringify(pos)}`);
 
         if (!playerId) {
             throw new ActionValidationError(`Missing 'playerId' argument`);
@@ -98,7 +99,7 @@ class ActionValidator {
 
         const player = PlayersManager.getPlayerById(playerId);
         if (!this.game.playerCanPlay(player)) {
-            throw new ActionValidationError(`Player of id=${player.id} cannot play`);
+            throw new ActionValidationError(`The player cannot play`);
         }
 
         piece =  Piece.fromDTO(piece);
@@ -139,7 +140,7 @@ class ActionValidator {
 
     _validateRotate({playerId, piece, pos, rotation}) {
         // DEBUG::
-        console.log("Validating rotation of piece:", piece, "at:", pos, "to the", rotation);
+        console.log(`Validating rotation by player (id=${playerId}) of piece: ${JSON.stringify(piece)} at: ${JSON.stringify(pos)} to the ${rotation}`);
 
 
         if (!playerId) {
@@ -157,7 +158,7 @@ class ActionValidator {
 
         const player = PlayersManager.getPlayerById(playerId);
         if (!this.game.playerCanPlay(player)) {
-            throw new ActionValidationError(`Player of id=${player.id} cannot play`);
+            throw new ActionValidationError(`The player cannot play`);
         }
 
         piece = Piece.fromDTO(piece);
@@ -174,7 +175,7 @@ class ActionValidator {
 
     _validateSwitch({playerId, piece1, pos1, piece2, pos2}) {
         // DEBUG::
-        console.log("Validating switch of piece: ", piece1, "at:", pos1, "with piece:", piece2, "at: ", pos2);
+        console.log(`Validating switch by player (id=${playerId}) of piece: ${JSON.stringify(piece1)} at: ${JSON.stringify(pos1)} with piece: ${JSON.stringify(piece2)} at: ${JSON.stringify(pos2)}`);
 
         if (!playerId) {
             throw new ActionValidationError(`Missing 'playerId' argument`);
@@ -194,10 +195,10 @@ class ActionValidator {
 
         const player = PlayersManager.getPlayerById(playerId);
         if (!this.game.playerCanPlay(player)) {
-            throw new ActionValidationError(`Player of id=${player.id} cannot play`);
+            throw new ActionValidationError(`The player cannot play`);
         }
         if (!this.game.playerCanSwap(player)) {
-            throw new ActionValidationError(`Player of id=${player.id} cannot swap`);
+            throw new ActionValidationError(`The player cannot swap`);
         }
 
         piece1 = Piece.fromDTO(piece1);

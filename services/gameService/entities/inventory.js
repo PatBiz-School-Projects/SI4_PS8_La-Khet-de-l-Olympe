@@ -41,7 +41,7 @@ class Inventory {
     }
 
     /**
-     * @throws If the inventory is empty
+     * @throws if the inventory is empty
      */
     popPyramid() {
         if (this.isEmpty()) {

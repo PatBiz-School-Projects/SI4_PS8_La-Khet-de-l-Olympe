@@ -4,7 +4,7 @@ const { Board }     = require("../entities/board");
 const { Inventory } = require("../entities/inventory");
 const { Piece }     = require("../entities/piece");
 
-const LaserService = require("./laserService");
+const { LaserService } = require("./laserService");
 const { ActionValidator } = require("./ActionValidator");
 
 
@@ -131,7 +131,7 @@ class Game {
      * @param {PlayerID} playerId
      *
      * @returns {Inventory}
-     * @throws If the id of the player doesn't correspond to a player in the game
+     * @throws if the player id cannot be mapped to a player in the game
      */
     getInventoryOfPlayer(playerId) {
         if (!playerId in this._playerInventories) {

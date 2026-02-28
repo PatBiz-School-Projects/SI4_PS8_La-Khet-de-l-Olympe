@@ -4,10 +4,6 @@ const { Player } = require('./Player');
 const { randomUUID } = require('node:crypto');
 
 
-// NOTE : Currently the games manager cannot manage more than one at a time.
-// TODO : Enable games multiplexing
-
-
 class WaitingRoom {
     static SIZE = 2;
 
@@ -93,7 +89,7 @@ class GamesManager {
      *
      * @param {GameID} gameId
      *
-     * @throws If no waiting room have the given `gameId`
+     * @throws if no waiting room have the given `gameId`
      */
     static startGame(gameId) {
         const waitingRoom = this._waitingRooms[gameId];
@@ -111,7 +107,7 @@ class GamesManager {
      * @param {Player} player
      * @param {GameID} gameId
      *
-     * @throws If no waiting room have the given `gameId`
+     * @throws if no waiting room have the given `gameId`
      */
     static registerPlayerInRoom(player, gameId) {
         const waitingRoom = this._waitingRooms[gameId];
@@ -151,7 +147,7 @@ class GamesManager {
      * @param {GameID} gameId
      *
      * @returns {Game}
-     * @throws If no match has been found
+     * @throws if no match has been found for the given game id
      */
     static getGameById(gameId) {
         const game = this._games[gameId];

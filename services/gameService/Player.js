@@ -52,7 +52,7 @@ class Bot extends Player {
 
         this.ai;
 
-        // Fake socket to get notify of game's updates
+        // Fake socket to be notified of game's updates
         this.socket = Object.freeze({
             emit: (msg, payload, acknowledgement) => {
                 // Boot the ai

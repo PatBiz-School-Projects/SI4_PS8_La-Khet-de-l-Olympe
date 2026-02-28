@@ -206,4 +206,4 @@ class StartingPositions {
     }
 }
 
-module.exports = StartingPositions;
+module.exports = { StartingPositions };

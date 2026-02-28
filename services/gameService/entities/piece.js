@@ -36,7 +36,7 @@ class Piece {
      * @param {PieceDTO} pieceDTO
      *
      * @returns {Piece}
-     * @throws When the piece's type is unknown 
+     * @throws if the piece's type is unknown
      */
     static fromDTO(pieceDTO) {
         const PieceClass = PieceConstructors[pieceDTO.type];
@@ -86,8 +86,6 @@ class Piece {
 
     canRotate() { return false; }
     canMove() { return false; }
-    // REVIEW : Useless (see note above `Reflective` mixin)
-    canReflect() { return false; }
 
     /**
      * @param {"left" | "right"} rotation
@@ -130,11 +128,6 @@ const Moveable = (Base) => class extends Base {
     canMove() { return true; }
 };
 
-// REVIEW : Useless bcs the reflectiveness of a piece depends on the piece's type AND on the laser's impact
-const Reflective = (Base) => class extends Base {
-    canReflect() { return true; }
-};
-
 
 //
 // Piece's Constructors
@@ -157,7 +150,7 @@ const PieceConstructors = {
         }
     },
 
-    Pyramid: class extends Reflective(Moveable(Rotatable(Piece))) {
+    Pyramid: class extends Moveable(Rotatable(Piece)) {
         constructor(type, owner, orientation) {
             super(type, owner, orientation);
         }
@@ -211,7 +204,7 @@ const PieceConstructors = {
         }
     },
 
-    Scarab: class extends Reflective(Moveable(Rotatable(Piece))) {
+    Scarab: class extends Moveable(Rotatable(Piece)) {
         constructor(type, owner, orientation) {
             super(type, owner, orientation);
         }
@@ -265,7 +258,7 @@ const PieceConstructors = {
         }
     },
 
-    Anubis: class extends Reflective(Moveable(Rotatable(Piece))) {
+    Anubis: class extends Moveable(Rotatable(Piece)) {
         constructor(type, owner,orientation) {
             super(type, owner, orientation);
         }
