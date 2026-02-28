@@ -214,4 +214,4 @@ class Game {
     }
 }
 
-module.exports = { Game, GameID }
+module.exports = { Game, GameID, GameMode }

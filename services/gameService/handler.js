@@ -1,7 +1,12 @@
 const { readJsonBody, sendJson, parseCookies } = require("./helpers/parser");
 
 const { GamesManager } = require("./GamesManager");
+const { GameMode } = require("./manager/game");
 const { PlayersManager } = require("./PlayersManager");
+
+
+const { AiService } = require("./ai/aiService");
+const { Bot } = require("./Player");
 
 
 //
@@ -82,8 +87,20 @@ exports.HTTPHandler = {
             sendJson(res, 400, { ok: false, error: err.message });
             return;
         }
+        const gameId = GamesManager.newGame(GameMode.SOLO);
+        GamesManager.registerPlayerInRoom(player, gameId);
+        GamesManager.registerPlayerInRoom(new Bot(
+            gameId, () => {
+                const game = GamesManager.getGameById(gameId);
+                return new AiService(
+                    `ai#${gameId}`,
+                    game.board, // TODO : Giving an immutable reference of the board
+                    game.getBoxOfPlayer(`ai#${gameId}`)
+                );
+            }
+        ), gameId);
 
-        // TODO : Complete it once the AI has been implemented
+        sendJson(res, 200, { ok:true, gameId });
     },
 
     startLocalMultiplayerGame: async (req, res) => {
@@ -98,7 +115,7 @@ exports.HTTPHandler = {
             return;
         }
 
-        const gameId = GamesManager.newGame();
+        const gameId = GamesManager.newGame(GameMode.LOCAL_MULTIPLAYER);
         GamesManager.registerPlayerInRoom(player1, gameId);
         GamesManager.registerPlayerInRoom(player2, gameId);
 
@@ -228,6 +245,7 @@ exports.SocketIOMiddelware = (socket, next) => {
 
     return next();
 }
+
 
 exports.SocketIOHandler = {
     //

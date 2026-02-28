@@ -1,4 +1,4 @@
-const { Game, GameID } = require('./manager/game');
+const { Game, GameID, GameMode } = require('./manager/game');
 const { Player } = require('./Player');
 
 const { randomUUID } = require('node:crypto');
@@ -11,12 +11,20 @@ const { randomUUID } = require('node:crypto');
 class WaitingRoom {
     static SIZE = 2;
 
-    constructor() {
+    constructor(mode) {
+        /** @private @type {GameMode} */
+        this._mode = mode;
+
         /** @private @type {Player[]} */
         this._players = []; // The players in the waiting room
 
         /** @private @type {number} */
         this._openedAt = Date.now();
+    }
+
+    /** @type {GameMode} */
+    get mode() {
+        return this._mode;
     }
 
     /** @type {Player[]} */
@@ -70,11 +78,13 @@ class GamesManager {
     /**
      * Creates a new game in a waiting state.
      *
-     *  @returns {GameID} The id of the game created (initially a waiting room)
+     * @param {GameMode} mode
+     *
+     * @returns {GameID} The id of the game created (initially a waiting room)
      */
-    static newGame() {
+    static newGame(mode = GameMode.MULTIPLAYER) {
         const gameId = randomUUID();
-        this._waitingRooms[gameId] = new WaitingRoom();
+        this._waitingRooms[gameId] = new WaitingRoom(mode);
         return gameId;
     }
 
@@ -91,7 +101,7 @@ class GamesManager {
             throw new Error(`Game with id=${gameId} not found`);
         }
 
-        this._games[gameId] = new Game(gameId, waitingRoom.players);
+        this._games[gameId] = new Game(gameId, waitingRoom.players, waitingRoom.mode);
         delete this._waitingRooms[gameId];
     }
 
