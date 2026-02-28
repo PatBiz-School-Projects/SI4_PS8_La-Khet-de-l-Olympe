@@ -208,6 +208,32 @@ export class GameBoard extends HTMLElement {
     }
 
 
+    /**
+     * Apply the given rotation to the given piece at the given position
+     * & updates the board rendering.
+     *
+     * @param {Piece} piece - The piece to rotate
+     * @param {Coord} pos - The position where the piece is
+     * @param {"left"|"right"} rotation - The rotation to apply
+     */
+    rotatePiece(piece, pos, rotation) {
+        // TODO : ...
+    }
+
+    /**
+     * Swap the given pieces at the given positions
+     * & updates the board rendering.
+     *
+     * @param {Piece} piece1 - The 1st piece to swap
+     * @param {Coord} pos1 - The position of the 1st piece
+     * @param {Piece} piece2 - The 2nd piece to swap
+     * @param {Coord} pos2 - The position of the 2nd piece
+     */
+    switchPieces(piece1, pos1, piece2, pos2) {
+        // TODO : ...
+    }
+
+
     async showLaserBeam(laserPath) {
         console.log(laserPath);
         await this.renderer.drawLaser(laserPath);

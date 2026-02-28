@@ -384,7 +384,7 @@ class GamePageState_Substate_Impl {
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:
                 return {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_ON_BOARD,
-                    newContext: { ...pageAction.payload }, // In case the switch action is refused
+                    newContext: {},
                     gameAction: {
                         type: GameActionType.SWITCH_PIECES,
                         payload: {
