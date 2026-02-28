@@ -1,6 +1,6 @@
 const { PlayerID } = require("../Player");
 const { Board } = require("../entities/board");
-const { Box } = require("../entities/box");
+const { Inventory } = require("../entities/inventory");
 
 const MoveValidator = require('../rules/moveValidator');
 
@@ -46,15 +46,15 @@ const AIActionGenerator = {
 
 
 class AiService {
-    constructor(playerId, board, box) {
+    constructor(playerId, board, inventory) {
         /** @private @type {PlayerID} */
         this._playerId = playerId;
 
         /** @private @type {Board} */
         this._board = board;
 
-        /** @private @type {Box} */
-        this._box = box;
+        /** @private @type {Inventory} */
+        this._inventory = inventory;
 
         this.moveValidator = new MoveValidator(this._board);
     }
@@ -105,7 +105,7 @@ class AiService {
     }
 
     addPyramidsMoveFromReserve(from,legalMoves){
-        if (0<this._box.getNbOfPyramids()) {
+        if (!this._inventory.isEmpty()) {
             legalMoves.push(
                 AIActionGenerator.place(this._playerId, this._board.getPieceAt(from), from)
             );

@@ -1,7 +1,8 @@
-const { Player } = require("../Player");
+const { Player, PlayerID } = require("../Player");
 
-const { Board } = require("../entities/board");
-const { Piece } = require("../entities/piece");
+const { Board }     = require("../entities/board");
+const { Inventory } = require("../entities/inventory");
+const { Piece }     = require("../entities/piece");
 
 const LaserService = require("./laserService");
 const { ActionValidator } = require("./ActionValidator");
@@ -42,6 +43,12 @@ class Game {
         /** @private @type {Player[]} */
         this._players = players;
 
+        /** @private @type {Record<PlayerID, Inventory>} */
+        this._playerInventories = {
+            [players[0].playerId]: new Inventory(players[0].playerId),
+            [players[1].playerId]: new Inventory(players[1].playerId),
+        };
+
         /** @private @type {GameState} */
         this._state = GameState.RUNNING;
 
@@ -63,28 +70,29 @@ class Game {
         this.actionValidator = new ActionValidator(this);
 
         this.ACTIONS = {
-            move: ({piece, from, to}) => {
+            move: ({playerId, piece, from, to}) => {
                 // DEBUG::
                 console.log("Moving piece: ", piece, "from:", from, "to:", to);
 
                 this.board.movePiece(Piece.fromDTO(piece), from, to);
                 return this.board.toDTO();
             },
-            place: ({piece, pos}) => {
+            place: ({playerId, piece, pos}) => {
                 // DEBUG::
                 console.log("Placing piece:", piece, "at:", pos);
 
                 this.board.placePiece(Piece.fromDTO(piece), pos);
+                this._playerInventories[playerId].popPyramid();
                 return this.board.toDTO();
             },
-            rotate: ({piece, pos, rotation}) => {
+            rotate: ({playerId, piece, pos, rotation}) => {
                 // DEBUG::
                 console.log("Rotating piece:", piece, "at:", pos, "to the", rotation);
 
                 this.board.rotatePiece(Piece.fromDTO(piece), pos, rotation);
                 return this.board.toDTO();
             },
-            switch: ({piece1, pos1, piece2, pos2}) => {
+            switch: ({playerId, piece1, pos1, piece2, pos2}) => {
                 // DEBUG::
                 console.log("Switching piece: ", piece1, "at:", pos1, "with piece:", piece2, "at: ", pos2);
 
@@ -114,18 +122,22 @@ class Game {
         return this._state;
     }
 
-    /**
-     * @deprecated This method will be removed. Use {@link state} getter.
-     *
-     * @returns {GameState}
-     */
-    getGameStatus(){
-        return this._state;
-    }
-
     /** @type {GameMode} */
     get mode() {
         return this._mode;
+    }
+
+    /**
+     * @param {PlayerID} playerId
+     *
+     * @returns {Inventory}
+     * @throws If the id of the player doesn't correspond to a player in the game
+     */
+    getInventoryOfPlayer(playerId) {
+        if (!playerId in this._playerInventories) {
+            throw new Error(`No player has id=${playerId}`);
+        }
+        return this._playerInventories[playerId];
     }
 
 
@@ -180,8 +192,8 @@ class Game {
         } else {
             return {
                 actionRes: this.ACTIONS[action.method](action.args),
-                //laserRes: this.processLaserHit(),
-                laserRes: undefined, // Until the laser service is patched
+                // laserRes: this.processLaserHit(),
+                laserRes: undefined, // Until the owner corresponds to the player's id
             };
         }
     }
@@ -202,11 +214,11 @@ class Game {
                     this._winner = piece.owner;
                 }
             } else {
-                if (piece.type === "Pyramid" && piece.owner !== this._currActivePlayer.playerId) {
-                    // TODO : Adding the pyramid into the inventory of the current player
-                } else {
-                    this.board.removePiece({x:piece.x, y:piece.y});
+                if (piece.type === "Pyramid") {
+                    const opponent = this.players.filter(player => player !== this._currActivePlayer)[0];
+                    this._playerInventories[opponent.playerId].pushPyramid();
                 }
+                this.board.removePiece({x:piece.x, y:piece.y});
             }
         }
 

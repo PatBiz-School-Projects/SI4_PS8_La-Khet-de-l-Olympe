@@ -32,14 +32,9 @@ class MoveValidator {
     }
 
     checkMovePyramid(move){
-        const pyramid = move.piece;
-        if(!pyramid.isFromReserve){
-            return this.checkOrthogonalMove(move);
-        }
-        else {
-            return this.checkOrthogonalPieces(move);
-        }
+        return this.checkOrthogonalPieces(move);
     }
+
     checkMoveScarab(move){
         if(this.checkOrthogonalMove(move))return true;
         else return this.checkSwapPosition(move);

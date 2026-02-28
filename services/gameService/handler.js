@@ -94,8 +94,8 @@ exports.HTTPHandler = {
                 const game = GamesManager.getGameById(gameId);
                 return new AiService(
                     `ai#${gameId}`,
-                    game.board, // TODO : Giving an immutable reference of the board
-                    game.getBoxOfPlayer(`ai#${gameId}`)
+                    game.board,                                 // TODO : Giving an immutable reference of the board
+                    game.getInventoryOfPlayer(`ai#${gameId}`)   // TODO : Giving an immutable reference of the inventory
                 );
             }
         ), gameId);

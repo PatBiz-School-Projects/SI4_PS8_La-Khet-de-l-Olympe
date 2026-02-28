@@ -102,7 +102,7 @@ class ActionValidator {
             throw new ActionValidationError(`Player of id=${player.id} cannot play`);
         }
 
-        piece = Piec
+        piece =  Piece.fromDTO(piece);
         // TODO : Uncomment once the owner truly correseponds to the playerId.fromDTO(piece);
         // if (piece.owner !== playerId) {
         //     throw new ActionValidationError(`The player doesn't own the piece to place`);
@@ -116,8 +116,7 @@ class ActionValidator {
             throw new ActionValidationError(`A piece already occupies the given position`);
         }
 
-        // TODO : Assert that the player inventory isn't Check if the player inventory is emptyempty (once an inventory is implemented) :
-        if (false) {
+        if (this.game.getInventoryOfPlayer(playerId).isEmpty()) {
             throw new ActionValidationError(`Player's inventory is empty`);
         }
 
