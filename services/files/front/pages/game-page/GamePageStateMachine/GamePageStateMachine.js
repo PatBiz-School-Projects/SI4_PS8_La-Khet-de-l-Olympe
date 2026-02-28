@@ -1,5 +1,6 @@
-import { GameAction, GameActionType } from "./GameAction.js";
 import { GamePageAction } from "./GamePageAction.js";
+import { GameAction, GameActionType } from "./GameAction.js";
+import { UIAction, UIActionType } from "./UIAction.js";
 
 import { GamePageState, GamePageState_Impl } from "./GamePageState.js";
 
@@ -8,11 +9,11 @@ export class GamePageStateMachine {
     static Listener = class Listener {
         /**
          * @param {GameActionType[]} triggers
-         * @param {(GameAction) => void|Promise<void>} callback
+         * @param {(GameAction|UIAction) => void|Promise<void>} callback
          * @param {() => void} free - The method to free the listener
          */
         constructor(triggers, callback, free) {
-            /** @public @type {GameActionType[]} */
+            /** @public @type {(GameActionType|UIActionType)[]} */
             this.triggers = triggers;
 
             /** @public @type {(GameAction) => void|Promise<void>} */
@@ -66,7 +67,7 @@ export class GamePageStateMachine {
         // DEBUG::
         console.log("Before page action:", pageAction, "state was:", this.state);
 
-        const {newStateImpl, gameAction} = this._stateImpl.on(pageAction);
+        const {newStateImpl, gameAction, uiAction} = this._stateImpl.on(pageAction);
         this._stateImpl = newStateImpl;
 
         // DEBUG::
@@ -75,12 +76,16 @@ export class GamePageStateMachine {
         if (gameAction) {
             this.notifyListenersOf(gameAction);
         }
+
+        if (uiAction) {
+            this.notifyListenersOf(uiAction);
+        }
     }
 
 
     /**
      * @param {GameActionType[]} triggers
-     * @param {(GameAction) => void|Promise<void>} callback
+     * @param {(GameAction|UIAction) => void|Promise<void>} callback
      *
      * @returns {InstanceType<GamePageStateMachine.Listener>} the listener
      */
@@ -100,11 +105,11 @@ export class GamePageStateMachine {
     /**
      * @private
      *
-     * @param {GameAction} gameAction
+     * @param {GameAction|UIAction} action
      */
-    notifyListenersOf(gameAction) {
+    notifyListenersOf(action) {
         this._listeners
-            .filter(listener => listener.triggers.includes(gameAction.type))
-            .forEach(listener => listener.callback(gameAction.payload));
+            .filter(listener => listener.triggers.includes(action.type))
+            .forEach(listener => listener.callback(action.payload));
     }
 }

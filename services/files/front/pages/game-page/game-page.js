@@ -5,6 +5,7 @@ import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
 import { GameActionType } from "./GamePageStateMachine/GameAction.js";
+import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
 
@@ -106,6 +107,21 @@ socket.on("end-turn", _ => {
 onclick = (event) => {
     stateMachine.on(clickHandler.computePageAction(event));
 };
+
+
+//
+// Reacting to `UIAction`
+//
+
+
+stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos}) => {
+    // TODO : Call endpoint to get legal action for piece on board here (once the endpoint is added)
+    // TODO : Start visualisation on game-board here
+});
+
+stateMachine.subscribe([UIActionType.STOP_UI_ACTIONS], async () => {
+    // TODO : Stop visualisation on game-board here
+});
 
 
 //
