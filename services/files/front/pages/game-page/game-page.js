@@ -117,6 +117,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
     // DEBUG::
     console.log("Trying to move piece:", piece, "from:", from, "to:", to);
 
+    let actionRes, laserRes;
     try {
         const moveResponse = await fetch("/api/game-service/action", {
             method: "POST",
@@ -134,6 +135,8 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
         if (!moveResponse.ok) {
             throw moveResponse.error;
         }
+
+        ({actionRes, laserRes} = await moveResponse.json());
     } catch (err) {
         throw err;
     }
@@ -142,12 +145,16 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
     console.log("Movement accepted");
 
     await board.movePiece(piece, from, to);
+    if (laserRes) {
+        await board.showLaserBeam(laserRes.path);
+    }
 });
 
 stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     // DEBUG::
     console.log("Trying to place piece:", piece, "at:", pos);
 
+    let actionRes, laserRes;
     try {
         const placeResponse = await fetch("/api/game-service/action", {
             method: "POST",
@@ -164,6 +171,8 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
         if (!placeResponse.ok) {
             throw placeResponse.error;
         }
+
+        ({actionRes, laserRes} = await moveResponse.json());
     } catch (err) {
         throw err;
     }
@@ -172,6 +181,9 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     console.log("Placement accepted");
 
     await board.placePiece(piece, pos);
+    if (laserRes) {
+        await board.showLaserBeam(laserRes.path);
+    }
 });
 
 stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {

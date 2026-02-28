@@ -1,5 +1,7 @@
 const { Socket } = require('socket.io');
 
+const { GamesManager } = require("./GamesManager");
+
 
 /**
  * @typedef {string} PlayerID
@@ -43,4 +45,37 @@ class Player {
     }
 }
 
-module.exports = { Player, PlayerID };
+
+class Bot extends Player {
+    constructor (gameId, ai_bootloader) {
+        super(`ai#${gameId}`, `ai#${gameId}`, `ai#${gameId}`)
+
+        this.ai;
+
+        // Fake socket to get notify of game's updates
+        this.socket = Object.freeze({
+            emit: (msg, payload, acknowledgement) => {
+                // Boot the ai
+                if (!this.ai) {
+                    this.ai = ai_bootloader();
+                }
+
+                switch (msg) {
+                    case "start-turn":
+                        GamesManager.getGameById(gameId).onAction(ai.computeNextMove());
+                        break;
+
+                    // Add more if needed ...
+
+                    default:
+                        /* nothing */
+                }
+                if (acknowledgement) {
+                    acknowledgement();
+                }
+            }
+        });
+    }
+}
+
+module.exports = { Player, Bot, PlayerID };

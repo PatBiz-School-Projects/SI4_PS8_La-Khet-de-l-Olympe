@@ -1,7 +1,8 @@
-const { Player } = require("../Player");
+const { Player, PlayerID } = require("../Player");
 
-const { Board } = require("../entities/board");
-const { Piece } = require("../entities/piece");
+const { Board }     = require("../entities/board");
+const { Inventory } = require("../entities/inventory");
+const { Piece }     = require("../entities/piece");
 
 const LaserService = require("./laserService");
 const { ActionValidator } = require("./ActionValidator");
@@ -11,6 +12,7 @@ const { ActionValidator } = require("./ActionValidator");
  * @typedef {string} GameID
  */
 const GameID = undefined;
+
 
 /**
  * @enum {typeof GameState[keyof typeof GameState]} GameState
@@ -23,16 +25,35 @@ const GameState = Object.freeze({
 });
 
 
+/**
+ * @enum {typeof GameMode[keyof typeof GameMode]} GameMode
+ */
+const GameMode = Object.freeze({
+    SOLO: "SOLO",
+    LOCAL_MULTIPLAYER: "LOCAL_MULTIPLAYER",
+    MULTIPLAYER: "MULTIPLAYER",
+});
+
+
 class Game {
-    constructor(gameId, players) {
+    constructor(gameId, players, mode) {
         /** @private @type {GameID} */
         this._gameId = gameId;
 
         /** @private @type {Player[]} */
         this._players = players;
 
+        /** @private @type {Record<PlayerID, Inventory>} */
+        this._playerInventories = {
+            [players[0].playerId]: new Inventory(players[0].playerId),
+            [players[1].playerId]: new Inventory(players[1].playerId),
+        };
+
         /** @private @type {GameState} */
         this._state = GameState.RUNNING;
+
+        /** @private @type {GameMode} */
+        this._mode = mode;
 
         /** @private @type {number} */
         this._turnCount = 1;
@@ -49,28 +70,29 @@ class Game {
         this.actionValidator = new ActionValidator(this);
 
         this.ACTIONS = {
-            move: ({piece, from, to}) => {
+            move: ({playerId, piece, from, to}) => {
                 // DEBUG::
                 console.log("Moving piece: ", piece, "from:", from, "to:", to);
 
                 this.board.movePiece(Piece.fromDTO(piece), from, to);
                 return this.board.toDTO();
             },
-            place: ({piece, pos}) => {
+            place: ({playerId, piece, pos}) => {
                 // DEBUG::
                 console.log("Placing piece:", piece, "at:", pos);
 
                 this.board.placePiece(Piece.fromDTO(piece), pos);
+                this._playerInventories[playerId].popPyramid();
                 return this.board.toDTO();
             },
-            rotate: ({piece, pos, rotation}) => {
+            rotate: ({playerId, piece, pos, rotation}) => {
                 // DEBUG::
                 console.log("Rotating piece:", piece, "at:", pos, "to the", rotation);
 
                 this.board.rotatePiece(Piece.fromDTO(piece), pos, rotation);
                 return this.board.toDTO();
             },
-            switch: ({piece1, pos1, piece2, pos2}) => {
+            switch: ({playerId, piece1, pos1, piece2, pos2}) => {
                 // DEBUG::
                 console.log("Switching piece: ", piece1, "at:", pos1, "with piece:", piece2, "at: ", pos2);
 
@@ -98,6 +120,24 @@ class Game {
     /** @type {GameState} */
     get state() {
         return this._state;
+    }
+
+    /** @type {GameMode} */
+    get mode() {
+        return this._mode;
+    }
+
+    /**
+     * @param {PlayerID} playerId
+     *
+     * @returns {Inventory}
+     * @throws If the id of the player doesn't correspond to a player in the game
+     */
+    getInventoryOfPlayer(playerId) {
+        if (!playerId in this._playerInventories) {
+            throw new Error(`No player has id=${playerId}`);
+        }
+        return this._playerInventories[playerId];
     }
 
 
@@ -152,15 +192,15 @@ class Game {
         } else {
             return {
                 actionRes: this.ACTIONS[action.method](action.args),
-                //laserRes: this.processLaserHit(),
-                laserRes: undefined, // Until the laser service is patched
+                // laserRes: this.processLaserHit(),
+                laserRes: undefined, // Until the owner corresponds to the player's id
             };
         }
     }
 
 
     processLaserHit() {
-        const {path, destroyedPieces} = this.laserService.fireLaser(this._currActivePlayer);
+        const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
 
         for (const piece of destroyedPieces) {
             if(piece.type === "Pharaoh"){
@@ -174,11 +214,11 @@ class Game {
                     this._winner = piece.owner;
                 }
             } else {
-                if (piece.type === "Pyramid" && piece.owner !== this._currActivePlayer) {
-                    // TODO : Adding the pyramid into the inventory of the current player
-                } else {
-                    this.board.removePiece(piece.x, piece.y);
+                if (piece.type === "Pyramid") {
+                    const opponent = this.players.filter(player => player !== this._currActivePlayer)[0];
+                    this._playerInventories[opponent.playerId].pushPyramid();
                 }
+                this.board.removePiece({x:piece.x, y:piece.y});
             }
         }
 
@@ -186,4 +226,4 @@ class Game {
     }
 }
 
-module.exports = { Game, GameID }
+module.exports = { Game, GameID, GameMode }

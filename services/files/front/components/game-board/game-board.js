@@ -206,5 +206,11 @@ export class GameBoard extends HTMLElement {
         // DEBUG::
         console.log("Rendered the whole grid.\nDoes it match the following grid ?\n" + this.gridRepr);
     }
+
+
+    async showLaserBeam(laserPath) {
+        console.log(laserPath);
+        await this.renderer.drawLaser(laserPath);
+    }
 }
 customElements.define('game-board', GameBoard);

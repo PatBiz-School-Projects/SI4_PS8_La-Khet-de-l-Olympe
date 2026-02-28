@@ -158,9 +158,8 @@ const PieceConstructors = {
     },
 
     Pyramid: class extends Reflective(Moveable(Rotatable(Piece))) {
-        constructor(type, owner, orientation, isFromReserve) {
+        constructor(type, owner, orientation) {
             super(type, owner, orientation);
-            this.isFromReserve = isFromReserve;
         }
 
         /**
