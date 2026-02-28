@@ -46,7 +46,7 @@ const AIActionGenerator = {
 
 
 class AiService {
-    constructor(playerId, board, box){
+    constructor(playerId, board, box) {
         /** @private @type {PlayerID} */
         this._playerId = playerId;
 
