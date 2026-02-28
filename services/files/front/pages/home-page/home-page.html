@@ -1,15 +1,55 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>TEST</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fauna+One&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>La Khet De L'Olympe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
 
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fauna+One&display=swap" rel="stylesheet">
+    <link href="./home-page.css" rel="stylesheet">
     <script type="module" src="./home-page.js" defer></script>
 </head>
 
 <body>
-    <!-- TODO : Make a true home page -->
+    <div class="stars"></div>
+    <div class="pillar pillar-left"></div>
+    <div class="pillar pillar-right"></div>
+
+    <!-- Auth buttons -->
+    <nav class="auth-bar">
+        <button class="btn-auth" onclick="window.location.href='../signup/signup.html'">Signup</button>
+        <button class="btn-auth" onclick="window.location.href='../login/login.html'">Login</button>
+    </nav>
+
+    <!-- Main content -->
+    <main class="scene">
+
+        <div class="title-block">
+            <p class="title-eyebrow">Bienvenue dans</p>
+            <h1 class="title-main">La Khet De L'Olympe</h1>
+            <div class="divider"></div>
+            <p class="title-sub">Que les dieux guident vos pièces</p>
+        </div>
+
+        <div class="play-buttons">
+            <button id="start-solo-btn" class="btn-play">
+                <div class="glow-bg"></div>
+                <span>Jouer en Solo</span>
+            </button>
+
+            <button id="join-multiplayer-btn" class="btn-play primary">
+                <div class="glow-bg"></div>
+                <span>Jouer en Multijoueur</span>
+            </button>
+
+            <button id="start-local-multiplayer-btn" class="btn-play">
+                <div class="glow-bg"></div>
+                <span>Lancer Une Partie Multijoueur Locale</span>
+            </button>
+        </div>
+
+    </main>
+
+    <p class="ornament">⬥ &nbsp; Khet — Le Jeu des Lasers &nbsp; ⬥</p>
 </body>
 </html>
