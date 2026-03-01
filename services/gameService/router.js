@@ -39,6 +39,12 @@ const ROUTES = {
     '/api/game-service/board': HTTPMiddelware_InsideGame(
         HTTPHandler.getBoard
     ),
+    '/api/game-service/inventory': HTTPMiddelware_InsideGame(
+        HTTPHandler.getInventoryOfPlayer
+    ),
+    '/api/game-service/players': HTTPMiddelware_InsideGame(
+        HTTPHandler.getPlayers
+    ),
     '/api/game-service/active-player': HTTPMiddelware_InsideGame(
         HTTPHandler.getCurrActivePlayer
     ),

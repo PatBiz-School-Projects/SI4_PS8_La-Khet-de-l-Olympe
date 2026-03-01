@@ -22,7 +22,7 @@ export type GamePageActionPayload<T extends GamePageActionType> =
     T extends typeof GamePageActionType.END_TURN
         ? undefined :
     T extends typeof GamePageActionType.CLICKED_PIECE_IN_INVENTORY
-        ? { inventoryIdx: number, piece: Piece } :
+        ? { slotIdx: number, piece: Piece } :
     T extends typeof GamePageActionType.CLICKED_PIECE_ON_BOARD
         ? { pos: Coord, piece: Piece } :
     T extends typeof GamePageActionType.CLICKED_EMPTY_CELL

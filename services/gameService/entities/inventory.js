@@ -4,6 +4,7 @@ const { Piece } = require("./piece");
 
 
 class Inventory {
+    static MAX_SIZE = 15;
     static INITIAL_SIZE = 7;
 
     constructor(owner) {
@@ -12,7 +13,7 @@ class Inventory {
 
         /** @private @type {Piece[]} */
         this._pieces = [];
-        for(let i=0; i<this.INITIAL_SIZE; i++) {
+        for(let i=0; i<Inventory.INITIAL_SIZE; i++) {
             this.pushPyramid();
         }
     }
@@ -22,10 +23,11 @@ class Inventory {
     }
 
     toDTO() {
-        return {
-            owner: this._owner,
-            content: [...this._pieces],
-        };
+        const ret = [];
+        for (let i=0; i<this._pieces.length; i++) {
+            ret.push(this._pieces[i].toDTO());
+        }
+        return ret;
     }
 
     isEmpty() {

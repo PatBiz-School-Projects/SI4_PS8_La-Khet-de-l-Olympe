@@ -1,40 +1,29 @@
 #turn-indicator {
     position: relative;
+    box-sizing: border-box;
 
-    width: 30vw;
-    height: 5.7vh;
-
-    padding: 15px 40px;
+    height: 4.8vh;
+    padding: 0 3vw;
 
     display: flex;
-    justify-content: space-evenly;
-    align-items: center;      /* vertical */
+    justify-content: center;
+    align-items: center;
+    gap: 1vw;
 
-    background: rgba(255, 255, 255);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(212, 175, 55, 0.5); /* Bordure Or */
-    border-radius: 15px;
-
-    /* box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37); */
-
-    text-align: center;
+    color: rgba(255, 255, 255, 0.96);
     text-transform: uppercase;
+
     font-family: 'Cinzel', serif;
-    font-size: 1.5rem;
-    letter-spacing: 2px;
+    font-size: 1.6vh; letter-spacing: .1em; font-weight: 600;
+
 
     transition: all 0.3s ease;
 }
 
 #turn-indicator #active-player-name {
     font-weight: bold;
-    text-shadow: 0 0 10px currentColor;
+    text-shadow: 0 0 1vh currentColor;
 }
 
-#active-player-name.red {
-    color: #dc3545;
-}
-
-#active-player-name.blue {
-    color: #007bff;
-}
+#active-player-name.red  { color: #dc3545; }
+#active-player-name.blue { color: #007bff; }
