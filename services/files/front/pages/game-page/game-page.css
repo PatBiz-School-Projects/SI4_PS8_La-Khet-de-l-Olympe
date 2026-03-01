@@ -1,51 +1,129 @@
-
 :root {
-    --gold: #c9a84c;
+    --gold:       #c9a84c;
     --gold-light: #f0d080;
-    --gold-dim: #7a6028;
-    --dark: #0a0a0f;
-    --text: #e8dfc0;
-    --text-dim: #8a7d5a;
+    --gold-dim:   #7a6028;
+    --dark:       #0a0a0f;
+    --text:       #e8dfc0;
+    --text-dim:   #8a7d5a;
+
+    --header-h:   5.7vh;
+    --h-padding:  2vw;
+    --v-padding:  1vh;
+
+    --slot-size: min(
+        calc((100vw - 2 * var(--h-padding)) / 16),
+        calc((100vh - var(--header-h) - 2 * var(--v-padding)) / 10)
+    );
 }
+
 
 html, body {
     overflow: hidden;
-
     background-color: var(--dark);
 }
 
+
 header {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-
-    height: 5.7vh; /** same height as `game-turn-indicator`*/
+    height: var(--header-h);
+    padding: 0 1vw;
+    background: linear-gradient(180deg, #111118 0%, #0a0a0f 100%);
+    border-bottom: 1px solid var(--gold-dim);
+    box-sizing: border-box;
 
     & #header-btns {
         display: flex;
-        gap: 12px;
+        align-items: center;
+        gap: 0.5vw;
 
-        & button { height: 100%; }
+        & button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            height: 3.5vh;
+            aspect-ratio: 1;
+
+            background: transparent;
+            color: var(--text);
+            font-size: 1.8vh;
+            border: 0.2vh solid var(--gold-dim);
+            border-radius: 0.5vh;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s, color 0.15s;
+            padding: 0;
+
+            &:hover {
+                background: var(--gold-dim);
+                border-color: var(--gold);
+                color: var(--gold-light);
+            }
+            &:active {
+                background: var(--gold);
+                color: var(--dark);
+            }
+        }
+
+        /* Icône maison via clip-path */
+        & #home-btn::before {
+            content: "⌂";
+            font-size: 2vh;
+            line-height: 1;
+        }
+
+        /* Icône ? cerclé */
+        & #info-btn {
+            border-radius: 50%;
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.8vh;
+        }
+        & #info-btn::before {
+            content: "?";
+        }
+    }
+
+    & #indicators {
+        display: flex;
+        align-items: center;
+        gap: 2vw;
     }
 
     & #timer {
-        color: var(--text);
+        color: var(--gold-light);
         font-family: 'Cinzel', serif;
-        font-size: 1.5rem;
-        font-weight: bold;
+        font-size: 2.2vh;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-shadow: 0 0 1.2vh rgba(201, 168, 76, 0.5);
+        white-space: nowrap;
     }
 }
 
 
 .game-container {
-    position: relative;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     align-items: center;
+    justify-content: center;
+    gap: var(--h-padding);
+
     width: 100vw;
-    height: 100vh;
+    height: calc(100vh - var(--header-h));
     box-sizing: border-box;
+    padding: var(--v-padding) var(--h-padding);
+
+    & game-player-inventory {
+        display: block;
+        flex-shrink: 0;
+        width:  calc(var(--slot-size) * 3);
+        height: calc(var(--slot-size) * 5);
+    }
 
     & game-board {
-        margin-top: 3em;
+        display: block;
+        flex-shrink: 0;
     }
 }

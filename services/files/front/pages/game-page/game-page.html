@@ -12,17 +12,22 @@
 <body>
     <header>
         <div id="header-btns">
-            <!-- home button --> <button id="home-btn" onclick="window.location.href='../home-page/home-page.html'"> HOME </button>
-            <!-- info button --> <button id="info-btn" onclick="alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`)"> [?] </button>
+            <!-- home button --> <button id="home-btn" onclick="window.location.href='../home-page/home-page.html'"></button>
+            <!-- info button --> <button id="info-btn" onclick="alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`)"></button>
         </div>
-        <game-turn-indicator></game-turn-indicator>
-        <!-- timer --> <p id="timer">--:--</p>
+
+        <div id="indicators">
+            <game-turn-indicator></game-turn-indicator>
+            <!-- timer --> <p id="timer">--:--</p>
+        </div>
+
+        <div style="width: 7vw;"></div>
     </header>
 
     <div class="game-container">
-        <!-- player1 inventory -->
+        <game-player-inventory id="player1-inventory"></game-player-inventory>
         <game-board></game-board>
-        <!-- player2 inventory -->
+        <game-player-inventory id="player2-inventory"></game-player-inventory>
     </div>
 </body>
 </html>
