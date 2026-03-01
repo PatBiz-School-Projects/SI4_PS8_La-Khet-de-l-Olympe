@@ -10,11 +10,19 @@
 </head>
 
 <body>
-    <div class="game-container">
-        <div id="status-bar">
-            Tour du Joueur : <span id="current-player-id">3</span>
+    <header>
+        <div id="header-btns">
+            <!-- home button --> <button id="home-btn" onclick="window.location.href='../home-page/home-page.html'"> HOME </button>
+            <!-- info button --> <button id="info-btn" onclick="alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`)"> [?] </button>
         </div>
+        <game-turn-indicator></game-turn-indicator>
+        <!-- timer --> <p id="timer">--:--</p>
+    </header>
+
+    <div class="game-container">
+        <!-- player1 inventory -->
         <game-board></game-board>
+        <!-- player2 inventory -->
     </div>
 </body>
 </html>
