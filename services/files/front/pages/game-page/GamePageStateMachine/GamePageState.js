@@ -183,6 +183,16 @@ class GamePageState_Superstate_Impl {
                     uiAction: uiAction,
                 };
 
+            case GamePageActionType.CANCEL:
+                return {
+                    newSuperstate: this._state,
+                    newSubstate: GamePageState.Substate.IDLE,
+                    newContext: {},
+                    gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
+                };
+
+
             default:
                 throw new Error(`Not supported game page action type: ${pageAction.type} in state ${this._state}`);
         }
@@ -237,6 +247,15 @@ class GamePageState_Superstate_Impl {
                     newSubstate: newSubstate,
                     newContext: newContext,
                     gameAction: gameAction,
+                };
+
+            case GamePageActionType.CANCEL:
+                return {
+                    newSuperstate: this._state,
+                    newSubstate: GamePageState.Substate.IDLE,
+                    newContext: {},
+                    gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
                 };
 
             default:
@@ -345,6 +364,14 @@ class GamePageState_Substate_Impl {
                     uiAction: undefined,
                 };
 
+            case GamePageActionType.CANCEL:
+                return {
+                    newSubstate: GamePageState.Substate.IDLE,
+                    newContext: {},
+                    gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
+                };
+
             default:
                 throw new Error(`Not supported game page action type: ${pageAction.type} in state ${this._state}`);
         }
@@ -427,6 +454,14 @@ class GamePageState_Substate_Impl {
                     uiAction: undefined, // Keep the visualisation alive
                 };
 
+            case GamePageActionType.CANCEL:
+                return {
+                    newSubstate: GamePageState.Substate.IDLE,
+                    newContext: {},
+                    gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
+                };
+
             default:
                 throw new Error(`Not supported game page action type: ${pageAction.type} in state ${this._state}`);
         }
@@ -500,6 +535,14 @@ class GamePageState_Substate_Impl {
                         },
                     },
                     uiAction: undefined,
+                };
+
+            case GamePageActionType.CANCEL:
+                return {
+                    newSubstate: GamePageState.Substate.IDLE,
+                    newContext: {},
+                    gameAction: undefined,
+                    uiAction: { type: UIActionType.STOP_UI_ACTIONS },
                 };
 
             default:

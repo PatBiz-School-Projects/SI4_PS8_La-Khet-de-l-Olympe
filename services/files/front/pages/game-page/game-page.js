@@ -1,6 +1,4 @@
-import { GameBoard, GameTurnIndicator } from "/components/index.js";
-
-import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import { GameBoard, GameTurnIndicator, GamePlayerInventory } from "/components/index.js";
 
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
@@ -8,20 +6,64 @@ import { GameActionType } from "./GamePageStateMachine/GameAction.js";
 import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
+import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+
+
+class EventQueue {
+    constructor() {
+        this.queue = [];
+        this.running = false;
+    }
+
+    enqueue(fn) {
+        return async (...args) => {
+            this.queue.push(() => fn(...args));
+            if (this.running) return;
+
+            this.running = true;
+            while (this.queue.length) {
+                await this.queue.shift()();
+            }
+            this.running = false;
+        };
+    }
+}
+
 
 const socket = io({ path: "/api/game-service/socket.io" });
+const clickHandler = new GamePageClickHandler(document);
+const stateMachine = new GamePageStateMachine();
+
+
+/**
+ * @typedef {string} PlayerID
+ */
+
+
+/** @type {PlayerID[]} */
+let PLAYERS_ID;
+
+/** @type {PlayerID} */
+let CLIENT_PLAYER_ID;
+
+/** @type { Record<PlayerID, GamePlayerInventory> } */
+let PLAYERS_INVENTORY = {};
+
+
+//
+// Game page's components
+//
 
 
 /** @type { GameBoard } */
 const board = document.querySelector("game-board");
 /** @type { GameTurnIndicator } */
 const turnIndicator = document.querySelector("game-turn-indicator");
-// TODO : Implementing an 'inventory' component
+/** @type { GamePlayerInventory } */
+const player1Inventory = document.querySelector("game-player-inventory#player1-inventory");
+/** @type { GamePlayerInventory } */
+const player2Inventory = document.querySelector("game-player-inventory#player2-inventory");
 
-
-let PLAYER_ID;
-const stateMachine = new GamePageStateMachine();
-const clickHandler = new GamePageClickHandler(document);
 
 
 //
@@ -29,7 +71,22 @@ const clickHandler = new GamePageClickHandler(document);
 //
 
 
-async function fetchPlayerId() {
+async function fetchPlayersId() {
+    let playersId;
+    try {
+        const playersResponse = await fetch("/api/game-service/players");
+        if (!playersResponse.ok) {
+            throw playersResponse.error;
+        }
+        ({ playersId } = await playersResponse.json());
+    } catch (err) {
+        throw err;
+    }
+
+    return playersId;
+}
+
+async function fetchClientPlayerId() {
     let playerId;
     try {
         const playerResponse = await fetch("/api/game-service/player");
@@ -59,26 +116,35 @@ async function askWhoIsPlaying() {
     return playerId;
 }
 
-
 onload = async (_) => {
-    PLAYER_ID = await fetchPlayerId();
+    PLAYERS_ID = await fetchPlayersId();
+    CLIENT_PLAYER_ID = await fetchClientPlayerId();
+
     const activePlayerId = await askWhoIsPlaying();
 
-    const playerCanPlay = (PLAYER_ID === activePlayerId);
+    const playerCanPlay = (CLIENT_PLAYER_ID === activePlayerId);
     if (playerCanPlay) {
         // DEBUG::
-        console.log(`Faked reception of 'start-turn' event for player with id=${PLAYER_ID}`);
+        console.log(`Faked reception of 'start-turn' event for player with id=${CLIENT_PLAYER_ID}`);
 
-        stateMachine.on({ type: GamePageActionType.START_TURN, payload: {playerId: PLAYER_ID} });
+        stateMachine.on({ type: GamePageActionType.START_TURN, payload: {playerId: CLIENT_PLAYER_ID} });
     }
 
     // TODO (in the backend): Supporting player name
     turnIndicator.activePlayerName = activePlayerId.slice(0, 7);
-    turnIndicator.color = (
-        (playerCanPlay)
-        ? "blue"
-        : "red"
-    );
+    turnIndicator.color = PLAYERS_ID.indexOf(activePlayerId) === 1 ? "red" : "blue";
+
+    PLAYERS_INVENTORY[PLAYERS_ID[0]] = player1Inventory;
+    player1Inventory.owner = PLAYERS_ID[0];
+    player1Inventory.color = "blue";
+    player1Inventory.active = true;
+    await player1Inventory.actualise();
+
+    PLAYERS_INVENTORY[PLAYERS_ID[1]] = player2Inventory;
+    player2Inventory.owner = PLAYERS_ID[1];
+    player2Inventory.color = "red";
+    player2Inventory.active = false;
+    await player2Inventory.actualise();
 }
 
 
@@ -87,32 +153,40 @@ onload = async (_) => {
 //
 
 
-socket.on("start-turn", async payload => {
+const turnEventQueue = new EventQueue();
+
+socket.on("start-turn", turnEventQueue.enqueue(async payload => {
     // DEBUG::
     console.log(`Received 'start-turn' event for player with id=${payload.playerId}`);
 
-    // It's important to update `PLAYER_ID` each time we get a `start-turn` event
-    // for the case where we are in a local multiplayer game
-    PLAYER_ID = payload.playerId;
+    // It's important to update `CLIENT_PLAYER_ID` each time we get a `start-turn` event
+    // for the case where we are in a local multiplayer game.
+    CLIENT_PLAYER_ID = payload.playerId;
 
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
 
     // TODO (in the backend): Supporting player name
-    turnIndicator.activePlayerName = PLAYER_ID.slice(0, 7);
-    turnIndicator.color = "blue";
-});
+    turnIndicator.activePlayerName = CLIENT_PLAYER_ID.slice(0, 7);
+    turnIndicator.color = PLAYERS_ID.indexOf(CLIENT_PLAYER_ID) === 1 ? "red" : "blue";
 
-// TODO (in the backend) : Add `playerId` in the payload corresponding to the opponent who will starts its turn
-socket.on("end-turn", async _ => {
+    PLAYERS_INVENTORY[CLIENT_PLAYER_ID].active = true;
+}));
+
+socket.on("end-turn", turnEventQueue.enqueue(async _ => {
     // DEBUG::
-    console.log(`Received 'end-turn' event for player with id=${PLAYER_ID}`);
+    console.log(`Received 'end-turn' event for player with id=${CLIENT_PLAYER_ID}`);
+
+    // TODO (in the backend) : Add `playerId` in the payload corresponding to the opponent who will starts its turn
+    const activePlayerId = await askWhoIsPlaying();
 
     stateMachine.on({ type: GamePageActionType.END_TURN })
 
     // TODO (in the backend): Supporting player name
-    turnIndicator.activePlayerName = (await askWhoIsPlaying()).slice(0, 7);
-    turnIndicator.color = "red";
-});
+    turnIndicator.activePlayerName = activePlayerId.slice(0, 7);
+    turnIndicator.color = PLAYERS_ID.indexOf(activePlayerId) === 1 ? "red" : "blue";
+
+    PLAYERS_INVENTORY[CLIENT_PLAYER_ID].active = false;
+}));
 
 onclick = (event) => {
     stateMachine.on(clickHandler.computePageAction(event));
@@ -151,7 +225,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             body: JSON.stringify({
                 method: "move",
                 args: {
-                    playerId: PLAYER_ID,
+                    playerId: CLIENT_PLAYER_ID,
                     piece: piece.toDTO(),
                     from: from,
                     to: to,
@@ -188,7 +262,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             body: JSON.stringify({
                 method: "place",
                 args: {
-                    playerId: PLAYER_ID,
+                    playerId: CLIENT_PLAYER_ID,
                     piece: piece.toDTO(),
                     pos: pos,
                 },
@@ -198,7 +272,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             throw placeResponse.error;
         }
 
-        ({actionRes, laserRes} = await moveResponse.json());
+        ({actionRes, laserRes} = await placeResponse.json());
     } catch (err) {
         throw err;
     }
@@ -210,6 +284,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
     }
+    await PLAYERS_INVENTORY[CLIENT_PLAYER_ID].popPyramid();
 });
 
 stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {
@@ -224,7 +299,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
             body: JSON.stringify({
                 method: "rotate",
                 args: {
-                    playerId: PLAYER_ID,
+                    playerId: CLIENT_PLAYER_ID,
                     piece: piece.toDTO(),
                     pos: pos,
                     rotation: rotation,
@@ -261,7 +336,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
             body: JSON.stringify({
                 method: "switch",
                 args: {
-                    playerId: PLAYER_ID,
+                    playerId: CLIENT_PLAYER_ID,
                     piece1: piece1.toDTO(),
                     pos1: pos1,
                     piece2: piece2.toDTO(),

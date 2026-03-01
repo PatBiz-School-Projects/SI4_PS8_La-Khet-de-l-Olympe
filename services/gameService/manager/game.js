@@ -134,7 +134,7 @@ class Game {
      * @throws if the player id cannot be mapped to a player in the game
      */
     getInventoryOfPlayer(playerId) {
-        if (!playerId in this._playerInventories) {
+        if (!(playerId in this._playerInventories)) {
             throw new Error(`No player has id=${playerId}`);
         }
         return this._playerInventories[playerId];

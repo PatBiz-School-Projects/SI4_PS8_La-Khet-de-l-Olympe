@@ -6,7 +6,7 @@ export type GamePageStatePayload<T extends GamePageState.Substate> =
     T extends typeof GamePageState.Substate.IDLE
         ? undefined :
     T extends typeof GamePageState.Substate.SELECTED_PIECE_IN_INVENTORY
-        ? { inventoryIdx: number, piece: Piece} :
+        ? { slotIdx: number, piece: Piece} :
     T extends typeof GamePageState.Substate.SELECTED_PIECE_ON_BOARD
         ? {pos: Coord, piece: Piece } :
     never;

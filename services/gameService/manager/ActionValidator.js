@@ -127,7 +127,7 @@ class ActionValidator {
         ];
         for (const neighbourPos of orthogonalNeighbourPositions) {
             if (this.board.hasPieceAt(neighbourPos)) {
-                const neighbourPiece = this.getPieceAt(neighbourPos);
+                const neighbourPiece = this.board.getPieceAt(neighbourPos);
                 if (neighbourPiece.type === "Sphinx") {
                     throw new ActionValidationError(`Cannot place a pyramid orthogonally next to a sphinx`);
                 }

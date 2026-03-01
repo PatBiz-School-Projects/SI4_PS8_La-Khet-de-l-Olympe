@@ -183,6 +183,29 @@ exports.HTTPHandler = {
         sendJson(res, 200, { ok:true, ...game.board.toDTO() });
     },
 
+    getInventoryOfPlayer: async (req, res) => {
+        const { gameId } = parseCookies(req.headers.cookie);
+        const { playerId } = await readJsonBody(req);
+
+        const game = GamesManager.getGameById(gameId);
+
+        try {
+            const inventory = game.getInventoryOfPlayer(playerId);
+            sendJson(res, 200, { ok:true, inventory:inventory.toDTO() });
+        } catch (err) {
+            console.error(err);
+            sendJson(res, 400, { ok:false, error: err.message });
+        }
+    },
+
+    getPlayers: async (req, res) => {
+        const { gameId } = parseCookies(req.headers.cookie);
+
+        const game = GamesManager.getGameById(gameId);
+
+        sendJson(res, 200, { ok:true, playersId: game.players.map(player => player.playerId) });
+    },
+
     getCurrActivePlayer: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
 
