@@ -39,6 +39,7 @@ services:
     environment:
       DB_URL: mongodb://mongo:27017
       DB_NAME : ps8
+      JWT_SECRET : kSMIWOZ2BOEAqbnwGLXafltUn1yO2iE5wkeN6h81m4Q=
     depends_on:
       - mongo
 
