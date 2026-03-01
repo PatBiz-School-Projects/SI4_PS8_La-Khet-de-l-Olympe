@@ -24,15 +24,16 @@ export const PieceType = /** @type {const}*/ ({
 /**
  * @typedef {Object} PieceDTO
  *
- * @property {number} owner
  * @property {PieceType} type
+ * @property {number} owner
+ * @property {"red"|"blue"} color
  * @property {PieceOrientation} orientation
  */
 export const PieceDTO = undefined;
 
 
 export class Piece {
-    constructor(owner, type, orientation) {
+    constructor(owner, type, orientation, color) {
         /** @private @type {number} */
         this._owner = owner;
 
@@ -41,6 +42,9 @@ export class Piece {
 
         /** @private @type {PieceOrientation} */
         this._orientation = orientation;
+
+        /** @private @type {"red"|"blue"} */
+        this._color = color;
     }
 
 
@@ -59,9 +63,14 @@ export class Piece {
         return this._orientation;
     }
 
+    /** @type {"red"|"blue"} */
+    get color() {
+        return this._color;
+    }
+
     /** @type {string} */
     get image() {
-        return `/assets/${this._type.toLowerCase()}.png`;
+        return `/assets/${this._type.toLowerCase()}-${this._color}.png`;
     }
 
 
@@ -70,6 +79,7 @@ export class Piece {
             pieceDTO.owner,
             pieceDTO.type,
             pieceDTO.orientation,
+            pieceDTO.color,
         );
     }
 
@@ -78,6 +88,7 @@ export class Piece {
             owner: this._owner,
             type: this._type,
             orientation: this._orientation,
+            color: this._color,
         };
     }
 

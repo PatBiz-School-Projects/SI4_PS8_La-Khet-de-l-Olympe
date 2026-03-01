@@ -15,8 +15,9 @@ const PieceOrientation = Object.freeze({
 /**
  * @typedef {Object} PieceDTO
  *
- * @property {number} owner
  * @property {string} type
+ * @property {number} owner
+ * @property {"red"|"blue"} color
  * @property {PieceOrientation} orientation
  */
 const PieceDTO = undefined;
@@ -26,9 +27,10 @@ const PieceDTO = undefined;
  * @abstract
  */
 class Piece {
-    constructor(type, owner, orientation) {
+    constructor(type, owner, color, orientation) {
         this.type = type;
         this.owner = owner;
+        this.color = color
         this.orientation = orientation;
     }
 
@@ -47,7 +49,8 @@ class Piece {
         return new PieceClass(
             pieceDTO.type,
             pieceDTO.owner,
-            pieceDTO.orientation
+            pieceDTO.color,
+            pieceDTO.orientation,
         );
     }
 
@@ -56,9 +59,10 @@ class Piece {
      */
     toDTO(){
         return{
-            owner : this.owner,
-            type : this.constructor.name,
-            orientation : this.orientation
+            type: this.type,
+            owner: this.owner,
+            color: this.color,
+            orientation: this.orientation
         }
     }
 
@@ -136,8 +140,8 @@ const Moveable = (Base) => class extends Base {
 
 const PieceConstructors = {
     Pharaoh: class extends Piece {
-        constructor(type, owner, orientation) {
-            super(type, owner, orientation);
+        constructor(type, owner, color, orientation) {
+            super(type, owner, color, orientation);
         }
 
         /**
@@ -151,8 +155,8 @@ const PieceConstructors = {
     },
 
     Pyramid: class extends Moveable(Rotatable(Piece)) {
-        constructor(type, owner, orientation) {
-            super(type, owner, orientation);
+        constructor(type, owner, color, orientation) {
+            super(type, owner, color, orientation);
         }
 
         /**
@@ -205,8 +209,8 @@ const PieceConstructors = {
     },
 
     Scarab: class extends Moveable(Rotatable(Piece)) {
-        constructor(type, owner, orientation) {
-            super(type, owner, orientation);
+        constructor(type, owner, color, orientation) {
+            super(type, owner, color, orientation);
         }
 
         /**
@@ -259,8 +263,8 @@ const PieceConstructors = {
     },
 
     Anubis: class extends Moveable(Rotatable(Piece)) {
-        constructor(type, owner,orientation) {
-            super(type, owner, orientation);
+        constructor(type, owner, color, orientation) {
+            super(type, owner, color, orientation);
         }
 
         /**
@@ -285,8 +289,8 @@ const PieceConstructors = {
     },
 
     Sphinx: class extends Rotatable(Piece) {
-        constructor(type, owner,orientation) {
-            super(type, owner, orientation);
+        constructor(type, owner, color, orientation) {
+            super(type, owner, color, orientation);
         }
 
         /**

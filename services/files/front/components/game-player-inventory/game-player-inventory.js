@@ -132,6 +132,7 @@ export class GamePlayerInventory extends HTMLElement {
             type: "Pyramid",
             owner: this._owner,
             orientation: "N",
+            color: this.color,
         });
         this._inventory.push(pyramid);
 

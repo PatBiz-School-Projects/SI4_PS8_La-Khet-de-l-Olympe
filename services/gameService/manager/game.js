@@ -45,8 +45,8 @@ class Game {
 
         /** @private @type {Record<PlayerID, Inventory>} */
         this._playerInventories = {
-            [players[0].playerId]: new Inventory(players[0].playerId),
-            [players[1].playerId]: new Inventory(players[1].playerId),
+            [players[0].playerId]: new Inventory(players[0].playerId, "blue"),
+            [players[1].playerId]: new Inventory(players[1].playerId, "red"),
         };
 
         /** @private @type {GameState} */

@@ -1,18 +1,31 @@
 const { Player } = require("../Player");
 
-const { Piece } = require("../entities/piece");
+const { Piece, PieceOrientation } = require("../entities/piece");
 
-const assert = require("assert");
 
-const ORIENTATIONS = ["N", "E", "S", "W"];
+class PieceColorizer {
+    constructor (players) {
+        /** @type {Player[]} */
+        this._players = players;
+    }
+
+    colorize(piece) {
+        if (piece.owner === this._players[0].playerId) {
+            return { ...piece, color: "blue" };
+        } else {
+            return { ...piece, color: "red" };
+        }
+    }
+}
+
 
 class StartingPositions {
     constructor(players, boardSize = 10) {
-        assert(players !== undefined);
-        assert(players.length === 2);
-
         /** @type {Player[]} */
         this._players = players;
+
+        // TODO : Replace the piece colorizer by a more in place solution
+        this.pieceColorizer = new PieceColorizer(players);
 
         this.N = boardSize;
         if (this.N % 2 !== 0) throw new Error("Board size must be even for central symmetry.");
@@ -132,13 +145,11 @@ class StartingPositions {
     // -----------------------------
 
     _safeAdd(board, pieceDto) {
-        // On transforme le DTO en vraie Piece (comme ton placePiece le fait)
-        const piece = Piece.fromDTO(pieceDto);
+        const piece = Piece.fromDTO(this.pieceColorizer.colorize(pieceDto));
         if (!piece) throw new Error("Invalid piece DTO: " + JSON.stringify(pieceDto));
 
         this._assertFree(board, pieceDto.x, pieceDto.y, pieceDto.type);
 
-        // IMPORTANT : ici on pose l'objet Piece (pas le dto), sinon tu risques des bugs
         board.putPiece(piece, {x: pieceDto.x, y: pieceDto.y});
     }
 
@@ -202,7 +213,7 @@ class StartingPositions {
     }
 
     _randOrientation() {
-        return this._choice(ORIENTATIONS);
+        return this._choice(Object.values(PieceOrientation));
     }
 }
 

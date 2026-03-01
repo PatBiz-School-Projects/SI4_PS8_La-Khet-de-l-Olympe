@@ -3,8 +3,6 @@ import { Cell } from "./Cell.js";
 import { Coord } from "./Coord.js"
 import { Piece } from "./Piece.js";
 
-import { assert } from "/utils/assert.js";
-
 
 export class GameBoard extends HTMLElement {
     constructor() {
@@ -52,9 +50,6 @@ export class GameBoard extends HTMLElement {
             console.error("Error while initializing the board:", err)
         }
 
-        assert(this.grid.length === 10);
-        this.grid.forEach(row => assert(row.length === 10));
-
         this.renderer.setCanvasResolution();
         // TODO ?: Uncomment the line below if one day we decide to support bigger than 10×10 grid
         // this.renderer.setBoardLen(this.grid.length);
@@ -89,22 +84,6 @@ export class GameBoard extends HTMLElement {
 
     /** @type {string} */
     get gridRepr() { // DEBUG : Only for debug purposes
-        // TODO : Uncomment once the starting position (see `StartingPotion` in game-service) assign the correct owner to each piece
-        // let owner1, owner2;
-        // for (const row of this.grid) {
-        //     for (const cell of row) {
-        //         const piece = cell.content;
-        //         if (piece) {
-        //             if (!owner1) {
-        //                 owner1 = piece.owner;
-        //             } else if (piece.owner !== owner1) {
-        //                 owner2 = piece.owner;
-        //                 break;
-        //             }
-        //         }
-        //     }
-        // }
-
         let ret = "";
         for (const row of this.grid) {
             ret += "|";
@@ -112,7 +91,7 @@ export class GameBoard extends HTMLElement {
                 const piece = cell.content;
                 if (piece) {
                     ret += piece.type[0];
-                    if (piece.owner === 1/*owner1*/) {
+                    if (piece.color === "blue") {
                         ret += '1';
                     } else {
                         ret += '2';

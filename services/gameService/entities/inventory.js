@@ -7,9 +7,12 @@ class Inventory {
     static MAX_SIZE = 15;
     static INITIAL_SIZE = 7;
 
-    constructor(owner) {
+    constructor(owner, color) {
         /** @private @type {PlayerID} */
         this._owner = owner;
+
+        /** @private @type {"red"|"blue"} */
+        this._color = color;
 
         /** @private @type {Piece[]} */
         this._pieces = [];
@@ -20,6 +23,10 @@ class Inventory {
 
     get owner() {
         return this._owner;
+    }
+
+    get color() {
+        return this._color;
     }
 
     toDTO() {
@@ -38,6 +45,7 @@ class Inventory {
         this._pieces.push(Piece.fromDTO({
             type: "Pyramid",
             owner: this._owner,
+            color: this._color,
             orientation: "N",
         }));
     }
