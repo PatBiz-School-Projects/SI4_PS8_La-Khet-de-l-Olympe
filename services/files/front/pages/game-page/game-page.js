@@ -1,4 +1,4 @@
-import { GameBoard } from "/components/index.js";
+import { GameBoard, GameTurnIndicator } from "/components/index.js";
 
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
@@ -14,7 +14,9 @@ const socket = io({ path: "/api/game-service/socket.io" });
 
 /** @type { GameBoard } */
 const board = document.querySelector("game-board");
-// TODO : Implementing an 'inventory' component and a 'turn indicator' component
+/** @type { GameTurnIndicator } */
+const turnIndicator = document.querySelector("game-turn-indicator");
+// TODO : Implementing an 'inventory' component
 
 
 let PLAYER_ID;
@@ -60,14 +62,23 @@ async function askWhoIsPlaying() {
 
 onload = async (_) => {
     PLAYER_ID = await fetchPlayerId();
+    const activePlayerId = await askWhoIsPlaying();
 
-    const playerCanPlay = (PLAYER_ID === (await askWhoIsPlaying()));
+    const playerCanPlay = (PLAYER_ID === activePlayerId);
     if (playerCanPlay) {
         // DEBUG::
         console.log(`Faked reception of 'start-turn' event for player with id=${PLAYER_ID}`);
 
         stateMachine.on({ type: GamePageActionType.START_TURN, payload: {playerId: PLAYER_ID} });
     }
+
+    // TODO (in the backend): Supporting player name
+    turnIndicator.activePlayerName = activePlayerId.slice(0, 7);
+    turnIndicator.color = (
+        (playerCanPlay)
+        ? "blue"
+        : "red"
+    );
 }
 
 
@@ -76,16 +87,7 @@ onload = async (_) => {
 //
 
 
-// board.addEventListener('turn-updated', (event) => {
-//     const playerNumber = event.detail.player;
-//     if(playerIndicator){
-//         playerIndicator.textContent = playerNumber;
-//         playerIndicator.style.color = (playerNumber === 1) ? "#007bff" : "#dc3545";
-//     }
-// });
-
-// TODO (in the backend) : Dispatching "start-turn" socket event only to the client (aka player) that can play
-socket.on("start-turn", payload => {
+socket.on("start-turn", async payload => {
     // DEBUG::
     console.log(`Received 'start-turn' event for player with id=${payload.playerId}`);
 
@@ -94,14 +96,22 @@ socket.on("start-turn", payload => {
     PLAYER_ID = payload.playerId;
 
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
+
+    // TODO (in the backend): Supporting player name
+    turnIndicator.activePlayerName = PLAYER_ID.slice(0, 7);
+    turnIndicator.color = "blue";
 });
 
-// TODO (in the backend) : Dispatching "end-turn" socket event only to the player that cannot play
-socket.on("end-turn", _ => {
+// TODO (in the backend) : Add `playerId` in the payload corresponding to the opponent who will starts its turn
+socket.on("end-turn", async _ => {
     // DEBUG::
     console.log(`Received 'end-turn' event for player with id=${PLAYER_ID}`);
 
     stateMachine.on({ type: GamePageActionType.END_TURN })
+
+    // TODO (in the backend): Supporting player name
+    turnIndicator.activePlayerName = (await askWhoIsPlaying()).slice(0, 7);
+    turnIndicator.color = "red";
 });
 
 onclick = (event) => {

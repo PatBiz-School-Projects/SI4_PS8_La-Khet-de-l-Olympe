@@ -1,3 +1,41 @@
+
+:root {
+    --gold: #c9a84c;
+    --gold-light: #f0d080;
+    --gold-dim: #7a6028;
+    --dark: #0a0a0f;
+    --text: #e8dfc0;
+    --text-dim: #8a7d5a;
+}
+
+html, body {
+    overflow: hidden;
+
+    background-color: var(--dark);
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+
+    height: 5.7vh; /** same height as `game-turn-indicator`*/
+
+    & #header-btns {
+        display: flex;
+        gap: 12px;
+
+        & button { height: 100%; }
+    }
+
+    & #timer {
+        color: var(--text);
+        font-family: 'Cinzel', serif;
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+}
+
+
 .game-container {
     position: relative;
     display: flex;
@@ -6,27 +44,8 @@
     width: 100vw;
     height: 100vh;
     box-sizing: border-box;
-}
 
-#status-bar {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(212, 175, 55, 0.5); /* Bordure Or */
-    border-radius: 15px;
-    padding: 15px 40px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    font-family: 'Cinzel', serif;
-    font-size: 1.5rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    transition: all 0.3s ease;
-}
-
-#status-bar span {
-    font-weight: bold;
-    text-shadow: 0 0 10px currentColor;
-}
-
-game-board {
-    margin-top: 3em;
+    & game-board {
+        margin-top: 3em;
+    }
 }
