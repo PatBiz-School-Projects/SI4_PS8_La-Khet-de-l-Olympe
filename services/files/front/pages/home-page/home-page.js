@@ -3,11 +3,32 @@ import "/components/index.js"
 import { setCookie } from "/utils/cookie.js";
 
 
-// Temporary solution
-const USER_ID = "test";        // TODO : Update once a user service is implemented
-setCookie("userId", USER_ID);
-const USER_TOKEN = "74657374"; // TODO : Replace with the authentication token
-setCookie("userToken", USER_TOKEN);
+function decodeJwtPayload(token) {
+    try {
+        const payloadPart = token.split('.')[1];
+        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        const json = atob(base64);
+        return JSON.parse(json);
+    } catch (error) {
+        return null;
+    }
+}
+
+const token = localStorage.getItem('userToken');
+if (!token) {
+    window.location.href = '../pages/login/login.html';
+} else {
+    const payload = decodeJwtPayload(token);
+    const userId = payload?.sub;
+
+    if (!userId) {
+        localStorage.removeItem('userToken');
+        window.location.href = '/auth/index.html';
+    } else {
+        setCookie('userId', userId);
+        setCookie('userToken', token);
+    }
+}
 
 
 async function newPlayer() {
