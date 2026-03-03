@@ -15,7 +15,7 @@ const GameID = undefined;
 
 
 /**
- * @enum {typeof GameState[keyof typeof GameState]} GameState
+ * @enum {typeof GameState[keyof typeof GameState]}
  */
 const GameState = Object.freeze({
     RUNNING: "RUNNING",
@@ -26,7 +26,7 @@ const GameState = Object.freeze({
 
 
 /**
- * @enum {typeof GameMode[keyof typeof GameMode]} GameMode
+ * @enum {typeof GameMode[keyof typeof GameMode]}
  */
 const GameMode = Object.freeze({
     SOLO: "SOLO",

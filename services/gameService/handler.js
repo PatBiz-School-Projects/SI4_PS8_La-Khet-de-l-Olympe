@@ -36,6 +36,34 @@ exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
 };
 
 
+exports.HTTPMiddelware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
+    try {
+        const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
+        if (!userId) {
+            throw new Error("Missing 'userId' cookie");
+        }
+        if (!userToken) {
+            throw new Error("Missing 'userToken' cookie");
+        }
+        if (!gameId) {
+            throw new Error("Missing 'gameId' cookie");
+        }
+        if (!GamesManager.waitingRoomsId.includes(gameId) && !GamesManager.runningGamesId.includes(gameId)) {
+            throw new Error(`No waiting room nor game with id=${gameId}`);
+        }
+
+        // Add more verifications here (if needed)
+
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 400, {ok: false, error: err.message});
+        return;
+    }
+
+    await handlerCb(req, res);
+}
+
+
 exports.HTTPMiddelware_InsideGame = (handlerCb) => async (req, res) => {
     try {
         const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
@@ -136,6 +164,16 @@ exports.HTTPHandler = {
         const gameId = GamesManager.findRoomFor(player);
 
         sendJson(res, 200, { ok:true, gameId });
+    },
+
+    //
+    // Inside a waiting room
+    //
+
+    hasGameStarted: async (req, res) => {
+        const { gameId } = parseCookies(req.headers.cookie);
+
+        sendJson(res, 200, { ok:true, hasStarted: GamesManager.runningGamesId.includes(gameId) });
     },
 
     //
@@ -249,6 +287,8 @@ exports.HTTPHandler = {
 exports.SocketIOMiddelware = (socket, next) => {
     try {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
+        const { waiting } = socket.handshake.query;
+
         if (!userId) {
             throw new Error("Missing 'userId' cookie");
         }
@@ -257,6 +297,9 @@ exports.SocketIOMiddelware = (socket, next) => {
         }
         if (!gameId) {
             throw new Error("Missing 'gameId' cookie");
+        }
+        if (waiting && !GamesManager.waitingRoomsId.includes(gameId)) {
+            throw new Error(`No waiting room with id=${gameId}`);
         }
         if (!GamesManager.runningGamesId.includes(gameId)) {
             throw new Error(`No running game with id=${gameId}`);
@@ -277,8 +320,13 @@ exports.SocketIOHandler = {
 
     onConnection: async (io, socket, msgPayload) => {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
+        const { waiting } = socket.handshake.query;
 
-        const game = GamesManager.getGameById(gameId);
+        const game = (
+            (waiting)
+            ? GamesManager.getWaitingRoomById(gameId)
+            : GamesManager.getGameById(gameId)
+        );
 
         game.players
             .filter(player => (

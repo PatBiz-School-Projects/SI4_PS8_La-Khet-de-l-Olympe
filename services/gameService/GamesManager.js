@@ -61,7 +61,7 @@ class GamesManager {
 
 
     /** @type {GameID[]} */
-    static get waitingGamesId() {
+    static get waitingRoomsId() {
         return Object.keys(this._waitingRooms);
     }
 
@@ -99,6 +99,16 @@ class GamesManager {
 
         this._games[gameId] = new Game(gameId, waitingRoom.players, waitingRoom.mode);
         delete this._waitingRooms[gameId];
+
+        for (const player of waitingRoom.players) {
+            try {
+                player.socket.emit("start-game");
+            } catch (err) {
+                if (player.constructor.name === "Bot") {
+                    console.error("Bot doesn't have a socket. Caused:", err);
+                }
+            }
+        }
     }
 
     /**
@@ -116,6 +126,7 @@ class GamesManager {
         }
 
         waitingRoom.addPlayer(player);
+        player.gameId = gameId;
         if (waitingRoom.isFull()) {
             this.startGame(gameId, waitingRoom);
         }
@@ -142,6 +153,22 @@ class GamesManager {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * @param {GameID} gameId
+     *
+     * @returns {WaitingRoom}
+     * @throws if no match has been found for the given waiting room game id
+     */
+    static getWaitingRoomById(gameId) {
+        const waitingRoom = this._waitingRooms[gameId];
+        if (!waitingRoom) {
+            throw new Error(`Waiting room with id=${gameId} not found`);
+        }
+
+        return waitingRoom;
+    }
+
 
     /**
      * @param {GameID} gameId

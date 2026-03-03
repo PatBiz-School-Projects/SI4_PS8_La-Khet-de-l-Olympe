@@ -2,6 +2,7 @@ const { sendJson } = require("./helpers/parser");
 
 const {
     HTTPMiddelware_OutsideGame,
+    HTTPMiddelware_InsideWaitingRoom,
     HTTPMiddelware_InsideGame,
     HTTPHandler,
     SocketIOMiddelware,
@@ -24,6 +25,14 @@ const ROUTES = {
     ),
     '/api/game-service/join-multiplayer-game': HTTPMiddelware_OutsideGame(
         HTTPHandler.joinMultiplayerGame
+    ),
+
+    //
+    // Inside a waiting room
+    //
+
+    '/api/game-service/game-has-started': HTTPMiddelware_InsideWaitingRoom(
+        HTTPHandler.hasGameStarted
     ),
 
     //

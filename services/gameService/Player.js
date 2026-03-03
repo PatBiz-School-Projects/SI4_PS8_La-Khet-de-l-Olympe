@@ -25,6 +25,9 @@ class Player {
         /** @private @type {UserToken} */
         this._userToken = userToken;
 
+        /** @private @type {GameID} */
+        this._gameId; // will be set once the player is registered in a room/game
+
         /** @public @type {Socket} */
         this.socket;
     }
@@ -42,6 +45,17 @@ class Player {
     /** @type {UserToken} */
     get userToken() {
         return this._userToken;
+    }
+
+    /** @type {GameID} */
+    get gameId() {
+        return this._gameId;
+    }
+    set gameId(gameId) {
+        if (this._gameId) {
+            throw new Error("Cannot reassign player property 'gameId'");
+        }
+        this._gameId = gameId;
     }
 }
 
