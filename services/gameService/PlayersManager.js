@@ -1,4 +1,4 @@
-const { Player, PlayerID } = require('./Player');
+const { Player, Bot, PlayerID } = require('./Player');
 
 const { randomUUID } = require('node:crypto');
 
@@ -14,12 +14,20 @@ class PlayersManager {
      * @param {UserID} userId The id of the associated user
      * @param {UserToken} userToken The authentication token of the client to the user account
      *
-     * @returns {PlayerID}
+     * @returns {Player}
      */
     static newPlayer(userId, userToken) {
         const playerId = randomUUID();
-        this._players[playerId] = new Player(playerId, userId, userToken);
-        return playerId;
+        const player = new Player(playerId, userId, userToken);
+        this._players[playerId] = player;
+        return player;
+    }
+
+    static newBot(AI_Impl) {
+        const playerId = `ai#${randomUUID()}`;
+        const bot = new Bot(playerId, AI_Impl);
+        this._players[playerId] = bot;
+        return bot;
     }
 
     /**

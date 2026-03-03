@@ -1,6 +1,6 @@
 const { Socket } = require('socket.io');
 
-const { GamesManager } = require("./GamesManager");
+const assert = require("assert");
 
 
 /**
@@ -61,22 +61,49 @@ class Player {
 
 
 class Bot extends Player {
-    constructor (gameId, ai_bootloader) {
-        super(`ai#${gameId}`, `ai#${gameId}`, `ai#${gameId}`)
-
-        this.ai;
+    constructor (playerId, AI_Impl) {
+        super(playerId, playerId, playerId);
+        this._ai;
 
         // Fake socket to be notified of game's updates
         this.socket = Object.freeze({
             emit: (msg, payload, acknowledgement) => {
-                // Boot the ai
-                if (!this.ai) {
-                    this.ai = ai_bootloader();
-                }
+                const { GamesManager } = require("./GamesManager");
+                const game = GamesManager.getGameById(this._gameId);
 
                 switch (msg) {
+                    case "start-game":
+                        console.log("\n\n..................................................\n");
+                        console.log("Initialising bot's AI");
+                        console.log("\n..................................................\n\n");
+
+                        this._ai = new AI_Impl(
+                            this._playerId,
+                            game.board,                                 // TODO : Giving an immutable reference of the board
+                            game.getInventoryOfPlayer(this._playerId),  // TODO : Giving an immutable reference of the inventory
+                        );
+
+                        assert(this._ai !== undefined, "[Bot::socket <- \"start-game\"]: AI shouldn't be undefined");
+                        break;
+
                     case "start-turn":
-                        GamesManager.getGameById(gameId).onAction(ai.computeNextMove());
+                        assert(this._ai !== undefined, "[Bot::socket <- \"start-turn\"]: AI shouldn't be undefined");
+
+                        // Uncomment code below to debug AI :
+                        // ------------------------------------
+                        //
+                        // assert(this._ai._getLegalActions().every(act => {
+                        //     try {
+                        //         game.actionValidator.validate(act);
+                        //     } catch (_) {
+                        //         console.log("This action is invalid:", act);
+                        //         return false;
+                        //     }
+                        //     return true;
+                        // }));
+                        // console.log("\n\nAI WORKS PERFECTLY\n\n");
+
+                        game.onAction(this._ai.computeNextAction());
                         break;
 
                     // Add more if needed ...
@@ -84,6 +111,7 @@ class Bot extends Player {
                     default:
                         /* nothing */
                 }
+
                 if (acknowledgement) {
                     acknowledgement();
                 }

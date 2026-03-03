@@ -7,6 +7,8 @@ const { Piece }     = require("../entities/piece");
 const { LaserService } = require("./laserService");
 const { ActionValidator } = require("./ActionValidator");
 
+const assert = require("assert")
+
 
 /**
  * @typedef {string} GameID
@@ -37,6 +39,16 @@ const GameMode = Object.freeze({
 
 class Game {
     constructor(gameId, players, mode) {
+        assert(
+            players.length === 2,
+            "A game must have only 2 players for one game",
+        );
+        if (mode === "SOLO") assert(
+            players.some(p => p.constructor.name === "Bot"),
+            "If mode is solo then a player must be a bot",
+        );
+
+
         /** @private @type {GameID} */
         this._gameId = gameId;
 
