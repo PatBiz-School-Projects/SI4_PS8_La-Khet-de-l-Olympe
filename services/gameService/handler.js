@@ -4,9 +4,7 @@ const { GamesManager } = require("./GamesManager");
 const { GameMode } = require("./manager/game");
 const { PlayersManager } = require("./PlayersManager");
 
-
-const { AiService } = require("./ai/aiService");
-const { Bot } = require("./Player");
+const { RandomAI } = require("./ai/ai");
 
 
 //
@@ -100,9 +98,9 @@ exports.HTTPHandler = {
     newPlayer: async (req, res) => {
         const { userId, userToken } = parseCookies(req.headers.cookie);
 
-        const playerId = PlayersManager.newPlayer(userId, userToken);
+        const player = PlayersManager.newPlayer(userId, userToken);
 
-        sendJson(res, 200, { ok:true, playerId });
+        sendJson(res, 200, { ok:true, playerId: player.playerId });
     },
 
     startSoloGame: async (req, res) => {
@@ -115,18 +113,13 @@ exports.HTTPHandler = {
             sendJson(res, 400, { ok: false, error: err.message });
             return;
         }
+
+        // TODO : Using a better AI than a random one
+        const bot = PlayersManager.newBot(RandomAI);
+
         const gameId = GamesManager.newGame(GameMode.SOLO);
         GamesManager.registerPlayerInRoom(player, gameId);
-        GamesManager.registerPlayerInRoom(new Bot(
-            gameId, () => {
-                const game = GamesManager.getGameById(gameId);
-                return new AiService(
-                    `ai#${gameId}`,
-                    game.board,                                 // TODO : Giving an immutable reference of the board
-                    game.getInventoryOfPlayer(`ai#${gameId}`)   // TODO : Giving an immutable reference of the inventory
-                );
-            }
-        ), gameId);
+        GamesManager.registerPlayerInRoom(bot, gameId);
 
         sendJson(res, 200, { ok:true, gameId });
     },
