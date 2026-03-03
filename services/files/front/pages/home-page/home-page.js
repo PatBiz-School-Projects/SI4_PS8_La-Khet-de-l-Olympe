@@ -47,7 +47,7 @@ async function startSoloGame() {
         throw err;
     }
 
-    window.location.href = "../game-page/game-page.html";
+    window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
 
 
@@ -71,7 +71,7 @@ async function startLocalMultiplayerGame() {
         throw err;
     }
 
-    window.location.href = "../game-page/game-page.html";
+    window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
 
 
@@ -94,7 +94,7 @@ async function joinMultiplayerGame() {
         throw err;
     }
 
-    window.location.href = "../game-page/game-page.html";
+    window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
 
 
