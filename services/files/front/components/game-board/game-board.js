@@ -266,9 +266,9 @@ export class GameBoard extends HTMLElement {
     }
 
 
-    async showVisualisationMoves(actions,pos) {
+    async showVisualisationMoves(actions) {
         console.log(actions);
-        await this.renderer.drawVisualisation(actions,pos);
+        await this.renderer.drawVisualisation(actions);
     }
 }
 customElements.define('game-board', GameBoard);

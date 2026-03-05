@@ -1,4 +1,4 @@
-import { GameBoard, GameTurnIndicator, GamePlayerInventory } from "/components/index.js";
+import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/components/index.js";
 
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
@@ -49,6 +49,9 @@ let CLIENT_PLAYER_ID;
 /** @type { Record<PlayerID, GamePlayerInventory> } */
 let PLAYERS_INVENTORY = {};
 
+/** @type { Record<PlayerID, GameRotationIndicator> } */
+let PLAYERS_ROTATION_INDICATOR = {};
+
 
 //
 // Game page's components
@@ -63,7 +66,10 @@ const turnIndicator = document.querySelector("game-turn-indicator");
 const player1Inventory = document.querySelector("game-player-inventory#player1-inventory");
 /** @type { GamePlayerInventory } */
 const player2Inventory = document.querySelector("game-player-inventory#player2-inventory");
-
+/** @type { GameRotationIndicator } */
+const player1RotationIndicator = document.querySelector("#player1-rotation-indicator");
+/** @type { GameRotationIndicator } */
+const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
 
 
 //
@@ -145,6 +151,14 @@ onload = async (_) => {
     player2Inventory.color = "red";
     player2Inventory.active = false;
     await player2Inventory.actualise();
+
+    PLAYERS_ROTATION_INDICATOR[PLAYERS_ID[0]] = player1RotationIndicator;
+    player1RotationIndicator.owner = PLAYERS_ID[0];
+    player1RotationIndicator.active = false;
+
+    PLAYERS_ROTATION_INDICATOR[PLAYERS_ID[1]] = player2RotationIndicator;
+    player2RotationIndicator.owner = PLAYERS_ID[1];
+    player2RotationIndicator.active = false;
 }
 
 
@@ -192,6 +206,13 @@ onclick = (event) => {
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
+player1RotationIndicator.addEventListener("game-rotation", (event) => {
+    stateMachine.on(event.detail);
+});
+player2RotationIndicator.addEventListener("game-rotation", (event) => {
+    stateMachine.on(event.detail);
+});
+
 
 //
 // Reacting to `UIAction`
@@ -199,20 +220,30 @@ onclick = (event) => {
 
 
 stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos}) => {
-    try{
+    try {
         const response = await fetch(`/api/game-service/possible-actions?x=${pos.x}&y=${pos.y}`);
         const legalMoves = await response.json();
-        await board.showVisualisationMoves(legalMoves, pos);
+        await board.showVisualisationMoves(legalMoves);
+
+        player1RotationIndicator.active = false;
+        player2RotationIndicator.active = false;
+
+        const activeRotation = PLAYERS_ROTATION_INDICATOR[CLIENT_PLAYER_ID];
+        if (activeRotation) {
+            await activeRotation.showPiece(piece, pos);
+        }
     } catch (err) {
         throw err;
     }
 });
 
 stateMachine.subscribe([UIActionType.STOP_UI_ACTIONS], async () => {
-    try{
+    try {
         await board.renderer.clearVisualisationCanvas();
-    }catch (e) {
-        throw e;
+        player1RotationIndicator.active = false;
+        player2RotationIndicator.active = false;
+    } catch (err) {
+        throw err;
     }
 });
 
