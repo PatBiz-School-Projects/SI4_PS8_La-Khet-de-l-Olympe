@@ -268,7 +268,12 @@ class Game {
             }
         }
 
-        return { path };
+        let grid = null;
+        if (destroyedPieces.length>0) {
+            grid = this.board.toDTO().grid;
+        }
+
+        return { path, grid};
     }
 }
 

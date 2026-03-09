@@ -273,5 +273,23 @@ export class GameBoard extends HTMLElement {
         console.log(actions);
         await this.renderer.drawVisualisation(actions);
     }
+
+    /**
+     * Synchronise la grille locale avec l'état du serveur (post-laser).
+     * @param {Object[][]} gridDTO - La grille brute renvoyée par le serveur.
+     */
+    async syncGrid(gridDTO) {
+        if (!gridDTO) return;
+
+        console.log("gridDTO :",gridDTO);
+
+        this.grid = gridDTO.map(row =>
+            row.map(cellDTO => Cell.fromDTO(cellDTO))
+        );
+        await this.renderer.drawBoard(this.grid);
+
+
+        console.log("Grid sync complete after laser hit.");
+    }
 }
 customElements.define('game-board', GameBoard);

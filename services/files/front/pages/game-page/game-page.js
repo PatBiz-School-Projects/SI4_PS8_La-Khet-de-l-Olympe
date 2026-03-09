@@ -287,6 +287,9 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
     await board.movePiece(piece, from, to);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
 });
 
@@ -323,6 +326,9 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     await board.placePiece(piece, pos);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
     await PLAYERS_INVENTORY[CLIENT_PLAYER_ID].popPyramid();
 });
@@ -361,6 +367,9 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
     await board.rotatePiece(piece, pos, rotation);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
 });
 
@@ -408,5 +417,8 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
     await board.switchPieces(piece1, pos1, piece2, pos2);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
 });
