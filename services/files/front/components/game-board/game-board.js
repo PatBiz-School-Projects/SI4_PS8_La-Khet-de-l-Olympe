@@ -187,6 +187,41 @@ export class GameBoard extends HTMLElement {
     }
 
 
+    _convertRotationToCardinalCoordinate(orientation,rotation) {
+        let newOrientation = null;
+        switch (orientation) {
+            case "N":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "W"
+                    : "E"
+                );
+                break;
+            case "S":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "E"
+                    : "W"
+                );
+                break;
+            case "E":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "N"
+                    : "S"
+                );
+                break;
+            case "W":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "S"
+                    : "N"
+                );
+                break;
+        }
+        return newOrientation;
+    }
+
     /**
      * Apply the given rotation to the given piece at the given position
      * & updates the board rendering.
@@ -195,9 +230,15 @@ export class GameBoard extends HTMLElement {
      * @param {Coord} pos - The position where the piece is
      * @param {"left"|"right"} rotation - The rotation to apply
      */
-    rotatePiece(piece, pos, rotation) {
-        // TODO : ...
+    async rotatePiece(piece, pos, rotation) {
+        const pieceToRotate = this.getPieceAt(pos);
+        const cardinalCoordinate = this._convertRotationToCardinalCoordinate(pieceToRotate.orientation,rotation);
+        if(cardinalCoordinate){
+            pieceToRotate.rotateTo(cardinalCoordinate);
+        }
+        await this.renderer.drawBoard(this.grid);
     }
+
 
     /**
      * Swap the given pieces at the given positions
@@ -208,14 +249,47 @@ export class GameBoard extends HTMLElement {
      * @param {Piece} piece2 - The 2nd piece to swap
      * @param {Coord} pos2 - The position of the 2nd piece
      */
-    switchPieces(piece1, pos1, piece2, pos2) {
-        // TODO : ...
+    async switchPieces(piece1, pos1, piece2, pos2) {
+        this.getCellAt(pos1).empty();
+        this.getCellAt(pos2).empty();
+        this.getCellAt(pos2).put(piece1);
+        this.getCellAt(pos1).put(piece2);
+
+        await this.renderer.drawBoard(this.grid);
+
     }
 
 
     async showLaserBeam(laserPath) {
         console.log(laserPath);
         await this.renderer.drawLaser(laserPath);
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(2000);
+        await this.renderer.clearLaserCanvas();
+    }
+
+
+    async showVisualisationMoves(actions) {
+        console.log(actions);
+        await this.renderer.drawVisualisation(actions);
+    }
+
+    /**
+     * Synchronise la grille locale avec l'état du serveur (post-laser).
+     * @param {Object[][]} gridDTO - La grille brute renvoyée par le serveur.
+     */
+    async syncGrid(gridDTO) {
+        if (!gridDTO) return;
+
+        console.log("gridDTO :",gridDTO);
+
+        this.grid = gridDTO.map(row =>
+            row.map(cellDTO => Cell.fromDTO(cellDTO))
+        );
+        await this.renderer.drawBoard(this.grid);
+
+
+        console.log("Grid sync complete after laser hit.");
     }
 }
 customElements.define('game-board', GameBoard);

@@ -120,10 +120,12 @@ const Rotatable = (Base) => class extends Base {
                 this.orientation = ORDERED_ORIENTATIONS[
                     posMod(currOrientationIdx-1, ORDERED_ORIENTATIONS.length)
                 ];
+                break;
             case "right":
                 this.orientation = ORDERED_ORIENTATIONS[
                     posMod(currOrientationIdx+1, ORDERED_ORIENTATIONS.length)
                 ];
+                break;
         }
     }
 };

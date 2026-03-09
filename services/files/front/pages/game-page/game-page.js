@@ -1,4 +1,4 @@
-import { GameBoard, GameTurnIndicator, GamePlayerInventory } from "/components/index.js";
+import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/components/index.js";
 
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
@@ -49,6 +49,9 @@ let CLIENT_PLAYER_ID;
 /** @type { Record<PlayerID, GamePlayerInventory> } */
 let PLAYERS_INVENTORY = {};
 
+/** @type { Record<PlayerID, GameRotationIndicator> } */
+let PLAYERS_ROTATION_INDICATOR = {};
+
 
 //
 // Game page's components
@@ -63,7 +66,10 @@ const turnIndicator = document.querySelector("game-turn-indicator");
 const player1Inventory = document.querySelector("game-player-inventory#player1-inventory");
 /** @type { GamePlayerInventory } */
 const player2Inventory = document.querySelector("game-player-inventory#player2-inventory");
-
+/** @type { GameRotationIndicator } */
+const player1RotationIndicator = document.querySelector("#player1-rotation-indicator");
+/** @type { GameRotationIndicator } */
+const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
 
 
 //
@@ -145,6 +151,14 @@ onload = async (_) => {
     player2Inventory.color = "red";
     player2Inventory.active = false;
     await player2Inventory.actualise();
+
+    PLAYERS_ROTATION_INDICATOR[PLAYERS_ID[0]] = player1RotationIndicator;
+    player1RotationIndicator.owner = PLAYERS_ID[0];
+    player1RotationIndicator.active = false;
+
+    PLAYERS_ROTATION_INDICATOR[PLAYERS_ID[1]] = player2RotationIndicator;
+    player2RotationIndicator.owner = PLAYERS_ID[1];
+    player2RotationIndicator.active = false;
 }
 
 
@@ -192,6 +206,13 @@ onclick = (event) => {
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
+player1RotationIndicator.addEventListener("game-rotation", (event) => {
+    stateMachine.on(event.detail);
+});
+player2RotationIndicator.addEventListener("game-rotation", (event) => {
+    stateMachine.on(event.detail);
+});
+
 
 //
 // Reacting to `UIAction`
@@ -199,12 +220,31 @@ onclick = (event) => {
 
 
 stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos}) => {
-    // TODO : Call endpoint to get legal action for piece on board here (once the endpoint is added)
-    // TODO : Start visualisation on game-board here
+    try {
+        const response = await fetch(`/api/game-service/possible-actions?x=${pos.x}&y=${pos.y}`);
+        const legalMoves = await response.json();
+        await board.showVisualisationMoves(legalMoves);
+
+        player1RotationIndicator.active = false;
+        player2RotationIndicator.active = false;
+
+        const activeRotation = PLAYERS_ROTATION_INDICATOR[CLIENT_PLAYER_ID];
+        if (activeRotation) {
+            await activeRotation.showPiece(piece, pos);
+        }
+    } catch (err) {
+        throw err;
+    }
 });
 
 stateMachine.subscribe([UIActionType.STOP_UI_ACTIONS], async () => {
-    // TODO : Stop visualisation on game-board here
+    try {
+        await board.renderer.clearVisualisationCanvas();
+        player1RotationIndicator.active = false;
+        player2RotationIndicator.active = false;
+    } catch (err) {
+        throw err;
+    }
 });
 
 
@@ -236,7 +276,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             throw moveResponse.error;
         }
 
-        ({actionRes, laserRes} = await moveResponse.json());
+        laserRes = await moveResponse.json();
     } catch (err) {
         throw err;
     }
@@ -247,6 +287,9 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
     await board.movePiece(piece, from, to);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
 });
 
@@ -272,7 +315,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             throw placeResponse.error;
         }
 
-        ({actionRes, laserRes} = await placeResponse.json());
+        laserRes = await placeResponse.json();
     } catch (err) {
         throw err;
     }
@@ -283,6 +326,9 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     await board.placePiece(piece, pos);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
     await PLAYERS_INVENTORY[CLIENT_PLAYER_ID].popPyramid();
 });
@@ -310,7 +356,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
             throw rotateResponse.error;
         }
 
-        ({actionRes, laserRes} = await rotateResponse.json());
+        laserRes = await rotateResponse.json();
     } catch (err) {
         throw err;
     }
@@ -321,6 +367,9 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
     await board.rotatePiece(piece, pos, rotation);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
 });
 
@@ -357,7 +406,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
             throw switchResponse.error;
         }
 
-        ({actionRes, laserRes} = await switchResponse.json());
+        laserRes = await switchResponse.json();
     } catch (err) {
         throw err;
     }
@@ -368,5 +417,8 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
     await board.switchPieces(piece1, pos1, piece2, pos2);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
+        if (laserRes.grid) {
+            await board.syncGrid(laserRes.grid);
+        }
     }
 });

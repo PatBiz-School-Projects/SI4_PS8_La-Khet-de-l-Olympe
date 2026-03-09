@@ -45,6 +45,9 @@ const ROUTES = {
     '/api/game-service/board/piece': HTTPMiddelware_InsideGame(
         HTTPHandler.getPiece
     ),
+    '/api/game-service/possible-actions': HTTPMiddelware_InsideGame(
+        HTTPHandler.getPossibleMoves
+    ),
     '/api/game-service/board': HTTPMiddelware_InsideGame(
         HTTPHandler.getBoard
     ),
@@ -64,11 +67,11 @@ const ROUTES = {
 
 
 exports.manage = async (req,res) => {
-    const url = req.url;
-    if(ROUTES[url]){
-        await ROUTES[url](req, res);
+    const path = req.url.split('?')[0];
+    if (ROUTES[path]) {
+        await ROUTES[path](req, res);
     } else {
-        sendJson(res, 404, {ok: false, error: 'Not Found'})
+        sendJson(res, 404, {ok: false, error: 'Not Found'});
     }
 }
 

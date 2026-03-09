@@ -214,6 +214,25 @@ exports.HTTPHandler = {
         sendJson(res, 200, { ok:true, ...game.board.toDTO() });
     },
 
+    getPossibleMoves: async (req, res) => {
+        const { gameId } = parseCookies(req.headers.cookie);
+        const game = GamesManager.getGameById(gameId);
+
+        const url = new URL(req.url, `http://${req.headers.host}`);
+        const x = parseInt(url.searchParams.get('x'));
+        const y = parseInt(url.searchParams.get('y'));
+        if (isNaN(x) || isNaN(y)) {
+            throw new Error("Missing coordinates 'x' or 'y' as URL parameters");
+        }
+
+        try {
+            const possibleMoves = game.getPossibleMoveForPiece({x, y});
+            sendJson(res, 200, { ok: true, ...possibleMoves });
+        } catch (err) {
+            sendJson(res, 400, { ok: false, error: err.message });
+        }
+    },
+
     getInventoryOfPlayer: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
         const { playerId } = await readJsonBody(req);
@@ -252,7 +271,7 @@ exports.HTTPHandler = {
 
         let playerOfClient;
         for (const player of game.players)
-            if (player.userId === userId && player.userToken == userToken) {
+            if (player.userId === userId && player.userToken === userToken) {
                 if (playerOfClient) {
                     // If we already found one player corresponding to the user,
                     // which only happens if we are in a local multiplayer game,

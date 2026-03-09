@@ -104,6 +104,7 @@ header {
 
 
 .game-container {
+    position: relative;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -121,9 +122,17 @@ header {
         width:  calc(var(--slot-size) * 3);
         height: calc(var(--slot-size) * 5);
     }
+    & game-rotation-indicator {
+        position: absolute;
+        top: var(--v-padding);
+        width: calc(var(--slot-size) * 3);
+        height: calc(var(--slot-size));
+    }
 
     & game-board {
         display: block;
         flex-shrink: 0;
     }
 }
+#player1-rotation { left: var(--h-padding); }
+#player2-rotation { right: var(--h-padding); }
