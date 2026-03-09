@@ -71,6 +71,26 @@ const player1RotationIndicator = document.querySelector("#player1-rotation-indic
 /** @type { GameRotationIndicator } */
 const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
 
+const gameOverOverlay = document.querySelector("#game-over-overlay");
+const gameOverMessage = document.querySelector("#game-over-message");
+let isGameOver = false;
+
+function showGameOver({ state, winnerId }) {
+    isGameOver = true;
+    const isDraw = state === "DRAW";
+    const didIWin = winnerId === CLIENT_PLAYER_ID;
+
+    gameOverMessage.textContent = (
+        isDraw
+            ? "Match nul."
+            : didIWin
+                ? "Victoire !"
+                : "Défaite..."
+    );
+
+    gameOverOverlay.classList.remove("hidden");
+}
+
 
 //
 // Reloads support
@@ -202,7 +222,19 @@ socket.on("end-turn", turnEventQueue.enqueue(async _ => {
     PLAYERS_INVENTORY[CLIENT_PLAYER_ID].active = false;
 }));
 
+socket.on("game-over", payload => {
+    // DEBUG::
+    console.log("Received 'game-over' event:", payload);
+
+    showGameOver(payload);
+});
+
+
 onclick = (event) => {
+    if (isGameOver) {
+        return;
+    }
+
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
