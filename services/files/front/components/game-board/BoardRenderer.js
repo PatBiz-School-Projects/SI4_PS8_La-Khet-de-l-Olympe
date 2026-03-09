@@ -238,8 +238,9 @@ export class BoardRenderer {
 
     /**
      * @param {unknown[]} actions
+     * @param {Coord} originPos
      */
-    async drawVisualisation(actions) {
+    async drawVisualisation(actions, originPos) {
         const visualisationCanvas = this.canvases["visualisation-canvas"];
         const ctx = visualisationCanvas.getContext("2d");
 
@@ -275,6 +276,32 @@ export class BoardRenderer {
                 );
             });
         }
+
+        if(actions.rotations && originPos){
+            const cx = (originPos.x + 0.5) * this.cellSize;
+            const cy = (originPos.y + 0.5) * this.cellSize;
+            const offset = this.cellSize * 0.35;
+            this.drawRotationButton(ctx, cx - offset, cy - offset, "↺");
+            this.drawRotationButton(ctx, cx + offset, cy - offset, "↻");
+        }
+    }
+
+    drawRotationButton(ctx, x, y, symbol) {
+        const radius = this.cellSize * 0.2;
+
+        ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+        ctx.shadowBlur = 5;
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.beginPath();
+        ctx.arc(y, x, radius, 0, Math.PI * 2); // x and y swapped
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.fillStyle = "#333";
+        ctx.font = `${this.cellSize * 0.25}px Arial`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(symbol, y, x); //same
     }
 
 

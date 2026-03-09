@@ -187,6 +187,41 @@ export class GameBoard extends HTMLElement {
     }
 
 
+    _convertRotationToCardinalCoordinate(orientation,rotation) {
+        let newOrientation = null;
+        switch (orientation) {
+            case "N":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "W"
+                    : "E"
+                );
+                break;
+            case "S":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "E"
+                    : "W"
+                );
+                break;
+            case "E":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "N"
+                    : "S"
+                );
+                break;
+            case "W":
+                newOrientation = (
+                    (rotation === "left")
+                    ? "S"
+                    : "N"
+                );
+                break;
+        }
+        return newOrientation;
+    }
+
     /**
      * Apply the given rotation to the given piece at the given position
      * & updates the board rendering.
@@ -197,9 +232,13 @@ export class GameBoard extends HTMLElement {
      */
     async rotatePiece(piece, pos, rotation) {
         const pieceToRotate = this.getPieceAt(pos);
-        pieceToRotate.rotate(rotation);
+        const cardinalCoordinate = this._convertRotationToCardinalCoordinate(pieceToRotate.orientation,rotation);
+        if(cardinalCoordinate){
+            pieceToRotate.rotateTo(cardinalCoordinate);
+        }
         await this.renderer.drawBoard(this.grid);
     }
+
 
     /**
      * Swap the given pieces at the given positions
