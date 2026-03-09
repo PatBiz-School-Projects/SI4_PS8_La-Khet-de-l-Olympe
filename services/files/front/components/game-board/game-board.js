@@ -195,8 +195,10 @@ export class GameBoard extends HTMLElement {
      * @param {Coord} pos - The position where the piece is
      * @param {"left"|"right"} rotation - The rotation to apply
      */
-    rotatePiece(piece, pos, rotation) {
-        // TODO : ...
+    async rotatePiece(piece, pos, rotation) {
+        const pieceToRotate = this.getPieceAt(pos);
+        pieceToRotate.rotate(rotation);
+        await this.renderer.drawBoard(this.grid);
     }
 
     /**
@@ -208,14 +210,26 @@ export class GameBoard extends HTMLElement {
      * @param {Piece} piece2 - The 2nd piece to swap
      * @param {Coord} pos2 - The position of the 2nd piece
      */
-    switchPieces(piece1, pos1, piece2, pos2) {
-        // TODO : ...
+    async switchPieces(piece1, pos1, piece2, pos2) {
+        this.getCellAt(pos1).empty();
+        this.getCellAt(pos2).empty();
+        this.getCellAt(pos2).put(piece1);
+        this.getCellAt(pos1).put(piece2);
+
+        await this.renderer.drawBoard(this.grid);
+
     }
 
 
     async showLaserBeam(laserPath) {
         console.log(laserPath);
         await this.renderer.drawLaser(laserPath);
+    }
+
+
+    async showVisualisationMoves(actions,pos) {
+        console.log(actions);
+        await this.renderer.drawVisualisation(actions,pos);
     }
 }
 customElements.define('game-board', GameBoard);

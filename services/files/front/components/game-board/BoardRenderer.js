@@ -177,7 +177,6 @@ export class BoardRenderer {
         ctx.clearRect(0, 0, this.boardSize, this.boardSize);
     }
 
-    
     /**
      * @param {Coord[]} coverage
      */
@@ -238,13 +237,44 @@ export class BoardRenderer {
     }
 
     /**
-     * @param {Coord[]} coverage
+     * @param {unknown[]} actions
      */
-    async drawVisualisation(coverage) {
+    async drawVisualisation(actions) {
         const visualisationCanvas = this.canvases["visualisation-canvas"];
         const ctx = visualisationCanvas.getContext("2d");
 
-        // TODO : ...
+        await this.clearVisualisationCanvas();
+
+        if (!actions || (!actions.moves && !actions.switches)) return;
+
+        const dotRadius = this.cellSize * 0.15;
+        const dotColor = "rgba(0, 0, 0, 0.2)";
+        const switchColor = "rgba(0, 255, 255, 0.3)";
+
+        if (actions.moves) {
+            ctx.fillStyle = dotColor;
+            actions.moves.forEach(pos => {
+                const centerX = (pos.x + 0.5) * this.cellSize;
+                const centerY = (pos.y + 0.5) * this.cellSize;
+
+                ctx.beginPath();
+                ctx.arc(centerY, centerX, dotRadius, 0, Math.PI * 2); //coordinates x and y switched and it's okay
+                ctx.fill();
+            });
+        }
+
+
+        if (actions.switches) {
+            ctx.fillStyle = switchColor;
+            actions.switches.forEach(pos => {
+                ctx.fillRect(
+                    pos.x * this.cellSize + 2,
+                    pos.y * this.cellSize + 2,
+                    this.cellSize - 4,
+                    this.cellSize - 4
+                );
+            });
+        }
     }
 
 

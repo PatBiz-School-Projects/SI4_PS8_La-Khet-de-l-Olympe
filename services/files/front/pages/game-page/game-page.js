@@ -199,12 +199,21 @@ onclick = (event) => {
 
 
 stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos}) => {
-    // TODO : Call endpoint to get legal action for piece on board here (once the endpoint is added)
-    // TODO : Start visualisation on game-board here
+    try{
+        const response = await fetch(`/api/game-service/possible-actions?x=${pos.x}&y=${pos.y}`);
+        const legalMoves = await response.json();
+        await board.showVisualisationMoves(legalMoves, pos);
+    } catch (err) {
+        throw err;
+    }
 });
 
 stateMachine.subscribe([UIActionType.STOP_UI_ACTIONS], async () => {
-    // TODO : Stop visualisation on game-board here
+    try{
+        await board.renderer.clearVisualisationCanvas();
+    }catch (e) {
+        throw e;
+    }
 });
 
 
