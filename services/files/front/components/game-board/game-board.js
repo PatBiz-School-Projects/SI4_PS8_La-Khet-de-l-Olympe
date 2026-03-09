@@ -263,6 +263,9 @@ export class GameBoard extends HTMLElement {
     async showLaserBeam(laserPath) {
         console.log(laserPath);
         await this.renderer.drawLaser(laserPath);
+        const delay = ms => new Promise(res => setTimeout(res, ms));
+        await delay(2000);
+        await this.renderer.clearLaserCanvas();
     }
 
 

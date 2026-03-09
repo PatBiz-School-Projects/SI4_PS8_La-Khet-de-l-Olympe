@@ -196,7 +196,7 @@ export class BoardRenderer {
         }
 
         ctx.beginPath();
-        ctx.moveTo(startingPosition.x, startingPosition.y);
+        ctx.moveTo(startingPosition.y, startingPosition.x); //switched
         ctx.strokeStyle='red';
         ctx.lineWidth = 3;
         ctx.lineCap = "round";
@@ -212,11 +212,8 @@ export class BoardRenderer {
                 x: (newX + (1 / 2))*this.cellSize,
                 y: (newY + (1 / 2))*this.cellSize,
             }
-            ctx.lineTo(newPosition.x, newPosition.y);
+            ctx.lineTo(newPosition.y, newPosition.x); //switched
             i++;
-
-            //maybe we should add a sleeping method so the laser seems realistic
-
         }
         ctx.stroke();
 

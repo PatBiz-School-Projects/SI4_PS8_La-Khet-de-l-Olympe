@@ -276,7 +276,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             throw moveResponse.error;
         }
 
-        ({actionRes, laserRes} = await moveResponse.json());
+        laserRes = await moveResponse.json();
     } catch (err) {
         throw err;
     }
@@ -312,7 +312,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             throw placeResponse.error;
         }
 
-        ({actionRes, laserRes} = await placeResponse.json());
+        laserRes = await placeResponse.json();
     } catch (err) {
         throw err;
     }
@@ -350,7 +350,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
             throw rotateResponse.error;
         }
 
-        ({actionRes, laserRes} = await rotateResponse.json());
+        laserRes = await rotateResponse.json();
     } catch (err) {
         throw err;
     }
@@ -397,7 +397,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
             throw switchResponse.error;
         }
 
-        ({actionRes, laserRes} = await switchResponse.json());
+        laserRes = await switchResponse.json();
     } catch (err) {
         throw err;
     }
