@@ -44,7 +44,7 @@ class LaserService {
                     const piece = this.board.getPieceAt(laserPos);
                     const impactReaction = piece.onLaserHit(laserDir);
                     switch (impactReaction.type) {
-                        case "reflect":
+                        case "reflect": // cbon
                             laserDir = impactReaction.outDir;
                             path.push({
                                 ...laserPos,
@@ -70,6 +70,9 @@ class LaserService {
                                 hit:"destroyed",
                                 piece:piece.type,
                             });
+                            if (piece.type === "Pharaoh") {
+                                return { path, destroyedPieces };
+                            }
                             break;
                     }
                 } else {
