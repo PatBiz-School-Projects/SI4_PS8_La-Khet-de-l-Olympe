@@ -167,10 +167,10 @@ class Board {
 
     switchPieces(piece1, pos1, piece2, pos2) {
         this.emptyCell(pos1);
-        this.putPiece(piece2);
+        this.putPiece(piece2, pos1);
 
         this.emptyCell(pos2);
-        this.putPiece(piece1);
+        this.putPiece(piece1, pos2);
     }
 }
 
