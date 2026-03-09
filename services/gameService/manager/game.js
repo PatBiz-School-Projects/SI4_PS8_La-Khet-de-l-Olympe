@@ -267,6 +267,10 @@ class Game {
                 this.board.removePiece({x:piece.x, y:piece.y});
             }
         }
+        if(this.isFinished()){
+            this.onGameOver();
+        }
+
 
         let grid = null;
         if (destroyedPieces.length>0) {
@@ -274,6 +278,17 @@ class Game {
         }
 
         return { path, grid};
+    }
+
+    onGameOver(){
+        for (const player of this.players) {
+            if (player.socket) {
+                player.socket.emit("game-over", {
+                    state: this._state,
+                    winnerId: this._winner.playerId,
+                });
+            }
+        }
     }
 }
 
