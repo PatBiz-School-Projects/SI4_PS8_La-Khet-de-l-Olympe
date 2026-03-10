@@ -1,6 +1,6 @@
 import "/components/index.js"
 
-import { setCookie } from "/utils/cookie.js";
+import { setCookie, getCookie, removeCookie } from "/utils/cookie.js";
 
 
 function decodeJwtPayload(token) {
@@ -14,7 +14,7 @@ function decodeJwtPayload(token) {
     }
 }
 
-const token = localStorage.getItem('userToken');
+const token = getCookie('userToken');
 if (!token) {
     window.location.href = '../pages/login/login.html';
 } else {
@@ -22,7 +22,7 @@ if (!token) {
     const userId = payload?.sub;
 
     if (!userId) {
-        localStorage.removeItem('userToken');
+        removeCookie('userToken');
         window.location.href = '/auth/index.html';
     } else {
         setCookie('userId', userId);
