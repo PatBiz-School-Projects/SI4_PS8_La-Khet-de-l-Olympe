@@ -134,5 +134,5 @@ header {
         flex-shrink: 0;
     }
 }
-#player1-rotation { left: var(--h-padding); }
-#player2-rotation { right: var(--h-padding); }
+#player1-rotation-indicator { left: var(--h-padding); }
+#player2-rotation-indicator { right: var(--h-padding); }
