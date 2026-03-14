@@ -178,5 +178,23 @@ async function resetPassword(req,res){
         return sendJson(res,500, {ok: false, error: String(error?.message ?? error)});
     }
 }
-
-module.exports = { register, login, checkToken, renewToken, getQuestion,resetPassword };
+async function logout(req, res) {
+    try {
+        await readJsonBody(req);
+        res.writeHead(200, {
+            'Content-Type': 'application/json',
+            'Set-Cookie': [
+                'userToken=; Path=/; Max-Age=0',
+                'userId=; Path=/; Max-Age=0',
+                'gameId=; Path=/; Max-Age=0'
+            ]
+        });
+        res.end(JSON.stringify({ ok: true, detail: 'LOGOUT_SUCCESS' }));
+    } catch (error) {
+        return sendJson(res, 500, {
+            ok: false,
+            error: String(error?.message ?? error),
+        });
+    }
+}
+module.exports = { register, login, checkToken, renewToken, getQuestion,resetPassword,logout };

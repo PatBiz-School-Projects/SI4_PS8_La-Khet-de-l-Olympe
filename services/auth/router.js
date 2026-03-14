@@ -18,6 +18,9 @@ const routes = {
     },
     "/api/auth/forgot-password/question" : (req, res) => {
         handler.getQuestion(req, res);
+    },
+    "/api/auth/logout" : (req, res) => {
+        handler.logout(req, res);
     }
 };
 
