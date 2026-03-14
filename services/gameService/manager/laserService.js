@@ -24,9 +24,11 @@ class LaserService {
 
         const destroyedPieces = [];
 
+        let laserActive = true;
+
         path.push(laserPos);
-        while (
-            0<=laserPos.x && laserPos.x<Board.GRID_LEN
+        while (laserActive
+            &&0<=laserPos.x && laserPos.x<Board.GRID_LEN
             && 0<=laserPos.y && laserPos.y<Board.GRID_LEN
         ) {
             const variation = VECTORIZED_LASER_DIRECTIONS[laserDir];
@@ -57,6 +59,7 @@ class LaserService {
                                 ...laserPos,
                                 hit:"absorbed",
                             });
+                            laserActive = false;
                             break;
 
                         case "destroy":
