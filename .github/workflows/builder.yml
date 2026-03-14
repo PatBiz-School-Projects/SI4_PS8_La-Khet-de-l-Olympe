@@ -1,0 +1,16 @@
+name: image-builder
+on:
+  pull_request:
+    branches:
+      - production
+
+jobs:
+  build-images:
+    runs-on: self-hosted
+    if: github.event.pull_request.merged == true
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: build-image
+        run:
+
