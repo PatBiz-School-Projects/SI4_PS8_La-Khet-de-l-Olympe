@@ -161,8 +161,12 @@ class Board {
 
     rotatePiece(_piece, pos, rotation) {
         const piece = this.getPieceAt(pos);
-
         piece.rotate(rotation);
+        if (_piece.type === "Sphinx") {
+            this.sphinxes[piece.owner] = {
+                x: pos.x, y: pos.y, orientation: piece.orientation
+            };
+        }
     }
 
     switchPieces(piece1, pos1, piece2, pos2) {

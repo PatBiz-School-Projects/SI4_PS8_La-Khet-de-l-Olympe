@@ -1,3 +1,4 @@
+import {setCookie} from "/utils/cookie.js";
 const form = document.querySelector('form');
 const statusEl = document.querySelector('[data-status]');
 
@@ -56,10 +57,13 @@ async function handleSubmit(event) {
         }
 
         if (payload.token) {
-            localStorage.setItem('userToken', payload.token);
+            setCookie('userToken', payload.token);
+            setStatus(payload.detail || 'Connexion réussie.', 'ok');
+            window.location.href = '/pages/home-page/home-page.html';
+            return;
         }
-        console.log(payload.detail + "paylod");
-        setStatus(payload.detail, 'ok');
+
+        setStatus(payload.detail , 'ok');
     } catch (error) {
         setStatus('Erreur réseau. Réessayez plus tard.', 'error');
     } finally {

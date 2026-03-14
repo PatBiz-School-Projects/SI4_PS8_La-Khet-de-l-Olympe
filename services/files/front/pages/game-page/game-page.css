@@ -136,3 +136,56 @@ header {
 }
 #player1-rotation-indicator { left: var(--h-padding); }
 #player2-rotation-indicator { right: var(--h-padding); }
+
+
+#game-over-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background: rgba(0, 0, 0, 0.78);
+
+    &.hidden {
+        display: none;
+    }
+
+    & #game-over-asset {
+        width: min(80vw, 680px);
+        animation: game-over-pop 350ms ease-out;
+    }
+
+    & #game-over-message {
+        margin: 0;
+        font-family: 'Cinzel', serif;
+        color: var(--text);
+        font-size: 1.5rem;
+    }
+
+    & #game-over-home-btn {
+        border: 1px solid var(--gold);
+        background: #1a1208;
+        color: var(--text);
+        font-family: 'Cinzel', serif;
+        padding: 0.8rem 1.3rem;
+        cursor: pointer;
+    }
+}
+
+@keyframes game-over-pop {
+    from {
+        opacity: 0;
+        transform: scale(0.85);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+#player1-rotation { left: var(--h-padding); }
+#player2-rotation { right: var(--h-padding); }
