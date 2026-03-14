@@ -3,8 +3,8 @@ const hash = require("js-sha256");
 const { readJsonBody, sendJson } = require("./helpers/parser");
 const jwt = require("jsonwebtoken");
 
-const jwtSecret = process.env.JWT_SECRET || 'toztoz';
-const tokenExpiry = process.env.TOKEN_EXPIRY || '12h';
+const jwtSecret = process.env.JWT_SECRET;
+const tokenExpiry = process.env.TOKEN_EXPIRY;
 
 async function register(req, res) {
     try {

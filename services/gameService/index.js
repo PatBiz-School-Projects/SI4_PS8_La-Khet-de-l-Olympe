@@ -3,7 +3,7 @@ const { Server } = require('socket.io');
 const router = require('./router')
 
 
-const PORT = process.env.PORT || 8002;
+const PORT = process.env.PORT;
 
 
 const server = http.createServer(function (request, response) {
