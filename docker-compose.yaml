@@ -9,6 +9,7 @@ services:
       GAME_SERVICE_URL: http://game-service:8002
       FILE_SERVICE_URL: http://files-service:8001
       AUTH_SERVICE_URL: http://auth-service:8003
+      USER_SERVICE_URL: http://user-service:8004
     depends_on:
       - game-service
       - auth-service
@@ -22,6 +23,13 @@ services:
       context: ./services/files
     networks:
       - internal
+
+  user-service:
+      build:
+          context: ./services
+          dockerfile: ./userService/Dockerfile
+      networks:
+          - internal
 
   game-service:
     build:
@@ -44,24 +52,32 @@ services:
       - mongo
 
   mongo:
-    image : mongo:latest
-    command: ["mongod", "--quiet", "--logpath", "/dev/null"]
-    networks:
-      - internal
+      image: mongo:latest
+      volumes:
+          - ./data:/data/db
+      command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+      networks:
+          - internal
+      healthcheck:
+          test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+          interval: 10s
+          timeout: 5s
+          retries: 5
 
-  mongo-express: # image utilisée pour monitor la db depuis un navigateur
-    image: mongo-express:latest
-    ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongo
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
-    depends_on:
-      - mongo
-    networks:
-      - internal
-      - public
+  mongo-express:
+      image: mongo-express:latest
+      ports:
+          - "8081:8081"
+      environment:
+          ME_CONFIG_MONGODB_SERVER: mongo
+          ME_CONFIG_BASICAUTH_USERNAME: admin
+          ME_CONFIG_BASICAUTH_PASSWORD: admin
+      depends_on:
+          mongo:
+              condition: service_healthy
+      networks:
+          - internal
+          - public
 
 
 networks:

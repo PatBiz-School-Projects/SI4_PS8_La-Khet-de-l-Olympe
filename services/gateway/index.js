@@ -7,6 +7,7 @@ const proxy = httpProxy.createProxyServer();
 const gameServiceTarget = process.env.GAME_SERVICE_URL || "http://127.0.0.1:8002";
 const fileServiceTarget = process.env.FILE_SERVICE_URL || "http://127.0.0.1:8001";
 const authServiceTarget = process.env.AUTH_SERVICE_URL || "http://127.0.0.1:8003";
+const userServiceTarget = process.env.USER_SERVICE_URL || "http://localhost:8004";
 
 const server = http.createServer(function (request, response) {
     // First, let's check the URL to see if it's a REST request or a file request.
@@ -26,6 +27,10 @@ const server = http.createServer(function (request, response) {
                 case "auth" :
                     console.log("-> Redirection vers AuthService (8003)");
                     proxy.web(request, response, { target: authServiceTarget });
+                    break;
+                case "users" :
+                    console.log("-> Redirection vers UsersService (8004)");
+                    proxy.web(request, response, { target : userServiceTarget});
                     break;
             }
 
