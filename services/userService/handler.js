@@ -18,7 +18,13 @@ async function createUser(req, res) {
             return sendJson(res, 409, { ok: false, error: "ALREADY_EXISTS" });
         }
 
-        const result = await users.insertOne({ authId, username, createdAt: new Date() });
+        const result = await users.insertOne({
+            authId,
+            username,
+            createdAt: new Date(),
+            elo : 1000,
+            profilePicture : 'img.png'
+        });
 
         return sendJson(res, 201, {
             ok: true,

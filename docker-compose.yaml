@@ -81,7 +81,7 @@ services:
   mongo-user:
       image: mongo:latest
       volumes:
-          - ./data:/data/db
+          - ./data:/data/db2
       command: [ "mongod", "--quiet", "--logpath", "/dev/null" ]
       networks:
           - internal
@@ -96,11 +96,11 @@ services:
       ports:
           - "8081:8081"
       environment:
-          ME_CONFIG_MONGODB_SERVER: mongo
+          ME_CONFIG_MONGODB_SERVER: mongo-user
           ME_CONFIG_BASICAUTH_USERNAME: admin
           ME_CONFIG_BASICAUTH_PASSWORD: admin
       depends_on:
-          mongo:
+          mongo-user:
               condition: service_healthy
       networks:
           - internal
