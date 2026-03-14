@@ -14,22 +14,47 @@ function decodeJwtPayload(token) {
     }
 }
 
-const token = getCookie('userToken');
-if (!token) {
-    window.location.href = '../login/login.html';
-} else {
-    const payload = decodeJwtPayload(token);
-    const userId = payload?.sub;
-
-    if (!userId) {
-        removeCookie('userToken');
-        window.location.href = '/auth/index.html';
-    } else {
-        setCookie('userId', userId);
-        setCookie('userToken', token);
-    }
+function setAuthButtonsVisibility(isLoggedIn) {
+    signup_btn.style.display = isLoggedIn ? "none" : "inline-block";
+    login_btn.style.display = isLoggedIn ? "none" : "inline-block";
+    logout_btn.style.display = isLoggedIn ? "inline-block" : "none";
 }
 
+function setSessionCookiesAndGetUserId() {
+    const token = getCookie('userToken');
+    if (!token) {
+        return null;
+    }
+
+    const payload = decodeJwtPayload(token);
+    const userId = payload?.sub;
+    if (!userId) {
+        removeCookie('userToken');
+        return null;
+    }
+
+    setCookie('userId', userId);
+    setCookie('userToken', token);
+    return userId;
+}
+
+async function logout() {
+    try {
+        await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({}),
+        });
+    } catch (error) {
+        console.error('Logout request failed', error);
+    } finally {
+        removeCookie('userToken');
+        document.cookie = 'userToken=; Path=/; Max-Age=0';
+        document.cookie = 'userId=; Path=/; Max-Age=0';
+        document.cookie = 'gameId=; Path=/; Max-Age=0';
+        setAuthButtonsVisibility(false);
+    }
+}
 
 async function newPlayer() {
     try {
@@ -117,7 +142,14 @@ async function joinMultiplayerGame() {
 
     window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
-
+/** @type {HTMLButtonElement} */
+const signup_btn = document.getElementById("signup-btn");
+/** @type {HTMLButtonElement} */
+const login_btn = document.getElementById("login-btn");
+/** @type {HTMLButtonElement} */
+const logout_btn = document.getElementById("logout-btn");
+logout_btn.onclick = async (_) => await logout();
+setAuthButtonsVisibility(Boolean(setSessionCookiesAndGetUserId()));
 
 /** @type {HTMLButtonElement} */
 const startSoloGame_btn = document.getElementById("start-solo-btn");
