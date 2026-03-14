@@ -16,7 +16,7 @@ function decodeJwtPayload(token) {
 
 const token = getCookie('userToken');
 if (!token) {
-    window.location.href = '../pages/login/login.html';
+    window.location.href = '../login/login.html';
 } else {
     const payload = decodeJwtPayload(token);
     const userId = payload?.sub;

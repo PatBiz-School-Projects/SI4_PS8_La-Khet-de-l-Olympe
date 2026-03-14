@@ -1,4 +1,4 @@
-import {setCookie} from "../../utils/cookie"
+import {setCookie} from "/utils/cookie.js";
 const form = document.querySelector('form');
 const statusEl = document.querySelector('[data-status]');
 
