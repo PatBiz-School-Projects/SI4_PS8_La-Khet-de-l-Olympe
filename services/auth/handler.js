@@ -2,6 +2,7 @@ const { getDb } = require("./mongo");
 const hash = require("js-sha256");
 const { readJsonBody, sendJson } = require("./helpers/parser");
 const jwt = require("jsonwebtoken");
+const {createUserProfile} = require("./userClient")
 
 const jwtSecret = process.env.JWT_SECRET;
 const tokenExpiry = process.env.TOKEN_EXPIRY;
@@ -27,6 +28,17 @@ async function register(req, res) {
             username,
             password: hashedPassword,
         });
+
+        try {
+            await createUserProfile({
+                authId: result.insertedId.toString(),
+                username,
+            });
+        } catch (syncError) {
+            await questions.deleteOne({ userId: result.insertedId });
+            await users.deleteOne({ _id: result.insertedId });
+            throw syncError;
+        }
 
         await questions.insertOne({
             userId: result.insertedId,

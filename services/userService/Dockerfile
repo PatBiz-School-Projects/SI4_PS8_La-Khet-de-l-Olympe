@@ -6,7 +6,7 @@ COPY userService/package*.json ./
 RUN npm install --omit=dev
 
 COPY userService/ ./
-COPY auth/mongo.js ./
+COPY helpers ./helpers
 
 USER node
 
