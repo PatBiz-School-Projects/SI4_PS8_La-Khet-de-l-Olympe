@@ -1,6 +1,6 @@
 const { getDb } = require("./mongo");
 const { readJsonBody, sendJson } = require("./helpers/parser");
-const {connectedUsersService} = require("./connectedUsersService");
+const connectedUsersService = require("./connectedUsersService");
 const {extractToken,extractUserId} = require("./helpers/token");
 const {findUserByAuthId} = require("./userRepository");
 
@@ -61,8 +61,6 @@ async function isUserConnected(req, res) {
         }
 
         return sendJson(res, 200, {
-            ok: true,
-            authId,
             connected: connectedUsersService.isUserConnected(authId),
         });
     }
@@ -73,8 +71,7 @@ async function isUserConnected(req, res) {
 
 async function connectUser(req,res){
     try{
-        const body = await readJsonBody(req);
-        const token = extractToken(body);
+        const token = extractToken(req,null);
         if (!token) {
             sendJson(res, 401, "MISSING_TOKEN");
             return;
@@ -89,14 +86,14 @@ async function connectUser(req,res){
         sendJson(res, 200, {});
     }
     catch (error) {
-        sendJson(res, 500, {});
+        console.log(error)
+        sendJson(res, 500, {error:error});
     }
 }
 
 async function disconnectUser(req,res){
     try{
-        const body = await readJsonBody(req);
-        const token = extractToken(body);
+        const token = extractToken(req,null);
         if (!token) {
             sendJson(res, 401, "MISSING_TOKEN");
             return;
