@@ -7,13 +7,13 @@ const routes = {
     "/api/users/connected/is-connected": async (request, response) => {
         await handler.isUserConnected(request, response);
     },
-    "api/users/connected": async (request, response) => {
+    "/api/users/connected": async (request, response) => {
         handler.getConnectedUsers(request, response);
     },
-    "api/users/connect" : async (request, response) => {
+    "/api/users/connect" : async (request, response) => {
         await handler.connectUser(request, response);
     },
-    "api/users/disconnect": async (request, response) => {
+    "/api/users/disconnect": async (request, response) => {
         await handler.disconnectUser(request, response);
     }
 };

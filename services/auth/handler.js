@@ -2,7 +2,7 @@ const { getDb } = require("./mongo");
 const hash = require("js-sha256");
 const { readJsonBody, sendJson } = require("./helpers/parser");
 const jwt = require("jsonwebtoken");
-const {createUserProfile} = require("./userClient")
+const {createUserProfile, markUserConnected,markUserDisconnected} = require("./userClient")
 const {extractToken} = require("./helpers/token")
 
 const jwtSecret = process.env.JWT_SECRET;
@@ -82,6 +82,7 @@ async function login(req, res) {
         const token = jwt.sign({ sub: user._id.toString(), username: user.username }, jwtSecret, {
             expiresIn: tokenExpiry
         });
+        await markUserConnected(token);
         return sendJson(res, 200, { ok: true, token , detail : "Vous êtes connecté ! :)"});
     } catch (error) {
         return sendJson(res, 500, {
@@ -180,7 +181,8 @@ async function resetPassword(req,res){
 }
 async function logout(req, res) {
     try {
-        await readJsonBody(req);
+        const token = extractToken(req,null);
+        await markUserDisconnected(token);
         res.writeHead(200, {
             'Content-Type': 'application/json',
             'Set-Cookie': [
