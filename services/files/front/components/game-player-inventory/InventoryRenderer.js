@@ -149,11 +149,13 @@ export class InventoryRenderer {
     async drawPieceAt(piece, slotIdx) {
         const ctx = this.canvases["pieces-canvas"].getContext("2d");
 
+        const baseRotation = Math.PI;
+
         const angleMap = {
-            N:  0,
-            W: -Math.PI / 2,
-            E:  Math.PI / 2,
-            S:  Math.PI,
+            N:  baseRotation,
+            W: -Math.PI / 2 + baseRotation,
+            E:  Math.PI / 2 + baseRotation,
+            S:  Math.PI + baseRotation,
         };
 
         const img    = await this._getImage(piece.image);

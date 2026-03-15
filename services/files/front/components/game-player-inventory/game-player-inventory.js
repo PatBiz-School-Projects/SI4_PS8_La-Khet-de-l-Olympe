@@ -1,6 +1,7 @@
 import { Piece } from "../game-board/Piece.js";
 
 import { InventoryRenderer } from "./InventoryRenderer.js";
+import {GamePageActionType} from "../../pages/game-page/GamePageStateMachine/GamePageAction.js";
 
 
 export class GamePlayerInventory extends HTMLElement {
@@ -52,6 +53,16 @@ export class GamePlayerInventory extends HTMLElement {
         this.renderer = new InventoryRenderer(inventoryDiv);
 
         this.renderer.setCanvasesResolution();
+
+        inventoryDiv.addEventListener('click', (event) => {
+
+            const hasAvailablePyramid = this._inventory.some(piece => piece !== null);
+
+            if (hasAvailablePyramid && !inventoryDiv.classList.contains("inactive")) {
+                event.stopPropagation();
+                this._onPyramidClicked();
+            }
+        });
     }
 
     /** @type {string} */
@@ -154,6 +165,31 @@ export class GamePlayerInventory extends HTMLElement {
         // await this.renderer.clearPieceAt(endIdx);
 
         await this.actualise();
+    }
+
+    _onPyramidClicked() {
+
+
+        console.log("Inventory clicked");
+
+        const pyramidPiece = Piece.fromDTO({
+            type: "Pyramid",
+            owner: this.owner,
+            orientation: "N",
+            color: this.color
+        });
+
+        this.dispatchEvent(new CustomEvent("inventory-click", {
+            detail: {
+                type: GamePageActionType.CLICKED_PIECE_IN_INVENTORY,
+                payload: {
+                    piece: pyramidPiece,
+                    pos: null
+                }
+            },
+            bubbles: true,
+            composed: true
+        }));
     }
 }
 customElements.define('game-player-inventory', GamePlayerInventory);
