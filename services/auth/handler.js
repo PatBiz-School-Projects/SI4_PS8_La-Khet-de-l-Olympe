@@ -3,6 +3,7 @@ const hash = require("js-sha256");
 const { readJsonBody, sendJson } = require("./helpers/parser");
 const jwt = require("jsonwebtoken");
 const {createUserProfile} = require("./userClient")
+const {extractToken} = require("./helpers/token")
 
 const jwtSecret = process.env.JWT_SECRET;
 const tokenExpiry = process.env.TOKEN_EXPIRY;
@@ -88,19 +89,6 @@ async function login(req, res) {
             error: String(error?.message ?? error)
         });
     }
-}
-
-function extractToken(req, body) { // fonction qui extrait le token du body
-    if (body && body.token) {
-        return body.token;
-    }
-
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-        return authHeader.slice('Bearer '.length);
-    }
-
-    return null;
 }
 
 async function checkToken(req, res) {
