@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Mon Profil - La Khet De L'Olympe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="./profile-page.css" rel="stylesheet" />
+    <script type="module" src="./profile-page.js" defer></script>
+</head>
+<body>
+<main class="profile-page">
+    <a class="back-link" href="../home-page/home-page.html">← Retour à l'accueil</a>
+
+    <section class="profile-card">
+        <img id="profile-picture" class="profile-picture" alt="Photo de profil" src="/assets/pharaoh-blue.png" />
+        <div class="profile-info">
+            <h1 id="profile-username">Utilisateur</h1>
+            <p id="profile-elo">ELO: --</p>
+        </div>
+    </section>
+
+    <section class="friends-card">
+        <h2>Liste d'amis</h2>
+        <p class="empty-friends">Aucun ami à afficher pour le moment.</p>
+    </section>
+
+    <p id="profile-status" class="profile-status"></p>
+</main>
+</body>
+</html>

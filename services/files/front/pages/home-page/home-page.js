@@ -18,6 +18,7 @@ function decodeJwtPayload(token) {
 function setAuthButtonsVisibility(isLoggedIn) {
     signup_btn.style.display = isLoggedIn ? "none" : "inline-block";
     login_btn.style.display = isLoggedIn ? "none" : "inline-block";
+    profile_btn.style.display = isLoggedIn ? "inline-block" : "none";
     logout_btn.style.display = isLoggedIn ? "inline-block" : "none";
 }
 
@@ -143,6 +144,8 @@ async function joinMultiplayerGame() {
 
     window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
+/** @type {HTMLButtonElement} */
+const profile_btn = document.getElementById("profile-btn");
 /** @type {HTMLButtonElement} */
 const signup_btn = document.getElementById("signup-btn");
 /** @type {HTMLButtonElement} */
