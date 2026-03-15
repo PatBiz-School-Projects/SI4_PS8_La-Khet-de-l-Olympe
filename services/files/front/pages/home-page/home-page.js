@@ -1,6 +1,7 @@
 import "/components/index.js"
 
-import { setCookie, getCookie, removeCookie } from "/utils/cookie.js";
+import { setCookie, getCookie, removeCookie,clearCookies } from "/utils/cookie.js";
+
 
 
 function decodeJwtPayload(token) {
@@ -40,19 +41,19 @@ function setSessionCookiesAndGetUserId() {
 
 async function logout() {
     try {
+        const token = getCookie('userToken');
         await fetch('/api/auth/logout', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({}),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
         });
     } catch (error) {
         console.error('Logout request failed', error);
     } finally {
-        removeCookie('userToken');
-        document.cookie = 'userToken=; Path=/; Max-Age=0';
-        document.cookie = 'userId=; Path=/; Max-Age=0';
-        document.cookie = 'gameId=; Path=/; Max-Age=0';
-        setAuthButtonsVisibility(false);
+        clearCookies();
+        window.location.href="../login/login.html";
     }
 }
 
