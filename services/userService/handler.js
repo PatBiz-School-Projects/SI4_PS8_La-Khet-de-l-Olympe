@@ -107,5 +107,32 @@ async function disconnectUser(req,res){
     }
 }
 
+async function getProfile(req,res){
+    try{
+        const token = extractToken(req,null);
+        if (!token) {
+            sendJson(res, 401, "MISSING_TOKEN");
+            return;
+        }
+        const userId = extractUserId(token);
+        const user = await findUserByAuthId(userId);
+        if (!user) {
+            sendJson(res, 404, "USER_NOT_FOUND");
+            return;
+        }
+        const userFriends = []; // TODO: fetch real user friends when implemented
+        return sendJson(res, 200, {
+            username: user.username,
+            profilePicture: user.profilePicture,
+            elo: user.elo,
+            friends: userFriends
+        });
+    }
+    catch (error) {
+        console.error("getProfile error:", error);
+        return sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+    }
+}
 
-module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser };
+
+module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser,getProfile };
