@@ -38,7 +38,8 @@ services:
           DB_NAME: users
           PORT: 8004
       depends_on:
-          - mongo-user
+          mongo-user:
+            condition: service_healthy
 
   games-service:
     build:
@@ -63,12 +64,13 @@ services:
       TOKEN_EXPIRY : '12h'
       PORT: 8003
     depends_on:
-      - mongo
+      mongo:
+          condition: service_healthy
 
   mongo:
       image: mongo:7.0
       volumes:
-          - ./data:/data/db
+          - ./data/auth:/data/db
       command: ["mongod", "--quiet", "--logpath", "/dev/null"]
       networks:
           - internal
@@ -81,7 +83,7 @@ services:
   mongo-user:
       image: mongo:latest
       volumes:
-          - ./data:/data/db2
+          - ./data/users:/data/db
       command: [ "mongod", "--quiet", "--logpath", "/dev/null" ]
       networks:
           - internal
@@ -90,7 +92,6 @@ services:
           interval: 10s
           timeout: 5s
           retries: 5
-
   mongo-express:
       image: mongo-express:latest
       ports:
@@ -105,6 +106,8 @@ services:
       networks:
           - internal
           - public
+
+
 
 
 networks:
