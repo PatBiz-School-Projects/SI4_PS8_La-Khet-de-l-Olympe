@@ -1,5 +1,9 @@
 const { getDb } = require("./mongo");
 const { readJsonBody, sendJson } = require("./helpers/parser");
+const {connectedUsersService} = require("./connectedUsersService");
+const {extractToken,extractUserId} = require("./helpers/token");
+const {findUserByAuthId} = require("./userRepository");
+
 
 async function createUser(req, res) {
     try {
@@ -7,19 +11,21 @@ async function createUser(req, res) {
         const { authId, username } = body;
 
         if (!authId || !username) {
-            return sendJson(res, 400, { ok: false, error: "MISSING_FIELDS" });
+            sendJson(res, 400, { ok: false, error: "MISSING_FIELDS" });
+            return;
         }
 
         const db = await getDb();
         const users = db.collection("users");
-        const existing = await users.findOne({ authId });
+        const existing = await users.findOne({ _id: authId });
 
         if (existing) {
-            return sendJson(res, 409, { ok: false, error: "ALREADY_EXISTS" });
+            sendJson(res, 409, { ok: false, error: "ALREADY_EXISTS" });
+            return;
         }
 
         const result = await users.insertOne({
-            authId,
+            _id: authId,
             username,
             createdAt: new Date(),
             elo : 1000,
@@ -38,4 +44,71 @@ async function createUser(req, res) {
     }
 }
 
-module.exports = { createUser };
+function getConnectedUsers(req,res){
+    return sendJson(res,200,{
+        ok:true,
+        users: connectedUsersService.getConnectedUsers()
+    });
+}
+
+async function isUserConnected(req, res) {
+    try{
+        const body = await readJsonBody(req);
+        const { authId} = body;
+        if (!authId) {
+            sendJson(res, 400, { ok: false, error: 'MISSING_AUTH_ID' });
+            return;
+        }
+
+        return sendJson(res, 200, {
+            ok: true,
+            authId,
+            connected: connectedUsersService.isUserConnected(authId),
+        });
+    }
+    catch (error) {
+        throw new Error(error);
+    }
+}
+
+async function connectUser(req,res){
+    try{
+        const body = await readJsonBody(req);
+        const token = extractToken(body);
+        if (!token) {
+            sendJson(res, 401, "MISSING_TOKEN");
+            return;
+        }
+        const userId = extractUserId(token);
+        const user = await findUserByAuthId(userId);
+        if (!user) {
+            sendJson(res,404,"USER_NOT_FOUND");
+            return;
+        }
+        connectedUsersService.addConnectedUser(user.gameUserDTO());
+        sendJson(res, 200, {});
+    }
+    catch (error) {
+        sendJson(res, 500, {});
+    }
+}
+
+async function disconnectUser(req,res){
+    try{
+        const body = await readJsonBody(req);
+        const token = extractToken(body);
+        if (!token) {
+            sendJson(res, 401, "MISSING_TOKEN");
+            return;
+        }
+        const userId = extractUserId(token);
+        connectedUsersService.disconnectUser(userId);
+        sendJson(res, 200, {});
+    }
+    catch (error) {
+        sendJson(res, 500, {});
+    }
+}
+
+
+module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser };
