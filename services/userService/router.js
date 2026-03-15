@@ -15,6 +15,9 @@ const routes = {
     },
     "/api/users/disconnect": async (request, response) => {
         await handler.disconnectUser(request, response);
+    },
+    "/api/users/profile" : async (request, response) => {
+        await handler.getProfile(request, response);
     }
 };
 
