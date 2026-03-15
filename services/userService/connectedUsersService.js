@@ -4,12 +4,11 @@ class ConnectedUsersService {
     }
 
     addConnectedUser(user) {
-        this.connectedUsers.set(user.authId, user);
-        return user;
+        this.connectedUsers.set(user.id, user);
     }
 
     disconnectUser(authId) {
-        return this.connectedUsers.delete(authId);
+        this.connectedUsers.delete(authId);
     }
 
     isUserConnected(authId) {
