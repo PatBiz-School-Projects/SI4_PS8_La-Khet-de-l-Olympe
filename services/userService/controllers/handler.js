@@ -1,8 +1,8 @@
-const { getDb } = require("./mongo");
-const { readJsonBody, sendJson } = require("./helpers/parser");
-const connectedUsersService = require("./connectedUsersService");
-const {extractToken,extractUserId} = require("./helpers/token");
-const {findUserByAuthId} = require("./userRepository");
+const { getDb } = require("../repositories/mongo");
+const { readJsonBody, sendJson } = require("../helpers/parser");
+const connectedUsersService = require("../managers/connectedUsersService");
+const {extractToken,extractUserId} = require("../helpers/token");
+const {findUserByAuthId} = require("../repositories/userRepository");
 
 
 async function createUser(req, res) {

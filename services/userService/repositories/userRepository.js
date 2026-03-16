@@ -1,5 +1,5 @@
 const { getDb } = require('./mongo');
-const User = require('./entities/user');
+const User = require('../entities/user');
 /** @type {User} */
 async function findUserByAuthId(authId) {
     const db = await getDb();
