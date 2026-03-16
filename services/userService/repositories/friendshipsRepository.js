@@ -25,7 +25,7 @@ async function requestFriendship({userId1,userId2,requested_by}){
     }
 }
 
-async function acceptFriendship({userId1,userId2,requested_by}){
+async function acceptFriendship({userId1,userId2}){
     const friendships = await getFriendshipsCollection();
     return friendships.updateOne({_id: userId1,user_id:userId2,status: 'pending'},{$set:{accepted_at: new Date(),status:'accepted'}});
 }
