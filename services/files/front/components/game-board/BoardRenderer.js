@@ -314,13 +314,22 @@ export class BoardRenderer {
 
         // pos = this._convCoordToCanvasCoord(pos);
 
-        const baseRotation = Math.PI;
+        const pieceOffset = {
+            "Pyramid": -Math.PI / 2,
+            "Scarab": -Math.PI / 2,
+            "Anubis": Math.PI,
+            "Sphinx": Math.PI,
+            "Pharaoh": Math.PI
+        };
+
+        const baseRotation = pieceOffset[piece.type] || Math.PI;
+
 
         const angleMap = {
-            N: baseRotation,
+            N:  baseRotation,
             W: -Math.PI / 2 +baseRotation,
-            E: Math.PI / 2 +baseRotation,
-            S: Math.PI +baseRotation,
+            E:  Math.PI / 2 +baseRotation,
+            S:  Math.PI +baseRotation,
         };
 
         const img = await this._getImage(piece.image);

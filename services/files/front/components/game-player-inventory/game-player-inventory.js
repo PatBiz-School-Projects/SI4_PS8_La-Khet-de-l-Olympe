@@ -158,13 +158,13 @@ export class GamePlayerInventory extends HTMLElement {
         if (endIdx <= 0) {
             throw new Error("Inventory is already empty");
         }
+        const lastIdx = endIdx -1;
 
-        this._inventory[endIdx] = null;
+        this._inventory[lastIdx] = null;
 
-        // TODO : To fix
-        // await this.renderer.clearPieceAt(endIdx);
+        await this.renderer.clearPieceAt(lastIdx);
 
-        await this.actualise();
+        //await this.actualise(); // RACE CONDITION NEED TO FIX
     }
 
     _onPyramidClicked() {

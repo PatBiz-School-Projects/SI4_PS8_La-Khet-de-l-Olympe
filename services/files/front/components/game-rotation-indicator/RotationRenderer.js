@@ -12,7 +12,17 @@ export class RotationRenderer {
 
         ctx.clearRect(0, 0, size, size);
 
-        const baseRotation = Math.PI;
+
+        const pieceOffset = {
+            "Pyramid": -Math.PI / 2,
+            "Scarab": -Math.PI / 2,
+            "Anubis": Math.PI,
+            "Sphinx": Math.PI,
+            "Pharaoh": Math.PI
+        };
+
+        const baseRotation = pieceOffset[piece.type] || Math.PI;
+
 
         const angleMap = {
             N:  baseRotation,

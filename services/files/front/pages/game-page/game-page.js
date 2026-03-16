@@ -391,6 +391,8 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
         }
     }
     await PLAYERS_INVENTORY[CLIENT_PLAYER_ID].popPyramid();
+    player1RotationIndicator.active = false;
+    player2RotationIndicator.active = false;
 });
 
 stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {
