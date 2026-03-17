@@ -217,8 +217,10 @@ export class BoardRenderer {
         }
         ctx.stroke();
 
+        ctx.restore();
+
         const delay = ms => new Promise(res => setTimeout(res, ms));
-        await delay(50);
+        await delay(300);
     }
 
 

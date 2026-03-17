@@ -383,6 +383,10 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     // DEBUG::
     console.log("Placement accepted");
 
+    await PLAYERS_INVENTORY[piece.owner].popPyramid();
+    player1RotationIndicator.active = false;
+    player2RotationIndicator.active = false;
+
     await board.placePiece(pieceToPlace, pos);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
@@ -390,9 +394,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             await board.syncGrid(laserRes.grid);
         }
     }
-    await PLAYERS_INVENTORY[CLIENT_PLAYER_ID].popPyramid();
-    player1RotationIndicator.active = false;
-    player2RotationIndicator.active = false;
+
 });
 
 stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {

@@ -164,7 +164,7 @@ export class GamePlayerInventory extends HTMLElement {
 
         await this.renderer.clearPieceAt(lastIdx);
 
-        //await this.actualise(); // RACE CONDITION NEED TO FIX
+        await this.actualise(); // RACE CONDITION NEED TO FIX
     }
 
     _onPyramidClicked() {
