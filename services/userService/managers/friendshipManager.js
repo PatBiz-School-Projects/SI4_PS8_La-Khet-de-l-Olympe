@@ -1,12 +1,13 @@
 const friendshipRepository = require("../repositories/friendshipsRepository")
+const usersRepository = require("../repositories/userRepository")
 
 function orderIdsDESCOrder(userId1,userId2){
     return userId1<=userId2?{
-        "user_id_1": userId1,
-        "user_id_2": userId2
+        "userId1": userId1,
+        "userId2": userId2
     } : {
-        "user_id_1": userId2,
-        "user_id_2": userId1
+        "userId1": userId2,
+        "userId2": userId1
     }
 }
 
@@ -22,7 +23,7 @@ async function requestFriendship(currentUserId,targetUserId){
     const created = await friendshipRepository.requestFriendship({
         userId1,
         userId2,
-        requestedBy: currentUserId,
+        requestedBy: currentUserId
     });
     return {
         id: created._id,
@@ -33,6 +34,9 @@ async function acceptFriendship(currentUserId,requestUserId){
     const { userId1, userId2 } = orderIdsDESCOrder(currentUserId, requestUserId);
 
     const relation = await friendshipRepository.findByUsers(userId1, userId2);
+    if (!relation) {
+        throw new Error('FRIENDSHIP_NOT_FOUND');
+    }
     if (relation.status !== 'pending') {
         throw new Error('FRIENDSHIP_NOT_PENDING');
     }
@@ -68,5 +72,10 @@ async function listReceivedRequests(userId){
     return friendshipRepository.listPendingReceivedRequests(userId);
 }
 
-module.exports = {removeFriend,getAllFriends,listReceivedRequests,declineOrCancelRequest,acceptFriendship,requestFriendship};
+async function isUserPresent(userId){
+    const user = await usersRepository.findUserByAuthId(userId);
+    return user!=null;
+}
+
+module.exports = {removeFriend,getAllFriends,listReceivedRequests,declineOrCancelRequest,acceptFriendship,requestFriendship,isUserPresent};
 
