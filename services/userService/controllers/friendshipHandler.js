@@ -2,6 +2,7 @@ const friendshipService = require("../managers/friendshipManager")
 const {extractToken,extractUserId} = require("../helpers/token");
 const {readJsonBody,sendJson} = require("../helpers/parser");
 const {mapError} = require("../utils/error");
+const {isUserPresent} = require("../managers/friendshipManager");
 
 async function parseBodyAndExtractUserId(req){
     const parsedBody = await readJsonBody(req);
@@ -19,6 +20,7 @@ async function parseBodyAndExtractUserId(req){
 async function handleSendRequest(req, res) {
     try {
         const { currentUserId, body } = await parseBodyAndExtractUserId(req);
+        console.log({currentUserId,body});
         const targetUserId = body.targetUserId;
 
         if (!targetUserId) {
@@ -37,6 +39,9 @@ async function handleAcceptRequest(req, res) {
     try {
         const { currentUserId, body } = await parseBodyAndExtractUserId(req);
         const requestUserId = body.requestUserId;
+        if(!await friendshipService.isUserPresent(requestUserId) || !await isUserPresent(currentUserId)){
+            return sendJson(res,400,{ok:false,error:"USER_NOT_FOUND"})
+        }
 
         if (!requestUserId) {
             return sendJson(res, 400, { ok: false, error: 'MISSING_REQUEST_USER_ID' });
