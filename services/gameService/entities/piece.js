@@ -182,24 +182,28 @@ const PieceConstructors = {
                         [LaserDirection.N]: LaserDirection.E,
                         [LaserDirection.E]: LaserDirection.N,
                     };
+                    break;
                 case PieceOrientation.E :
                     // Reflective side: SE
                     reflectionMapping = {
                         [LaserDirection.S]: LaserDirection.E,
                         [LaserDirection.E]: LaserDirection.S,
                     };
+                    break;
                 case PieceOrientation.S :
                     // Reflective side: SW
                     reflectionMapping = {
                         [LaserDirection.S]: LaserDirection.W,
                         [LaserDirection.W]: LaserDirection.S,
                     };
+                    break;
                 case PieceOrientation.W :
                     // Reflective side: NW
                     reflectionMapping = {
                         [LaserDirection.N]: LaserDirection.W,
                         [LaserDirection.W]: LaserDirection.N,
                     };
+                    break;
             }
 
             if (laserImpact in reflectionMapping) {
@@ -242,6 +246,7 @@ const PieceConstructors = {
                         [LaserDirection.S]: LaserDirection.W,
                         [LaserDirection.W]: LaserDirection.S,
                     };
+                    break;
 
                 case PieceOrientation.E :
                 case PieceOrientation.W :
@@ -254,6 +259,7 @@ const PieceConstructors = {
                         [LaserDirection.S]: LaserDirection.E,
                         [LaserDirection.E]: LaserDirection.S,
                     };
+                    break;
             }
 
             if (laserImpact in reflectionMapping1) {

@@ -248,6 +248,8 @@ class Game {
     processLaserHit() {
         const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
 
+        console.log(path);
+
         for (const piece of destroyedPieces) {
             if(piece.type === "Pharaoh"){
                 this._state = GameState.GAME_OVER;

@@ -334,7 +334,10 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_IN_INVENTORY,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
-                    uiAction: undefined,
+                    uiAction: {
+                        type: UIActionType.VISUALISE_LEGAL_ACTION,
+                        payload: { ...pageAction.payload },
+                    },
                 };
 
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:
@@ -495,7 +498,10 @@ class GamePageState_Substate_Impl {
                     newSubstate: GamePageState.Substate.SELECTED_PIECE_IN_INVENTORY,
                     newContext: { ...pageAction.payload },
                     gameAction: undefined,
-                    uiAction: undefined,
+                    uiAction: {
+                        type: UIActionType.VISUALISE_LEGAL_ACTION,
+                        payload: { ...pageAction.payload },
+                    },
                 };
 
             case GamePageActionType.CLICKED_PIECE_ON_BOARD:

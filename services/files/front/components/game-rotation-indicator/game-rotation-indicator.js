@@ -1,5 +1,6 @@
 import {RotationRenderer} from "./RotationRenderer.js";
 import {GamePageActionType} from "../../pages/game-page/GamePageStateMachine/GamePageAction.js";
+import {Piece} from "../game-board/Piece.js";
 
 export class GameRotationIndicator extends HTMLElement {
     constructor() {
@@ -9,6 +10,7 @@ export class GameRotationIndicator extends HTMLElement {
         this.currentPos = null;
         this.color;
         this.renderer;
+        this.mode = 'board';
     }
 
     async connectedCallback() {
@@ -34,9 +36,10 @@ export class GameRotationIndicator extends HTMLElement {
         }
     }
 
-    async showPiece(piece,pos) {
+    async showPiece(piece,pos=null,mode='board') {
         this.currentPiece = piece;
         this.currentPos = pos;
+        this.mode = mode;
         this.style.display= "block";
         this.active=true;
         await this.renderer.drawRotationIndicator(piece);
@@ -73,21 +76,48 @@ export class GameRotationIndicator extends HTMLElement {
         };
     }
 
-    _dispatchRotation(direction) {
+    _rotatePieceLocally(direction){
+        const orientations = ["N", "E", "S", "W"];
+        let idx = orientations.indexOf(this.currentPiece.orientation || "N");
+
+        if (direction === "left") {
+            idx = (idx - 1 + 4) % 4;
+        } else {
+            idx = (idx + 1) % 4;
+        }
+        const newOrientation = orientations[idx];
+
+        const pieceDTO = {
+            type: this.currentPiece.type,
+            owner: this.currentPiece.owner,
+            color: this.currentPiece.color,
+            orientation: newOrientation
+        };
+
+        this.currentPiece= Piece.fromDTO(pieceDTO);
+    }
+
+    async _dispatchRotation(direction) {
         if (!this.currentPiece) return;
 
-        this.dispatchEvent(new CustomEvent("game-rotation", {
-            detail: {
-                type: GamePageActionType.CLICKED_ROTATE_ARROW,
-                payload: {
-                    piece: this.currentPiece,
-                    pos: this.currentPos,
-                    rotation: direction
-                }
-            },
-            bubbles: true,
-            composed: true
-        }));
+        if (this.mode === 'board') {
+            this.dispatchEvent(new CustomEvent("game-rotation", {
+                detail: {
+                    type: GamePageActionType.CLICKED_ROTATE_ARROW,
+                    payload: {
+                        piece: this.currentPiece,
+                        pos: this.currentPos,
+                        rotation: direction
+                    }
+                },
+                bubbles: true,
+                composed: true
+            }));
+        } else if (this.mode === 'inventory') {
+            this._rotatePieceLocally(direction);
+            await this.renderer.drawRotationIndicator(this.currentPiece);
+        }
+
     }
 }
 customElements.define('game-rotation-indicator', GameRotationIndicator);

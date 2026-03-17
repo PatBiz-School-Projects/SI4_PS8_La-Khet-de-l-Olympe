@@ -1,6 +1,7 @@
 import { Piece } from "../game-board/Piece.js";
 
 import { InventoryRenderer } from "./InventoryRenderer.js";
+import {GamePageActionType} from "../../pages/game-page/GamePageStateMachine/GamePageAction.js";
 
 
 export class GamePlayerInventory extends HTMLElement {
@@ -52,6 +53,16 @@ export class GamePlayerInventory extends HTMLElement {
         this.renderer = new InventoryRenderer(inventoryDiv);
 
         this.renderer.setCanvasesResolution();
+
+        inventoryDiv.addEventListener('click', (event) => {
+
+            const hasAvailablePyramid = this._inventory.some(piece => piece !== null);
+
+            if (hasAvailablePyramid && !inventoryDiv.classList.contains("inactive")) {
+                event.stopPropagation();
+                this._onPyramidClicked();
+            }
+        });
     }
 
     /** @type {string} */
@@ -147,13 +158,38 @@ export class GamePlayerInventory extends HTMLElement {
         if (endIdx <= 0) {
             throw new Error("Inventory is already empty");
         }
+        const lastIdx = endIdx -1;
 
-        this._inventory[endIdx] = null;
+        this._inventory[lastIdx] = null;
 
-        // TODO : To fix
-        // await this.renderer.clearPieceAt(endIdx);
+        await this.renderer.clearPieceAt(lastIdx);
 
-        await this.actualise();
+        await this.actualise(); // RACE CONDITION NEED TO FIX
+    }
+
+    _onPyramidClicked() {
+
+
+        console.log("Inventory clicked");
+
+        const pyramidPiece = Piece.fromDTO({
+            type: "Pyramid",
+            owner: this.owner,
+            orientation: "N",
+            color: this.color
+        });
+
+        this.dispatchEvent(new CustomEvent("inventory-click", {
+            detail: {
+                type: GamePageActionType.CLICKED_PIECE_IN_INVENTORY,
+                payload: {
+                    piece: pyramidPiece,
+                    pos: null
+                }
+            },
+            bubbles: true,
+            composed: true
+        }));
     }
 }
 customElements.define('game-player-inventory', GamePlayerInventory);

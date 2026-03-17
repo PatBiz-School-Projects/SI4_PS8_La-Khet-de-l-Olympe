@@ -238,6 +238,13 @@ onclick = (event) => {
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
+player1Inventory.addEventListener("inventory-click", (event) => {
+    stateMachine.on(event.detail);
+});
+player2Inventory.addEventListener("inventory-click", (event) => {
+    stateMachine.on(event.detail);
+});
+
 player1RotationIndicator.addEventListener("game-rotation", (event) => {
     stateMachine.on(event.detail);
 });
@@ -253,17 +260,30 @@ player2RotationIndicator.addEventListener("game-rotation", (event) => {
 
 stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos}) => {
     try {
-        const response = await fetch(`/api/game-service/possible-actions?x=${pos.x}&y=${pos.y}`);
-        const legalMoves = await response.json();
-        await board.showVisualisationMoves(legalMoves);
-
         player1RotationIndicator.active = false;
         player2RotationIndicator.active = false;
-
         const activeRotation = PLAYERS_ROTATION_INDICATOR[CLIENT_PLAYER_ID];
-        if (activeRotation) {
-            await activeRotation.showPiece(piece, pos);
+        const isFromInventory = (pos === null || pos === undefined);
+
+        if(isFromInventory) {
+
+            if(activeRotation) {
+
+                await activeRotation.showPiece(piece, null, 'inventory');
+            }
         }
+        else{
+
+            const response = await fetch(`/api/game-service/possible-actions?x=${pos.x}&y=${pos.y}`);
+            const legalMoves = await response.json();
+            await board.showVisualisationMoves(legalMoves);
+
+            if (activeRotation) {
+
+                await activeRotation.showPiece(piece, pos,'board');
+            }
+        }
+
     } catch (err) {
         throw err;
     }
@@ -329,6 +349,14 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     // DEBUG::
     console.log("Trying to place piece:", piece, "at:", pos);
 
+    let pieceToPlace = piece;
+
+    const activeRotation = PLAYERS_ROTATION_INDICATOR[CLIENT_PLAYER_ID];
+
+    if (activeRotation && activeRotation.mode === 'inventory' && activeRotation.currentPiece) {
+        pieceToPlace = activeRotation.currentPiece;
+    }
+
     let actionRes, laserRes;
     try {
         const placeResponse = await fetch("/api/game-service/action", {
@@ -338,7 +366,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
                 method: "place",
                 args: {
                     playerId: CLIENT_PLAYER_ID,
-                    piece: piece.toDTO(),
+                    piece: pieceToPlace.toDTO(),
                     pos: pos,
                 },
             }),
@@ -355,14 +383,18 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     // DEBUG::
     console.log("Placement accepted");
 
-    await board.placePiece(piece, pos);
+    await PLAYERS_INVENTORY[piece.owner].popPyramid();
+    player1RotationIndicator.active = false;
+    player2RotationIndicator.active = false;
+
+    await board.placePiece(pieceToPlace, pos);
     if (laserRes) {
         await board.showLaserBeam(laserRes.path);
         if (laserRes.grid) {
             await board.syncGrid(laserRes.grid);
         }
     }
-    await PLAYERS_INVENTORY[CLIENT_PLAYER_ID].popPyramid();
+
 });
 
 stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {
