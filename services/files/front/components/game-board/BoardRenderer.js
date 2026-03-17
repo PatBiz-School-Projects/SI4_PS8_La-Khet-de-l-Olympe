@@ -262,17 +262,32 @@ export class BoardRenderer {
             });
         }
 
-
+        console.log("Switch :",actions.switches);
         if (actions.switches) {
+            ctx.save();
             ctx.fillStyle = switchColor;
+            ctx.strokeStyle = "cyan";
+            ctx.lineWidth = 4;
+            ctx.shadowBlur = 0;
+            const offset = ctx.lineWidth / 2;
+
             actions.switches.forEach(pos => {
-                ctx.fillRect(
-                    pos.x * this.cellSize + 2,
-                    pos.y * this.cellSize + 2,
-                    this.cellSize - 4,
-                    this.cellSize - 4
+                if (!pos) return;
+                const x = pos.y * this.cellSize;
+                const y = pos.x * this.cellSize;
+                ctx.beginPath();
+
+                ctx.fillRect(x, y, this.cellSize, this.cellSize);
+
+                ctx.rect(
+                    x + offset,
+                    y + offset,
+                    this.cellSize - ctx.lineWidth,
+                    this.cellSize - ctx.lineWidth
                 );
+                ctx.stroke();
             });
+            ctx.restore();
         }
     }
 
