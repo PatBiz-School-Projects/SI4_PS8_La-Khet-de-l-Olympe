@@ -10,13 +10,14 @@ async function findByUsers(userId1,userId2){
     return friendships.findOne({user_id_1: userId1,user_id_2:userId2});
 }
 
-async function requestFriendship({userId1,userId2,requested_by}){
+async function requestFriendship({userId1,userId2,requestedBy}){
+    console.log(requestedBy);
     const friendships = await getFriendshipsCollection();
     const toInsert = {
         user_id_1: userId1,
         user_id_2: userId2,
         status: 'pending',
-        requested_by: requested_by,
+        requested_by: requestedBy,
         accepted_at: null
     }
     const result = await friendships.insertOne(toInsert);
@@ -25,9 +26,22 @@ async function requestFriendship({userId1,userId2,requested_by}){
     }
 }
 
-async function acceptFriendship({userId1,userId2}){
+async function acceptFriendship({ userId1, userId2 }) {
     const friendships = await getFriendshipsCollection();
-    return friendships.updateOne({_id: userId1,user_id:userId2,status: 'pending'},{$set:{accepted_at: new Date(),status:'accepted'}});
+
+    return friendships.updateOne(
+        {
+            user_id_1: userId1,
+            user_id_2: userId2,
+            status: 'pending'
+        },
+        {
+            $set: {
+                accepted_at: new Date(),
+                status: 'accepted'
+            }
+        }
+    );
 }
 
 async function deletePendingFriendship({ userId1, userId2 }) {
