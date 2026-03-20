@@ -112,8 +112,16 @@ class Board {
         return this.sphinxes[owner];
     }
 
+    setSphinxByOwner(owner, value) {
+        this.sphinxes[owner] = value;
+    }
+
     getPharaohByOwner(owner){
         return this.pharaohs[owner];
+    }
+
+    setPharaohByOwner(owner,value){
+        this.pharaohs[owner] = value;
     }
 
 
@@ -163,13 +171,20 @@ class Board {
         const piece = this.getPieceAt(pos);
         piece.rotate(rotation);
         if (_piece.type === "Sphinx") {
-            this.sphinxes[piece.owner] = {
-                x: pos.x, y: pos.y, orientation: piece.orientation
-            };
+            this.setSphinxByOwner(piece.owner,{x:pos.x,y:pos.y,orientation:piece.orientation})
+        }
+        if(_piece.type === "Pharaoh") {
+            this.setPharaohByOwner(piece.owner,{x:pos.x,y:pos.y,orientation:piece.orientation})
         }
     }
 
     switchPieces(piece1, pos1, piece2, pos2) {
+        if(piece2.type==="Sphinx"){
+            this.setSphinxByOwner(piece2.owner, {x: pos1.x, y: pos1.y,orientation: piece2.orientation});
+        }
+        if(piece2.type==="Pharaoh"){
+            this.setPharaohByOwner(piece2.owner, {x: pos1.x, y: pos1.y,orientation:piece2.orientation});
+        }
         this.emptyCell(pos1);
         this.putPiece(piece2, pos1);
 

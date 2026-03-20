@@ -167,19 +167,24 @@ class Game {
             {x: pos.x, y: pos.y + 1}, {x: pos.x, y: pos.y - 1}
         ];
 
+        if (piece.type === "Scarab" && piece.owner===this.currActivePlayer.playerId) {
+            possibleActions.switches.push(this.board.getSphinxByOwner(this.currActivePlayer.playerId));
+            possibleActions.switches.push(this.board.getPharaohByOwner(this.currActivePlayer.playerId));
+        }
+
         directions.forEach(targetPos => {
             if (targetPos.x >= 0 && targetPos.x < Board.GRID_LEN &&
                 targetPos.y >= 0 && targetPos.y < Board.GRID_LEN) {
                 try {
+
                     this.actionValidator.validate({
                         method: "move",
                         args: { playerId: this._currActivePlayer.playerId, piece: piece.toDTO(), from: pos, to: targetPos }
                     });
                     possibleActions.moves.push(targetPos);
+
                 } catch (e) {
-                    if (piece.type === "Scarab" && this.board.getPieceAt(targetPos)) {
-                        possibleActions.switches.push(targetPos);
-                    }
+
                 }
             }
         });
