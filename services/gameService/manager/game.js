@@ -38,6 +38,9 @@ const GameMode = Object.freeze({
 
 
 class Game {
+    /** @readonly */
+    static TURN_LIMIT = 200; // 2x100 so that each player cannot do more than 100 actions
+
     constructor(gameId, players, mode) {
         assert(
             players.length === 2,
@@ -230,30 +233,20 @@ class Game {
         this._currActivePlayer.socket.emit("start-turn", {
             playerId: this._currActivePlayer.playerId
         });
-    }
 
-
-    onAction(action) {
-        this.actionValidator.validate(action);
-
-        if (action.method === "switch" && action.args.piece2.type === "Sphinx") {
-            return {
-                actionRes: this.ACTIONS[action.method](action.args),
-                laserRes: undefined,
-            };
-        } else {
-            return {
-                actionRes: this.ACTIONS[action.method](action.args),
-                laserRes: this.processLaserHit(),
-            };
+        if (this._turnCount > Game.TURN_LIMIT) {
+            this._state = GameState.DRAW;
         }
     }
 
 
-    processLaserHit() {
+    /**
+     * @private
+     *
+     * @returns {path: Coord[]}
+     */
+    _processLaserHit() {
         const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
-
-        console.log(path);
 
         for (const piece of destroyedPieces) {
             if(piece.type === "Pharaoh"){
@@ -274,10 +267,6 @@ class Game {
                 this.board.removePiece({x:piece.x, y:piece.y});
             }
         }
-        if(this.isFinished()){
-            this.onGameOver();
-        }
-
 
         let grid = null;
         if (destroyedPieces.length>0) {
@@ -287,12 +276,30 @@ class Game {
         return { path, grid};
     }
 
-    onGameOver(){
+
+    onAction(action) {
+        this.actionValidator.validate(action);
+
+        if (action.method === "switch" && action.args.piece2.type === "Sphinx") {
+            return {
+                actionRes: this.ACTIONS[action.method](action.args),
+                laserRes: undefined,
+            };
+        } else {
+            return {
+                actionRes: this.ACTIONS[action.method](action.args),
+                laserRes: this._processLaserHit(),
+            };
+        }
+    }
+
+
+    onGameOver() {
         for (const player of this.players) {
             if (player.socket) {
                 player.socket.emit("game-over", {
                     state: this._state,
-                    winnerId: this._winner.playerId,
+                    winnerId: this._winner?.playerId,
                 });
             }
         }
