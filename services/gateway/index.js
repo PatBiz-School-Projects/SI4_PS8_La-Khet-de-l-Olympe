@@ -4,9 +4,9 @@ const httpProxy = require('http-proxy');
 // We need a proxy to send requests to the other services.
 const proxy = httpProxy.createProxyServer();
 
-const gameServiceTarget = process.env.GAME_SERVICE_URL || "http://127.0.0.1:8002";
-const fileServiceTarget = process.env.FILE_SERVICE_URL || "http://127.0.0.1:8001";
-const authServiceTarget = process.env.AUTH_SERVICE_URL || "http://127.0.0.1:8003";
+const filesServiceTarget = process.env.FILES_SERVICE_URL || "http://127.0.0.1:8001";
+const gameServiceTarget = process.env.GAMES_SERVICE_URL || "http://127.0.0.1:8002";
+const authServiceTarget = process.env.AUTH_SERVICE_URL  || "http://127.0.0.1:8003";
 
 const server = http.createServer(function (request, response) {
     // First, let's check the URL to see if it's a REST request or a file request.
@@ -19,8 +19,9 @@ const server = http.createServer(function (request, response) {
         // If the URL starts by /api, then it's a REST request (you can change that if you want).
         if (filePath[1] === "api") {
             switch(filePath[2]) {
+                // TODO : Rename `game-service` as `games` in URL to respect REST good practices
                 case "game-service":
-                    console.log("-> Redirection vers GameService (8002)");
+                    console.log("-> Redirection vers GamesService (8002)");
                     proxy.web(request, response, { target: gameServiceTarget });
                     break;
                 case "auth" :
@@ -32,7 +33,7 @@ const server = http.createServer(function (request, response) {
         // If it doesn't start by /api, then it's a request for a file.
         } else {
             console.log("Request for a file received, transferring to the file service")
-            proxy.web(request, response, {target: fileServiceTarget});
+            proxy.web(request, response, {target: filesServiceTarget});
         }
     } catch(error) {
         console.log(`error while processing ${request.url}: ${error}`)
@@ -50,7 +51,7 @@ server.on("upgrade", function (request, socket, head) {
     if (filePath[1] === "api") {
         switch(filePath[2]) {
             case "game-service":
-                console.log("-> WS Upgrade vers GameService (8002)");
+                console.log("-> WS Upgrade vers GamesService (8002)");
                 proxy.ws(request, socket, head, { target: gameServiceTarget });
                 break;
         }
