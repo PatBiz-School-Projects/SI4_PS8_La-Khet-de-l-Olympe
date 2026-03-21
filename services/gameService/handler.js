@@ -182,8 +182,10 @@ exports.HTTPHandler = {
             const {actionRes, laserRes} = game.onAction(action);
             sendJson(res, 200, { ok:true, ...actionRes, ...laserRes });
 
-            if (!game.isFinished()) {
-                game.nextTurn();
+            game.nextTurn();
+
+            if (game.isFinished()) {
+                game.onGameOver();
             }
         } catch (err) {
             console.error(err)

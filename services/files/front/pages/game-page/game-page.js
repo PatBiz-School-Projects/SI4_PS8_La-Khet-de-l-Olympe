@@ -80,6 +80,8 @@ function showGameOver({ state, winnerId }) {
     const isDraw = state === "DRAW";
     const didIWin = winnerId === CLIENT_PLAYER_ID;
 
+    // REVIEW : What happens if the game was a local multiplayer game
+
     gameOverMessage.textContent = (
         isDraw
             ? "Match nul."
