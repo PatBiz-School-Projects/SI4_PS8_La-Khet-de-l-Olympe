@@ -20,7 +20,6 @@ async function parseBodyAndExtractUserId(req){
 async function handleSendRequest(req, res) {
     try {
         const { currentUserId, body } = await parseBodyAndExtractUserId(req);
-        console.log({currentUserId,body});
         const targetUserId = body.targetUserId;
 
         if (!targetUserId) {

@@ -1,0 +1,119 @@
+services:
+  gateway:
+    build:
+      context:
+        ./services/gateway
+    ports:
+      - "8000:8000"
+    environment:
+      GAME_SERVICE_URL: http://game-service:8002
+      FILE_SERVICE_URL: http://files-service:8001
+      AUTH_SERVICE_URL: http://auth-service:8003
+      USER_SERVICE_URL: http://user-service:8004
+    depends_on:
+      - game-service
+      - auth-service
+      - files-service
+      - user-service
+    networks:
+      - internal
+      - public
+
+  files-service:
+    build:
+      context: ./services/files
+    networks:
+      - internal
+    environment:
+        PORT: 8001
+
+  user-service:
+      build:
+          context: ./services
+          dockerfile: ./userService/Dockerfile
+      networks:
+          - internal
+      environment:
+          DB_URL: mongodb://mongo-user:27017
+          DB_NAME: users
+          PORT: 8004
+      depends_on:
+          mongo-user:
+            condition: service_healthy
+
+  game-service:
+    build:
+      context: ./services
+      dockerfile: ./gameService/Dockerfile
+    networks:
+      - internal
+    environment:
+        PORT: 8002
+
+  auth-service:
+    build:
+      context: ./services
+      dockerfile: ./auth/Dockerfile
+    networks:
+      - internal
+    environment:
+      USER_SERVICE_URL: http://user-service:8004
+      DB_URL: mongodb://mongo:27017
+      DB_NAME : auth
+      JWT_SECRET : kSMIWOZ2BOEAqbnwGLXafltUn1yO2iE5wkeN6h81m4Q=
+      TOKEN_EXPIRY : '12h'
+      PORT: 8003
+    depends_on:
+      mongo:
+          condition: service_healthy
+
+  mongo:
+      image: mongo:latest
+      volumes:
+          - ./data/auth:/data/db
+      command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+      networks:
+          - internal
+      healthcheck:
+          test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+
+  mongo-user:
+      image: mongo:latest
+      volumes:
+          - ./data/users:/data/db
+      command: [ "mongod", "--quiet", "--logpath", "/dev/null" ]
+      networks:
+          - internal
+      healthcheck:
+          test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
+          interval: 10s
+          timeout: 5s
+          retries: 5
+  mongo-express:
+      image: mongo-express:latest
+      ports:
+          - "8081:8081"
+      environment:
+          ME_CONFIG_MONGODB_SERVER: mongo-user
+          ME_CONFIG_BASICAUTH_USERNAME: admin
+          ME_CONFIG_BASICAUTH_PASSWORD: admin
+      depends_on:
+          mongo-user:
+              condition: service_healthy
+      networks:
+          - internal
+          - public
+
+
+
+
+networks:
+  public:
+  internal:
+    internal: true
+
+
+
