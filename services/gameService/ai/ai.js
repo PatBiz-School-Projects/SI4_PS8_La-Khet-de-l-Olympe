@@ -164,7 +164,34 @@ class RandomAI extends AI {
 
 
 class MiniMaxAI extends AI {
-    // TODO : One day (once our whole game works)
+    constructor(playerId, board, inventory,opponentId) {
+        super(playerId, board, inventory);
+        this.opponentId = opponentId;
+        this.maxDepth = 2;
+    }
+
+    computeNextAction() {
+        let bestScore = -Infinity;
+        let bestAction = null;
+
+        const legalActions = this._getLegalActions();
+        for(const action in legalActions) {
+            let newBoard = this._cloneBoard();
+            let newInventory = this._cloneInventory();
+
+        }
+        return undefined;
+    }
+
+    _cloneBoard() {
+        return this._board;
+    }
+    _cloneInventory(){
+        return this._inventory;
+    }
+    _applyAction(board,inventory,action){
+
+    }
 }
 
 module.exports = { RandomAI };
