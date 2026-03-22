@@ -1,9 +1,14 @@
 class User {
-    constructor({ id, username, elo, profilePicture }) {
+    constructor({ id, username, elo, profilePicture,ratedGames,wins,losses,draws,winstreak }) {
         this.id = id;
         this.username = username;
         this.elo = elo;
         this.profilePicture = profilePicture;
+        this.ratedGames = ratedGames;
+        this.wins = wins;
+        this.losses = losses;
+        this.draws = draws;
+        this.winStreak = winstreak;
     }
 
     static builder(document) {
@@ -16,6 +21,11 @@ class User {
             username: document.username,
             elo: document.elo,
             profilePicture: document.profilePicture,
+            ratedGames: document.ratedGames,
+            wins: document.wins,
+            losses: document.losses,
+            draws: document.draws,
+            winStreak: document.winStreak
         });
     }
 
@@ -25,6 +35,10 @@ class User {
             username: this.username,
             elo: this.elo,
         };
+    }
+
+    getWinrate(){
+        return this.wins/this.ratedGames;
     }
 }
 
