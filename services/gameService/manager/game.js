@@ -58,17 +58,23 @@ class Game {
         /** @private @type {Player[]} */
         this._players = players;
 
+        /** @private @type {GameMode} */
+        this._mode = mode;
+
+        /** @private @type {GameState} */
+        this._state = GameState.RUNNING;
+
         /** @private @type {Record<PlayerID, Inventory>} */
         this._playerInventories = {
             [players[0].playerId]: new Inventory(players[0].playerId, "blue"),
             [players[1].playerId]: new Inventory(players[1].playerId, "red"),
         };
 
-        /** @private @type {GameState} */
-        this._state = GameState.RUNNING;
-
-        /** @private @type {GameMode} */
-        this._mode = mode;
+        /** @private @type {Record<PlayerID, number>} */
+        this._playersSwapCooldowns = {
+            [players[0].playerId]: 0,
+            [players[1].playerId]: 0,
+        };
 
         /** @private @type {number} */
         this._turnCount = 1;
@@ -96,8 +102,9 @@ class Game {
                 // DEBUG::
                 console.log("Placing piece:", piece, "at:", pos);
 
-                this.board.placePiece(Piece.fromDTO(piece), pos);
                 this._playerInventories[playerId].popPyramid();
+
+                this.board.placePiece(Piece.fromDTO(piece), pos);
                 return this.board.toDTO();
             },
             rotate: ({playerId, piece, pos, rotation}) => {
@@ -110,6 +117,9 @@ class Game {
             switch: ({playerId, piece1, pos1, piece2, pos2}) => {
                 // DEBUG::
                 console.log("Switching piece: ", piece1, "at:", pos1, "with piece:", piece2, "at: ", pos2);
+
+                const SWAP_COOLDOWN = 4;
+                this._playersSwapCooldowns[playerId] = SWAP_COOLDOWN;
 
                 this.board.switchPieces(Piece.fromDTO(piece1), pos1, Piece.fromDTO(piece2), pos2);
                 return this.board.toDTO();
@@ -179,15 +189,13 @@ class Game {
             if (targetPos.x >= 0 && targetPos.x < Board.GRID_LEN &&
                 targetPos.y >= 0 && targetPos.y < Board.GRID_LEN) {
                 try {
-
                     this.actionValidator.validate({
                         method: "move",
                         args: { playerId: this._currActivePlayer.playerId, piece: piece.toDTO(), from: pos, to: targetPos }
                     });
                     possibleActions.moves.push(targetPos);
-
                 } catch (e) {
-
+                    /* nothing */
                 }
             }
         });
@@ -219,8 +227,7 @@ class Game {
      * @returns {boolean}
      */
     playerCanSwap(player) {
-        // TODO : implement cooldown
-        return true;
+        return this.isRunning() && this._playersSwapCooldowns[player.playerId] <= 0;
     }
 
 
@@ -233,6 +240,10 @@ class Game {
         this._currActivePlayer.socket.emit("start-turn", {
             playerId: this._currActivePlayer.playerId
         });
+
+        for (const player of this._players) {
+            this._playersSwapCooldowns[player.playerId]--;
+        }
 
         if (this._turnCount > Game.TURN_LIMIT) {
             this._state = GameState.DRAW;
