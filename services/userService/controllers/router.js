@@ -20,6 +20,9 @@ const routes = {
     "GET /api/users/profile" : async (request, response) => {
         await userHandler.getProfile(request, response);
     },
+    "POST /api/users/elo/apply-result" : async (request, response) => {
+        await userHandler.onEloChange(request, response);
+    },
     "POST /api/users/friends/request" : async (request, response) => {
         await friendshipHandler.handleSendRequest(request, response);
     },

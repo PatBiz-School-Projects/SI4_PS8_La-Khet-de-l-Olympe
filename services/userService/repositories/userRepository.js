@@ -29,7 +29,34 @@ async function createUser(authId,username) {
     });
 }
 
+async function updateWinnerElo(winnerId,newElo){
+    const usersCollection = await getUsersCollection();
+    return usersCollection.updateOne({_id: winnerId,},
+        {
+            $set: {elo: newElo},
+            $inc: {
+                wins:1,
+                ratedGames:1,
+                winStreak:1
+            }
+        });
+}
+
+async function updateLoserElo(loserId,newElo){
+    const usersCollection = await getUsersCollection();
+    return usersCollection.updateOne({_id: loserId,},
+        {
+            $set: {elo: newElo,winStreak:0},
+            $inc: {
+                losses:1,
+                ratedGames:1
+            }
+        });
+}
+
 module.exports = {
     findUserByAuthId,
-    createUser
+    createUser,
+    updateWinnerElo,
+    updateLoserElo
 };

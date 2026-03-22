@@ -3,6 +3,8 @@ const { readJsonBody, sendJson } = require("../helpers/parser");
 const connectedUsersService = require("../managers/connectedUsersService");
 const {extractToken,extractUserId} = require("../helpers/token");
 const usersRepository = require("../repositories/userRepository");
+const {computeEloWithWinStreak} = require("../utils/elo");
+const gamesRepository = require("../repositories/gamesRepository");
 
 
 async function createUser(req, res) {
@@ -146,5 +148,66 @@ async function getPublicProfile(req,res){
     }
 }
 
+async function onEloChange(req,res){
+    try{
+        const body = await readJsonBody(req);
+        const {gameId,winnerId,loserId}=body;
+        const winnerUser = await usersRepository.findUserByAuthId(winnerId);
+        const loserUser = await usersRepository.findUserByAuthId(loserId);
+        if(!winnerUser || !loserUser){
+            sendJson(res, 404, "ONE_USER_NOT_FOUND");
+        }
+        const game = gamesRepository.findGameById(gameId);
+        if(game){
+            return sendJson(res, 200, {
+                ok: true,
+                applied: false,
+                reason: "ALREADY_PROCESSED",
+                match: game,
+            });
+        }
+        const {winner,loser} = computeEloWithWinStreak({
+            winnerRating : winnerUser.elo,
+            loserRating: loserUser.elo,
+            winnerWinStreak: winnerUser.winStreak
+        })
 
-module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser,getProfile,getPublicProfile };
+        await gamesRepository.createGame({
+            winnerId:winnerId,
+            loserId:loserId,
+            oldEloW:winnerUser.elo,
+            oldEloL:loserUser.elo,
+            newEloW:winner.newRating,
+            newEloL:loser.newRating,
+        });
+
+        await usersRepository.updateWinnerElo(winnerId,winner.newRating);
+        await usersRepository.updateLoserElo(loserId,loser.newRating);
+        return sendJson(res, 200, {
+            ok: true,
+            applied: true,
+            details : {
+                winner : {
+                    oldElo : winnerUser.elo,
+                    newElo : winner.newRating,
+                    delta : winner.delta,
+                },
+                loser:{
+                    oldElo: loserUser.elo,
+                    newElo: loser.newRating,
+                    delta: loser.delta,
+                }
+            }
+        });
+    }
+    catch (error) {
+        console.error("applyMatchResult error:", error);
+        return sendJson(res, 500, {
+            ok: false,
+            error: String(error?.message ?? error),
+        });
+    }
+}
+
+
+module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser,getProfile,getPublicProfile,onEloChange };
