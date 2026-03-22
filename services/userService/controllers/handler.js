@@ -2,7 +2,7 @@ const { getDb } = require("../repositories/mongo");
 const { readJsonBody, sendJson } = require("../helpers/parser");
 const connectedUsersService = require("../managers/connectedUsersService");
 const {extractToken,extractUserId} = require("../helpers/token");
-const {findUserByAuthId} = require("../repositories/userRepository");
+const usersRepository = require("../repositories/userRepository");
 
 
 async function createUser(req, res) {
@@ -15,22 +15,14 @@ async function createUser(req, res) {
             return;
         }
 
-        const db = await getDb();
-        const users = db.collection("users");
-        const existing = await users.findOne({ _id: authId });
+        const existing = await usersRepository.findUserByAuthId(authId);
 
         if (existing) {
             sendJson(res, 409, { ok: false, error: "ALREADY_EXISTS" });
             return;
         }
 
-        const result = await users.insertOne({
-            _id: authId,
-            username,
-            createdAt: new Date(),
-            elo : 1000,
-            profilePicture : 'img.png'
-        });
+        const result = await usersRepository.createUser(authId,username);
 
         return sendJson(res, 201, {
             ok: true,
@@ -77,7 +69,7 @@ async function connectUser(req,res){
             return;
         }
         const userId = extractUserId(token);
-        const user = await findUserByAuthId(userId);
+        const user = await usersRepository.findUserByAuthId(userId);
         if (!user) {
             sendJson(res,404,"USER_NOT_FOUND");
             return;
@@ -115,7 +107,7 @@ async function getProfile(req,res){
             return;
         }
         const userId = extractUserId(token);
-        const user = await findUserByAuthId(userId);
+        const user = await usersRepository.findUserByAuthId(userId);
         if (!user) {
             sendJson(res, 404, "USER_NOT_FOUND");
             return;
@@ -137,7 +129,7 @@ async function getProfile(req,res){
 async function getPublicProfile(req,res){
     try{
         const userId = req.params.userId;
-        const user = await findUserByAuthId(userId);
+        const user = await usersRepository.findUserByAuthId(userId);
         if(!user){
             sendJson(res, 404, "USER_NOT_FOUND");
             return;
