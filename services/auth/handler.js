@@ -2,9 +2,11 @@ const { getDb } = require("./mongo");
 const hash = require("js-sha256");
 const { readJsonBody, sendJson } = require("./helpers/parser");
 const jwt = require("jsonwebtoken");
+const {createUserProfile, markUserConnected,markUserDisconnected} = require("./userClient")
+const {extractToken} = require("./helpers/token")
 
-const jwtSecret = process.env.JWT_SECRET || 'toztoz';
-const tokenExpiry = process.env.TOKEN_EXPIRY || '12h';
+const jwtSecret = process.env.JWT_SECRET;
+const tokenExpiry = process.env.TOKEN_EXPIRY;
 
 async function register(req, res) {
     try {
@@ -27,6 +29,17 @@ async function register(req, res) {
             username,
             password: hashedPassword,
         });
+
+        try {
+            await createUserProfile({
+                authId: result.insertedId.toString(),
+                username,
+            });
+        } catch (syncError) {
+            await questions.deleteOne({ userId: result.insertedId });
+            await users.deleteOne({ _id: result.insertedId });
+            throw syncError;
+        }
 
         await questions.insertOne({
             userId: result.insertedId,
@@ -69,6 +82,7 @@ async function login(req, res) {
         const token = jwt.sign({ sub: user._id.toString(), username: user.username }, jwtSecret, {
             expiresIn: tokenExpiry
         });
+        await markUserConnected(token);
         return sendJson(res, 200, { ok: true, token , detail : "Vous êtes connecté ! :)"});
     } catch (error) {
         return sendJson(res, 500, {
@@ -76,19 +90,6 @@ async function login(req, res) {
             error: String(error?.message ?? error)
         });
     }
-}
-
-function extractToken(req, body) { // fonction qui extrait le token du body
-    if (body && body.token) {
-        return body.token;
-    }
-
-    const authHeader = req.headers.authorization;
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-        return authHeader.slice('Bearer '.length);
-    }
-
-    return null;
 }
 
 async function checkToken(req, res) {
@@ -180,7 +181,8 @@ async function resetPassword(req,res){
 }
 async function logout(req, res) {
     try {
-        await readJsonBody(req);
+        const token = extractToken(req,null);
+        await markUserDisconnected(token);
         res.writeHead(200, {
             'Content-Type': 'application/json',
             'Set-Cookie': [

@@ -15,3 +15,12 @@ export function setCookie(name, value) {
 export function removeCookie(name) {
     document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
 }
+
+export function clearCookies() {
+    const cookies = document.cookie.split(";");
+
+    for (let cookie of cookies) {
+        const name = cookie.split("=")[0].trim();
+        document.cookie = `${name}=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT`;
+    }
+}

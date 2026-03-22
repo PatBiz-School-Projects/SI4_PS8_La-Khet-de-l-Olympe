@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profil Public - La Khet De L'Olympe</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&display=swap" rel="stylesheet" />
+    <link href="./public-profile.css" rel="stylesheet" />
+    <script type="module" src="./public-profile.js" defer></script>
+</head>
+<body>
+<main class="profile-page">
+    <a class="back-link" href="../home-page/home-page.html">← Retour à l'accueil</a>
+
+    <section class="profile-card">
+        <img id="profile-picture" class="profile-picture" alt="Photo de profil" src="/assets/pharaoh-blue.png" />
+        <div class="profile-info">
+            <p class="profile-label">Profil public</p>
+            <h1 id="profile-username">Utilisateur</h1>
+            <p id="profile-elo">ELO: --</p>
+        </div>
+    </section>
+
+    <p id="profile-status" class="profile-status" aria-live="polite"></p>
+</main>
+</body>
+</html>

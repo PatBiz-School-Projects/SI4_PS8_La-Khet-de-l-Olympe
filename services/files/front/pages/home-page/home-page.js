@@ -1,6 +1,7 @@
 import "/components/index.js"
 
-import { setCookie, getCookie, removeCookie } from "/utils/cookie.js";
+import { setCookie, getCookie, removeCookie,clearCookies } from "/utils/cookie.js";
+
 
 
 function decodeJwtPayload(token) {
@@ -17,6 +18,7 @@ function decodeJwtPayload(token) {
 function setAuthButtonsVisibility(isLoggedIn) {
     signup_btn.style.display = isLoggedIn ? "none" : "inline-block";
     login_btn.style.display = isLoggedIn ? "none" : "inline-block";
+    profile_btn.style.display = isLoggedIn ? "inline-block" : "none";
     logout_btn.style.display = isLoggedIn ? "inline-block" : "none";
 }
 
@@ -40,19 +42,19 @@ function setSessionCookiesAndGetUserId() {
 
 async function logout() {
     try {
+        const token = getCookie('userToken');
         await fetch('/api/auth/logout', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({}),
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
         });
     } catch (error) {
         console.error('Logout request failed', error);
     } finally {
-        removeCookie('userToken');
-        document.cookie = 'userToken=; Path=/; Max-Age=0';
-        document.cookie = 'userId=; Path=/; Max-Age=0';
-        document.cookie = 'gameId=; Path=/; Max-Age=0';
-        setAuthButtonsVisibility(false);
+        clearCookies();
+        window.location.href="../login/login.html";
     }
 }
 
@@ -142,6 +144,8 @@ async function joinMultiplayerGame() {
 
     window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
+/** @type {HTMLButtonElement} */
+const profile_btn = document.getElementById("profile-btn");
 /** @type {HTMLButtonElement} */
 const signup_btn = document.getElementById("signup-btn");
 /** @type {HTMLButtonElement} */
