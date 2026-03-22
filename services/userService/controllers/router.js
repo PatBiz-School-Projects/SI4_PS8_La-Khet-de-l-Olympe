@@ -42,6 +42,12 @@ const routes = {
 
 async function manage(request, response) {
     const url = request.url;
+    const userIdMatch = url.match(/^\/api\/users\/([^\/]+)$/);
+
+    if (request.method === "GET" && userIdMatch) {
+        request.params = { userId: userIdMatch[1] };
+        return await userHandler.getPublicProfile(request, response);
+    }
     const routeKey = `${request.method} ${url}`
     if (routes[routeKey]) {
         await routes[routeKey](request, response);

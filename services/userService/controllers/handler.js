@@ -134,5 +134,25 @@ async function getProfile(req,res){
     }
 }
 
+async function getPublicProfile(req,res){
+    try{
+        const userId = req.params.userId;
+        const user = await findUserByAuthId(userId);
+        if(!user){
+            sendJson(res, 404, "USER_NOT_FOUND");
+            return;
+        }
+        return sendJson(res,200,{
+            username: user.username,
+            elo:user.elo,
+            profilePicture: user.profilePicture,
+        })
+    }
+    catch (error) {
+        console.error("getPublicProfile error:", error);
+        return sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+    }
+}
 
-module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser,getProfile };
+
+module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser,getProfile,getPublicProfile };
