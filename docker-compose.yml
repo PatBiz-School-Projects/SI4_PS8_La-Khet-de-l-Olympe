@@ -34,11 +34,11 @@ services:
       networks:
           - internal
       environment:
-          DB_URL: mongodb://mongo-user:27017
+          DB_URL: mongodb://mongo:27017
           DB_NAME: users
           PORT: 8004
       depends_on:
-          mongo-user:
+          mongo:
             condition: service_healthy
 
   games-service:
@@ -70,7 +70,7 @@ services:
   mongo:
       image: mongo:7.0
       volumes:
-          - ./data/auth:/data/db
+          - ./data/db:/data/db
       #command: ["mongod", "--quiet", "--logpath", "/dev/null"]
       networks:
           - internal
@@ -80,28 +80,16 @@ services:
           timeout: 5s
           retries: 5
 
-  mongo-user:
-      image: mongo:7.0
-      volumes:
-          - ./data/users:/data/db
-      #command: [ "mongod", "--quiet", "--logpath", "/dev/null" ]
-      networks:
-          - internal
-      healthcheck:
-          test: [ "CMD", "mongosh", "--eval", "db.adminCommand('ping')" ]
-          interval: 10s
-          timeout: 5s
-          retries: 5
   mongo-express:
     image: mongo-express:1.0.2-20-alpine3.19
     ports:
       - "8081:8081"
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://mongo-user:27017
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
       ME_CONFIG_BASICAUTH_USERNAME: admin
       ME_CONFIG_BASICAUTH_PASSWORD: admin
     depends_on:
-      mongo-user:
+      mongo:
         condition: service_healthy
     networks:
       - internal
