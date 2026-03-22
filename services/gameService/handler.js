@@ -322,7 +322,7 @@ exports.HTTPHandler = {
 exports.SocketIOMiddelware = (socket, next) => {
     try {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
-        const { waiting } = socket.handshake.query;
+        const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
 
         if (!userId) {
             throw new Error("Missing 'userId' cookie");
@@ -333,11 +333,14 @@ exports.SocketIOMiddelware = (socket, next) => {
         if (!gameId) {
             throw new Error("Missing 'gameId' cookie");
         }
-        if (waiting && !GamesManager.waitingRoomsId.includes(gameId)) {
-            throw new Error(`No waiting room with id=${gameId}`);
-        }
-        if (!GamesManager.runningGamesId.includes(gameId)) {
-            throw new Error(`No running game with id=${gameId}`);
+        if (inWaitingRoom) {
+            if (!GamesManager.waitingRoomsId.includes(gameId)) {
+                throw new Error(`No waiting room with id=${gameId}`);
+            }
+        } else {
+            if (!GamesManager.runningGamesId.includes(gameId)) {
+                throw new Error(`No running game with id=${gameId}`);
+            }
         }
     } catch (err) {
         console.error("Rejected socket bcs:", err);
@@ -355,10 +358,10 @@ exports.SocketIOHandler = {
 
     onConnection: async (io, socket, msgPayload) => {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
-        const { waiting } = socket.handshake.query;
+        const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
 
         const game = (
-            (waiting)
+            (inWaitingRoom)
             ? GamesManager.getWaitingRoomById(gameId)
             : GamesManager.getGameById(gameId)
         );
