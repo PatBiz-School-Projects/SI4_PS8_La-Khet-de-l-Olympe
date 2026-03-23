@@ -152,6 +152,11 @@ class Game {
         return this._mode;
     }
 
+    /** @type {Player | null} */
+    get winner() {
+        return this._winner;
+    }
+
     /**
      * @param {PlayerID} playerId
      *
@@ -210,6 +215,10 @@ class Game {
 
     isFinished() {
         return this._state === GameState.GAME_OVER || this._state === GameState.DRAW;
+    }
+
+    isRated(){
+        return this.players.forEach(player=>player.constructor.name!=="Bot");
     }
 
     /**
@@ -304,13 +313,51 @@ class Game {
         }
     }
 
+    buildRatedMatchPayload(){
+        if(!this.isRated()|| this._state!==GameState.GAME_OVER){
+            return null;
+        }
+        const loser = this.players.find(player => player.playerId !== this._winner.playerId);
+        if(!loser){ // pê cas draw dcp ?
+            return null; //TODO:changer
+        }
+        return {
+            gameId: this._gameId,
+            winnerId: this._winner.userId,
+            loserId: loser.userId,
+        };
+    }
 
-    onGameOver() {
+    applyRatingResult(matchRecord) {
+        if (!matchRecord) {
+            return {};
+        }
+
+        const ratingUpdatesByPlayerId = {};
+        const playerMappings = [
+            [matchRecord.winnerId, matchRecord.winner],
+            [matchRecord.loserId, matchRecord.loser],
+        ];
+
+        for (const [userId, ratingUpdate] of playerMappings) {
+            const player = this.players.find(candidate => candidate.userId === userId);
+            if (!player) {
+                continue;
+            }
+            ratingUpdatesByPlayerId[player.playerId] = ratingUpdate;
+        }
+
+        return ratingUpdatesByPlayerId;
+    }
+
+
+    onGameOver(ratingUpdatesByPlayerId) {
         for (const player of this.players) {
             if (player.socket) {
                 player.socket.emit("game-over", {
                     state: this._state,
                     winnerId: this._winner?.playerId,
+                    ratingUpdate : ratingUpdatesByPlayerId[player.playerId] ?? null
                 });
             }
         }
