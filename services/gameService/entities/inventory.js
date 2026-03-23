@@ -29,6 +29,10 @@ class Inventory {
         return this._color;
     }
 
+    get pyramidsCount(){
+        return this._pieces.length;
+    }
+
     toDTO() {
         const ret = [];
         for (let i=0; i<this._pieces.length; i++) {
@@ -58,6 +62,10 @@ class Inventory {
             throw new Error("The inventory is empty");
         }
         this._pieces.pop();
+    }
+
+    clear(){
+        this._pieces = [];
     }
 }
 

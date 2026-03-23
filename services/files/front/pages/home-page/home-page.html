@@ -33,10 +33,11 @@
         </div>
 
         <div class="play-buttons">
-            <button id="start-solo-btn" class="btn-play">
-                <div class="glow-bg"></div>
-                <span>Jouer en Solo</span>
-            </button>
+
+                <button id="start-solo-btn" class="btn-play">
+                    <div class="glow-bg"></div>
+                    <span>Jouer en Solo</span>
+                </button>
 
             <button id="join-multiplayer-btn" class="btn-play primary">
                 <div class="glow-bg"></div>
@@ -52,5 +53,22 @@
     </main>
 
     <p class="ornament">⬥ &nbsp; Khet — Le Jeu des Lasers &nbsp; ⬥</p>
+
+    <div id="difficulty-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Choisissez votre Destin</h2>
+            <div class="modal-buttons">
+                <button id="btn-easy" class="btn-play">
+                    <div class="glow-bg"></div>
+                    <span>Mortel (Facile)</span>
+                </button>
+                <button id="btn-hard" class="btn-play primary">
+                    <div class="glow-bg"></div>
+                    <span>Demi-Dieu (Difficile)</span>
+                </button>
+            </div>
+            <button id="close-modal-btn" class="btn-text">Fermer</button>
+        </div>
+    </div>
 </body>
 </html>

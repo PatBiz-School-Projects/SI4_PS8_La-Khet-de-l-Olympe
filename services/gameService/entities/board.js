@@ -143,6 +143,10 @@ class Board {
         this.emptyCell(pos);
     }
 
+    clearPieces(){
+        this.grid.flat().forEach(cell=>cell._content=null);
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // Actions
 
@@ -190,6 +194,12 @@ class Board {
 
         this.emptyCell(pos2);
         this.putPiece(piece1, pos2);
+    }
+
+    countPiecesByOwner(playerId) {
+        return this.grid.flat()
+            .filter(cell => cell.content !== null && cell.content.owner === playerId)
+            .length;
     }
 }
 
