@@ -1,5 +1,5 @@
 class User {
-    constructor({ id, username, elo, profilePicture,ratedGames,wins,losses,draws,winstreak }) {
+    constructor({ id, username, elo, profilePicture,ratedGames,wins,losses,draws,winStreak }) {
         this.id = id;
         this.username = username;
         this.elo = elo;
@@ -8,7 +8,7 @@ class User {
         this.wins = wins;
         this.losses = losses;
         this.draws = draws;
-        this.winStreak = winstreak;
+        this.winStreak = winStreak;
     }
 
     static builder(document) {
