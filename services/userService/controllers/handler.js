@@ -5,6 +5,7 @@ const {extractToken,extractUserId} = require("../helpers/token");
 const usersRepository = require("../repositories/userRepository");
 const {computeEloWithWinStreak} = require("../utils/elo");
 const gamesRepository = require("../repositories/gamesRepository");
+const friendshipManager = require("../managers/friendshipManager");
 
 
 async function createUser(req, res) {
@@ -114,7 +115,7 @@ async function getProfile(req,res){
             sendJson(res, 404, "USER_NOT_FOUND");
             return;
         }
-        const userFriends = []; // TODO: fetch real user friends when implemented
+        const userFriends = await friendshipManager.getAllFriends(userId);
         return sendJson(res, 200, {
             username: user.username,
             profilePicture: user.profilePicture,
