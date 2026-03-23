@@ -151,6 +151,7 @@ async function getPublicProfile(req,res){
 async function onEloChange(req,res){
     try{
         const body = await readJsonBody(req);
+        console.log(body)
         const {gameId,winnerId,loserId}=body;
         const winnerUser = await usersRepository.findUserByAuthId(winnerId);
         const loserUser = await usersRepository.findUserByAuthId(loserId);
