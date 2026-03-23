@@ -156,9 +156,9 @@ async function onEloChange(req,res){
         const winnerUser = await usersRepository.findUserByAuthId(winnerId);
         const loserUser = await usersRepository.findUserByAuthId(loserId);
         if(!winnerUser || !loserUser){
-            sendJson(res, 404, "ONE_USER_NOT_FOUND");
+            return sendJson(res, 404, "ONE_USER_NOT_FOUND");
         }
-        const game = gamesRepository.findGameById(gameId);
+        const game = await gamesRepository.findGameById(gameId);
         if(game){
             return sendJson(res, 200, {
                 ok: true,
@@ -173,32 +173,22 @@ async function onEloChange(req,res){
             winnerWinStreak: winnerUser.winStreak
         })
 
-        await gamesRepository.createGame({
-            winnerId:winnerId,
-            loserId:loserId,
-            oldEloW:winnerUser.elo,
-            oldEloL:loserUser.elo,
-            newEloW:winner.newRating,
-            newEloL:loser.newRating,
-        });
+        const matchRecord = {
+            gameId,
+            winnerId,
+            loserId,
+            winner,
+            loser,
+        };
+
+        await gamesRepository.createGame(matchRecord);
 
         await usersRepository.updateWinnerElo(winnerId,winner.newRating);
         await usersRepository.updateLoserElo(loserId,loser.newRating);
         return sendJson(res, 200, {
             ok: true,
             applied: true,
-            details : {
-                winner : {
-                    oldElo : winnerUser.elo,
-                    newElo : winner.newRating,
-                    delta : winner.delta,
-                },
-                loser:{
-                    oldElo: loserUser.elo,
-                    newElo: loser.newRating,
-                    delta: loser.delta,
-                }
-            }
+            match : matchRecord
         });
     }
     catch (error) {
