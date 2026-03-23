@@ -5,11 +5,27 @@ const { GameMode } = require("./manager/game");
 const { PlayersManager } = require("./PlayersManager");
 
 const { RandomAI } = require("./ai/ai");
+const {applyMatchResult} = require("./userClient");
 
 
 //
 // HTTP
 //
+
+async function finalizeRatedGame(game) {
+    const ratedMatchPayload = game.buildRatedMatchPayload();
+    if (!ratedMatchPayload) {
+        return {};
+    }
+
+    try {
+        const ratingResponse = await applyMatchResult(ratedMatchPayload);
+        return game.applyRatingResult(ratingResponse.match);
+    } catch (error) {
+        console.error(`Unable to apply Elo result for game=${game.id}:`, error);
+        return {};
+    }
+}
 
 
 exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
@@ -182,10 +198,13 @@ exports.HTTPHandler = {
             const {actionRes, laserRes} = game.onAction(action);
             sendJson(res, 200, { ok:true, ...actionRes, ...laserRes });
 
-            game.nextTurn();
+            if (!game.isFinished()) {
+                game.nextTurn();
+            }
 
             if (game.isFinished()) {
-                game.onGameOver();
+                const ratingUpdatesByPlayerId = await finalizeRatedGame(game);
+                game.onGameOver(ratingUpdatesByPlayerId);
             }
         } catch (err) {
             console.error(err)
