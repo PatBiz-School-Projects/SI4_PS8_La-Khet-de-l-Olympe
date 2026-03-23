@@ -76,14 +76,35 @@ async function newPlayer() {
 }
 
 
-async function startSoloGame() {
+const modal = document.getElementById("difficulty-modal");
+const closeModalBtn = document.getElementById("close-modal-btn");
+const btnEasy = document.getElementById("btn-easy");
+const btnHard = document.getElementById("btn-hard");
+
+
+
+closeModalBtn.onclick = () => {
+    modal.style.display = "none";
+};
+
+btnEasy.onclick = async () => {
+    modal.style.display = "none";
+    await startSoloGame("easy");
+};
+
+btnHard.onclick = async () => {
+    modal.style.display = "none";
+    await startSoloGame("hard");
+};
+
+async function startSoloGame(difficulty) {
     const playerId = await newPlayer();
 
     try {
         const res = await fetch("/api/game-service/start-solo-game", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({playerId}),
+            body: JSON.stringify({playerId,difficulty}),
         });
         if (!res.ok) {
             throw res.error;
@@ -157,7 +178,9 @@ setAuthButtonsVisibility(Boolean(setSessionCookiesAndGetUserId()));
 
 /** @type {HTMLButtonElement} */
 const startSoloGame_btn = document.getElementById("start-solo-btn");
-startSoloGame_btn.onclick = async (_) => await startSoloGame()
+startSoloGame_btn.onclick = () => {
+    modal.style.display = "flex";
+};
 
 
 /** @type {HTMLButtonElement} */
