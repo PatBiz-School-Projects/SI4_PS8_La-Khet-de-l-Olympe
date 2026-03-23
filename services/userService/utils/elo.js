@@ -2,8 +2,9 @@ function expectedScore(playerRating, opponentRating) {
     return 1 / (1 + 10 ** ((opponentRating - playerRating) / 400));
 }
 
-function streakBonus(winStreak, cap = 36, smoothing = 4) {
-    const s = Math.max(0, winStreak);
+function streakBonus(winStreak = 0, cap = 36, smoothing = 4) {
+    const normalizedStreak = Number.isFinite(winStreak) ? winStreak : 0;
+    const s = Math.max(0, normalizedStreak);
     const h = Math.max(1, smoothing);
 
     return cap * (s * s) / (s * s + h * h);
@@ -12,7 +13,7 @@ function streakBonus(winStreak, cap = 36, smoothing = 4) {
 function computeEloWithWinStreak({
                                      winnerRating,
                                      loserRating,
-                                     winnerWinStreak,
+                                     winnerWinStreak = 0,
                                      kFactor = 24,
                                      streakCap = 36,
                                      smoothing = 4,
@@ -36,14 +37,6 @@ function computeEloWithWinStreak({
             delta: loserDelta,
             newRating: loserRating + loserDelta,
         },
-        /*meta: {
-            expectedWinner,
-            baseDelta,
-            bonus,
-            kFactor,
-            streakCap,
-            smoothing,
-        },*/
     };
 }
 
