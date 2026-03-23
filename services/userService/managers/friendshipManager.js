@@ -88,7 +88,27 @@ async function getAllFriends(userId){
 }
 
 async function listReceivedRequests(userId){
-    return friendshipRepository.listPendingReceivedRequests(userId);
+    const requests = await friendshipRepository.listPendingReceivedRequests(userId);
+    const enrichedRequests = await Promise.all(requests.map(async (request) => {
+        const requesterId = request.requested_by;
+        const requester = await usersRepository.findUserByAuthId(requesterId);
+
+        if (!requester) {
+            return null;
+        }
+
+        return {
+            id: request._id?.toString?.() ?? null,
+            requester: {
+                id: requester.id,
+                username: requester.username,
+                elo: requester.elo,
+                profilePicture: requester.profilePicture,
+            },
+        };
+    }));
+
+    return enrichedRequests.filter(Boolean);
 }
 
 async function isUserPresent(userId){
