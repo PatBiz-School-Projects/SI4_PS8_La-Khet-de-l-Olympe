@@ -119,7 +119,16 @@ async function getProfile(req,res){
             username: user.username,
             profilePicture: user.profilePicture,
             elo: user.elo,
-            friends: userFriends
+            friends: userFriends,
+            stats:{
+                totalGames: user.ratedGames,
+                totalLosses: user.losses,
+                totalWins : user.wins,
+                winStreak: user.winStreak,
+                winRate: user.ratedGames > 0
+                    ? Math.round(((user.wins ?? 0) / user.ratedGames) * 100)
+                    : 0,
+            }
         });
     }
     catch (error) {
@@ -140,6 +149,15 @@ async function getPublicProfile(req,res){
             username: user.username,
             elo:user.elo,
             profilePicture: user.profilePicture,
+            stats:{
+                totalGames: user.ratedGames,
+                totalWins : user.wins,
+                totalLosses: user.losses,
+                winStreak: user.winStreak,
+                winRate: user.ratedGames > 0
+                    ? Math.round(((user.wins ?? 0) / user.ratedGames) * 100)
+                    : 0,
+            }
         })
     }
     catch (error) {
