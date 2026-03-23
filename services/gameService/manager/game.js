@@ -218,7 +218,7 @@ class Game {
     }
 
     isRated(){
-        return this.players.forEach(player=>player.constructor.name!=="Bot");
+        return this._mode===GameMode.MULTIPLAYER && this.players.every(player => player.constructor.name !== "Bot");
     }
 
     /**
@@ -346,7 +346,6 @@ class Game {
             }
             ratingUpdatesByPlayerId[player.playerId] = ratingUpdate;
         }
-
         return ratingUpdatesByPlayerId;
     }
 
@@ -364,4 +363,4 @@ class Game {
     }
 }
 
-module.exports = { Game, GameID, GameMode }
+module.exports = { Game, GameID, GameMode}
