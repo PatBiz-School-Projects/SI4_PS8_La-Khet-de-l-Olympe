@@ -19,13 +19,38 @@
             <p id="profile-elo">ELO: --</p>
         </div>
     </section>
-
+    <section class="stats-card" aria-labelledby="profile-stats-title">
+        <h2 id="profile-stats-title">Statistiques</h2>
+        <div class="stats-grid">
+            <article class="stat-item">
+                <p class="stat-label">Winrate</p>
+                <p id="profile-winRate" class="stat-value">0%</p>
+            </article>
+            <article class="stat-item">
+                <p class="stat-label">Total games</p>
+                <p id="profile-total-games" class="stat-value">0</p>
+            </article>
+            <article class="stat-item">
+                <p class="stat-label">Total wins</p>
+                <p id="profile-total-wins" class="stat-value">0</p>
+            </article>
+            <article class="stat-item">
+                <p class="stat-label">Total losses</p>
+                <p id="profile-total-losses" class="stat-value">0</p>
+            </article>
+            <article class="stat-item">
+                <p class="stat-label">Win streak</p>
+                <p id="profile-win-streak" class="stat-value">0</p>
+            </article>
+        </div>
+    </section>
     <section class="friends-card">
         <h2>Liste d'amis</h2>
         <p class="empty-friends">Aucun ami à afficher pour le moment.</p>
     </section>
 
-    <p id="profile-status" class="profile-status"></p>
+
+    <p id="profile-status" class="profile-status" aria-live="polite"></p>
 </main>
 </body>
 </html>

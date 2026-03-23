@@ -49,6 +49,7 @@ services:
       - internal
     environment:
         PORT: 8002
+        USER_SERVICE_URL: http://user-service:8004
 
   auth-service:
     build:
@@ -71,7 +72,7 @@ services:
       image: mongo:7.0
       volumes:
           - ./data/db:/data/db
-      #command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+      command: ["mongod", "--quiet", "--logpath", "/dev/null"]
       networks:
           - internal
       healthcheck:

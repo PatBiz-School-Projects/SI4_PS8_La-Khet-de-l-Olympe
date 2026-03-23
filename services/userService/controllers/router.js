@@ -20,6 +20,9 @@ const routes = {
     "GET /api/users/profile" : async (request, response) => {
         await userHandler.getProfile(request, response);
     },
+    "POST /api/users/elo/match-result" : async (request, response) => {
+        await userHandler.onEloChange(request, response);
+    },
     "POST /api/users/friends/request" : async (request, response) => {
         await friendshipHandler.handleSendRequest(request, response);
     },
@@ -42,19 +45,20 @@ const routes = {
 
 async function manage(request, response) {
     const url = request.url;
-    const userIdMatch = url.match(/^\/api\/users\/([^\/]+)$/);
+    const routeKey = `${request.method} ${url}`;
 
+    if (routes[routeKey]) {
+        return await routes[routeKey](request, response);
+    }
+
+    const userIdMatch = url.match(/^\/api\/users\/([^\/]+)$/);
     if (request.method === "GET" && userIdMatch) {
         request.params = { userId: userIdMatch[1] };
         return await userHandler.getPublicProfile(request, response);
     }
-    const routeKey = `${request.method} ${url}`
-    if (routes[routeKey]) {
-        await routes[routeKey](request, response);
-    } else {
-        response.writeHead(404, { 'Content-Type': 'application/json' });
-        response.end(JSON.stringify({ error: 'Not Found' }));
-    }
+
+    response.writeHead(404, { 'Content-Type': 'application/json' });
+    response.end(JSON.stringify({ error: 'Not Found' }));
 }
 
 module.exports = { manage };

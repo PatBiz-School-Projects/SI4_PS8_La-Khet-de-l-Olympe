@@ -75,21 +75,30 @@ const gameOverOverlay = document.querySelector("#game-over-overlay");
 const gameOverMessage = document.querySelector("#game-over-message");
 let isGameOver = false;
 
-function showGameOver({ state, winnerId }) {
+function formatRatingUpdate(ratingUpdate) {
+    if (!ratingUpdate) {
+        return "";
+    }
+
+    const signedDelta = ratingUpdate.delta >= 0 ? `+${ratingUpdate.delta}` : `${ratingUpdate.delta}`;
+    return ` ELO ${signedDelta} · nouveau score ${ratingUpdate.newRating}.`;
+}
+
+function showGameOver({ state, winnerId, ratingUpdate }) {
     isGameOver = true;
     const isDraw = state === "DRAW";
     const didIWin = winnerId === CLIENT_PLAYER_ID;
 
     // REVIEW : What happens if the game was a local multiplayer game
 
-    gameOverMessage.textContent = (
+    const baseMessage = (
         isDraw
             ? "Match nul."
             : didIWin
                 ? "Victoire !"
                 : "Défaite..."
     );
-
+    gameOverMessage.textContent = `${baseMessage}${formatRatingUpdate(ratingUpdate)}`;
     gameOverOverlay.classList.remove("hidden");
 }
 
