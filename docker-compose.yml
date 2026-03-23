@@ -49,6 +49,7 @@ services:
       - internal
     environment:
         PORT: 8002
+        USER_SERVICE_URL: http://user-service:8004
 
   auth-service:
     build:
