@@ -298,8 +298,7 @@ class Game {
         return { path, grid};
     }
 
-
-    onAction(action) {
+    onPlayerAction(action) {
         this.actionValidator.validate(action);
 
         this.ACTIONS[action.method](action.args);
@@ -317,6 +316,12 @@ class Game {
             ...action, // other player needs to know which action happened
             result,
         });
+
+        this.nextTurn();
+
+        if (this.isFinished()) {
+            this.onGameOver();
+        }
 
         return result;
     }
