@@ -5,22 +5,17 @@ async function getGamesCollection() {
     return db.collection('games');
 }
 
-async function createGame({winnerId,loserId,oldEloW,oldEloL,newEloW,newEloL}) {
+async function createGame(matchRecord) {
     const games = await getGamesCollection();
     return games.insertOne({
-        winnerId:winnerId,
-        loserId:loserId,
-        oldEloW:oldEloW,
-        oldEloL:oldEloL,
-        newEloW:newEloW,
-        newEloL:newEloL,
-        createdAt:new Date(),
+        ...matchRecord,
+        createdAt: new Date(),
     });
 }
 
 async function findGameById(gameId) {
     const games = await getGamesCollection();
-    return games.findOne({ _id: gameId });
+    return games.findOne({ gameId });
 }
 
 module.exports = {
