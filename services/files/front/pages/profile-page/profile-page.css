@@ -89,9 +89,107 @@ body {
 .friends-card h2 { margin-top: 0; }
 .empty-friends { color: var(--muted); }
 .profile-status { color: #ffb3b3; }
+.friend-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0;
+    display: grid;
+    gap: 12px;
+}
+
+.friend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 16px;
+    border: 1px solid rgba(201, 168, 76, 0.25);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.friend-main {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.friend-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid rgba(201, 168, 76, 0.6);
+}
+
+.friend-name {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.friend-meta {
+    margin: 6px 0 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+}
+
+.friend-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.friend-button {
+    border: 1px solid rgba(201, 168, 76, 0.45);
+    background: transparent;
+    color: var(--text);
+    border-radius: 999px;
+    padding: 10px 14px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.friend-button:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+}
+
+.friend-button.danger {
+    border-color: rgba(255, 130, 130, 0.5);
+    color: #ffb3b3;
+}
+
+.friend-button.danger:hover {
+    border-color: #ff8a8a;
+    color: #ffd2d2;
+}
+
+@media (max-width: 640px) {
+    .friend-item,
+    .friend-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .friend-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+}
 @media (max-width: 640px) {
     .profile-card {
         flex-direction: column;
         text-align: center;
+    }
+    .friend-item,
+    .friend-main {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .friend-actions {
+        width: 100%;
+        justify-content: flex-start;
     }
 }

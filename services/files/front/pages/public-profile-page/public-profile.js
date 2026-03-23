@@ -1,7 +1,15 @@
+import {getCookie} from "/utils/cookie.js";
+
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
 const pictureEl = document.getElementById('profile-picture');
 const statusEl = document.getElementById('profile-status');
+const addFriendButton = document.getElementById('add-friend-button');
+
+function setStatus(message, isError = false) {
+    statusEl.textContent = message;
+    statusEl.style.color = isError ? '#ffb3b3' : '#b8f7c5';
+}
 
 function getPictureUrl(profilePicture) {
     if (!profilePicture) {
@@ -14,6 +22,42 @@ function getPictureUrl(profilePicture) {
 
     return `/assets/${profilePicture}`;
 }
+
+async function sendFriendRequest(userId) {
+    const token = getCookie('userToken');
+    if (!token) {
+        setStatus('Connectez-vous pour ajouter cet utilisateur en ami.');
+        return;
+    }
+
+    addFriendButton.disabled = true;
+
+    try {
+        const response = await fetch('/api/users/friends/request', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ targetUserId: userId })
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+            setStatus(payload.error || 'Impossible d’envoyer la demande.');
+            addFriendButton.disabled = false;
+            return;
+        }
+
+        addFriendButton.textContent = 'Demande envoyée';
+        setStatus('La demande d’ami a bien été envoyée.');
+    } catch (error) {
+        console.error(error);
+        setStatus('Impossible d’envoyer la demande d’ami.');
+        addFriendButton.disabled = false;
+    }
+}
+
 
 async function loadPublicProfile() {
     const userId = new URLSearchParams(window.location.search).get('userId');
@@ -45,6 +89,7 @@ async function loadPublicProfile() {
         pictureEl.onerror = () => {
             pictureEl.src = '/assets/pharaoh-blue.png';
         };
+        addFriendButton.addEventListener('click', () => sendFriendRequest(userId));
     } catch (error) {
         console.error(error);
         statusEl.textContent = 'Impossible de charger le profil public.';
