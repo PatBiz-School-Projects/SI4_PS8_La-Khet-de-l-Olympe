@@ -65,7 +65,26 @@ async function removeFriend(currentUserId,targetUserId){
 }
 
 async function getAllFriends(userId){
-    return friendshipRepository.listAcceptedFriendshipsByUser(userId);
+    const friendships = await friendshipRepository.listAcceptedFriendshipsByUser(userId);
+    const friends = await Promise.all(friendships.map(async (friendship) => {
+        const friendId = friendship.user_id_1 === userId ? friendship.user_id_2 : friendship.user_id_1;
+        const friend = await usersRepository.findUserByAuthId(friendId);
+
+        if (!friend) {
+            return null;
+        }
+
+        return {
+            id: friend.id,
+            username: friend.username,
+            elo: friend.elo,
+            profilePicture: friend.profilePicture,
+            friendshipId: friendship._id?.toString?.() ?? null,
+            acceptedAt: friendship.accepted_at,
+        };
+    }));
+
+    return friends.filter(Boolean);
 }
 
 async function listReceivedRequests(userId){
