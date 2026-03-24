@@ -262,7 +262,6 @@ export class BoardRenderer {
             });
         }
 
-        console.log("Switch :",actions.switches);
         if (actions.switches) {
             ctx.save();
             ctx.fillStyle = switchColor;

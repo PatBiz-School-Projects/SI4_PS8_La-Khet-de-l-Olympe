@@ -65,12 +65,16 @@ export class GameRotationIndicator extends HTMLElement {
 
     _setupListeners() {
         this.shadowRoot.querySelector("#left-button").onclick = (event) => {
-            console.log("button left clicked");
+            // DEBUG::
+            console.log("Clicked on left rotation button");
+
             event.stopPropagation();
             this._dispatchRotation("left");
         };
         this.shadowRoot.querySelector("#right-button").onclick = (event) => {
-            console.log("button right clicked");
+            // DEBUG::
+            console.log("Clicked on right rotation button");
+
             event.stopPropagation();
             this._dispatchRotation("right");
         };

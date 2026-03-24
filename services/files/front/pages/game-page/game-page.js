@@ -159,8 +159,7 @@ onload = async (_) => {
 
     const activePlayerId = await askWhoIsPlaying();
 
-    const playerCanPlay = (CLIENT_PLAYER_ID === activePlayerId);
-    if (playerCanPlay) {
+    if (CLIENT_PLAYER_ID === activePlayerId) {
         // DEBUG::
         console.log(`Faked reception of 'start-turn' event for player with id=${CLIENT_PLAYER_ID}`);
 
@@ -273,28 +272,23 @@ stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos
     try {
         player1RotationIndicator.active = false;
         player2RotationIndicator.active = false;
+
         const activeRotation = PLAYERS_ROTATION_INDICATOR[CLIENT_PLAYER_ID];
         const isFromInventory = (pos === null || pos === undefined);
 
-        if(isFromInventory) {
-
-            if(activeRotation) {
-
+        if (isFromInventory) {
+            if (activeRotation) {
                 await activeRotation.showPiece(piece, null, 'inventory');
             }
-        }
-        else{
-
+        } else {
             const response = await fetch(`/api/game-service/possible-actions?x=${pos.x}&y=${pos.y}`);
             const legalMoves = await response.json();
             await board.showVisualisationMoves(legalMoves);
 
             if (activeRotation) {
-
-                await activeRotation.showPiece(piece, pos,'board');
+                await activeRotation.showPiece(piece, pos, 'board');
             }
         }
-
     } catch (err) {
         throw err;
     }

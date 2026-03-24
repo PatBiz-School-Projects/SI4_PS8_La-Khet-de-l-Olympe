@@ -135,7 +135,6 @@ export class InventoryRenderer {
      * @param {number} slotIdx
      */
     async clearPieceAt(slotIdx) {
-        console.log("Efface maintenant");
         const ctx = this.canvases["pieces-canvas"].getContext("2d");
         const { x, y } = this._slotOrigin(slotIdx);
         ctx.clearRect(x, y, this.slotSize, this.slotSize);
