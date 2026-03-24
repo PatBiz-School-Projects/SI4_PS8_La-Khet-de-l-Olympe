@@ -108,3 +108,6 @@ dist
 
 # Local files
 .local/
+
+# Data folder (volume of mongodb)
+data/
