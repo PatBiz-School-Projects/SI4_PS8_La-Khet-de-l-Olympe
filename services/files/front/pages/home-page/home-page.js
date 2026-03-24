@@ -1,7 +1,7 @@
 import "/components/index.js"
 
 import { setCookie, getCookie, removeCookie, removeAllCookies } from "/utils/cookie.js";
-import { decodeJwtPayload } from "/utils/jwt";
+import { decodeJwtPayload } from "/utils/jwt.js";
 
 
 //
