@@ -246,10 +246,6 @@ class Game {
         this._turnCount++;
         this._currActivePlayer = this._players[(this._turnCount-1)%2];
 
-        this._currActivePlayer.socket.emit("start-turn", {
-            playerId: this._currActivePlayer.playerId
-        });
-
         for (const player of this._players) {
             this._playersSwapCooldowns[player.playerId]--;
         }
@@ -257,6 +253,10 @@ class Game {
         if (this._turnCount > Game.TURN_LIMIT) {
             this._state = GameState.DRAW;
         }
+
+        this._currActivePlayer.socket.emit("start-turn", {
+            playerId: this._currActivePlayer.playerId
+        });
     }
 
 
@@ -309,6 +309,12 @@ class Game {
         const result = {};
         result.grid = this.board.toDTO().grid;
         result.laserPath = laserPath ?? undefined;
+
+        const currInactivePlayer = this._players[this._turnCount%2];
+        currInactivePlayer.socket.emit("opponent-action", {
+            ...action, // other player needs to know which action happened
+            result,
+        });
 
         return result;
     }

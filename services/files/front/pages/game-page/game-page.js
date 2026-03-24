@@ -1,5 +1,7 @@
 import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/components/index.js";
 
+import { Piece } from "/components/game-board/Piece.js";
+
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
 import { GameActionType } from "./GamePageStateMachine/GameAction.js";
@@ -153,7 +155,7 @@ async function askWhoIsPlaying() {
     return playerId;
 }
 
-onload = async (_) => {
+onload = async _ => {
     PLAYERS_ID = await fetchPlayersId();
     CLIENT_PLAYER_ID = await fetchClientPlayerId();
 
@@ -197,9 +199,9 @@ onload = async (_) => {
 //
 
 
-const turnEventQueue = new EventQueue();
+const gameEventQueue = new EventQueue();
 
-socket.on("start-turn", turnEventQueue.enqueue(async payload => {
+socket.on("start-turn", gameEventQueue.enqueue(async payload => {
     // DEBUG::
     console.log(`Received 'start-turn' event for player with id=${payload.playerId}`);
 
@@ -216,12 +218,12 @@ socket.on("start-turn", turnEventQueue.enqueue(async payload => {
     PLAYERS_INVENTORY[CLIENT_PLAYER_ID].active = true;
 }));
 
-socket.on("end-turn", turnEventQueue.enqueue(async _ => {
+socket.on("end-turn", gameEventQueue.enqueue(async _ => {
     // DEBUG::
     console.log(`Received 'end-turn' event for player with id=${CLIENT_PLAYER_ID}`);
 
-    // TODO (in the backend) : Add `playerId` in the payload corresponding to the opponent who will starts its turn
-    const activePlayerId = await askWhoIsPlaying();
+    // `activePlayerId` correspond to the id of the player who received a `start-turn`
+    const activePlayerId = PLAYERS_ID[(PLAYERS_ID.indexOf(CLIENT_PLAYER_ID)+1) % 2];
 
     stateMachine.on({ type: GamePageActionType.END_TURN })
 
@@ -232,12 +234,69 @@ socket.on("end-turn", turnEventQueue.enqueue(async _ => {
     PLAYERS_INVENTORY[CLIENT_PLAYER_ID].active = false;
 }));
 
-socket.on("game-over", payload => {
+socket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {
+    // DEBUG::
+    console.log(
+        "Opponent's action:",
+        "\n- action method:", method,
+        "\n- action arguments:", args,
+        "\n- action result:", result,
+    );
+
+    switch (method) {
+        case "move": {
+            let {piece, from, to} = args;
+            piece = board.getPieceAt(from);
+
+            // DEBUG::
+            console.log("Opponent moved piece:", piece, "from:", from, "to:", to);
+
+            await board.movePiece(piece, from, to);
+        } break;
+        case "place": {
+            let {piece, pos} = args;
+            piece = Piece.fromDTO(piece);
+
+            // DEBUG::
+            console.log("Opponent placed piece:", piece, "at:", pos);
+
+            await PLAYERS_INVENTORY[PLAYERS_ID.filter(id => id !== CLIENT_PLAYER_ID)[0]].popPyramid();
+            await board.placePiece(piece, pos);
+        } break;
+        case "rotate": {
+            let {piece, pos, rotation} = args;
+            piece = board.getPieceAt(pos);
+
+            // DEBUG::
+            console.log("Opponent rotated a piece:", piece, "at:", pos, "to the:", rotation);
+
+            await board.rotatePiece(piece, pos, rotation);
+        } break;
+        case "switch": {
+            let {piece1, pos1, piece2, pos2} = args;
+            piece1 = board.getPieceAt(pos1);
+            piece2 = board.getPieceAt(pos2);
+
+            // DEBUG::
+            console.log("Opponent switched piece:", piece1, "at:", pos1, "with piece:", piece2, "at:", pos2);
+
+            await board.switchPieces(piece1, pos1, piece2, pos2);
+        } break;
+    }
+
+    if (result.laserPath) {
+        await board.showLaserBeam(result.laserPath);
+        // REVIEW : It's better for the backend to send an event when a piece is destroyed
+        await board.syncGrid(result.grid);
+    }
+}));
+
+socket.on("game-over", gameEventQueue.enqueue(payload => {
     // DEBUG::
     console.log("Received 'game-over' event:", payload);
 
     showGameOver(payload);
-});
+}));
 
 
 onclick = (event) => {
@@ -345,6 +404,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
     await board.movePiece(piece, from, to);
     if (actionResult?.laserPath) {
         await board.showLaserBeam(actionResult.laserPath);
+        // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
     }
 });
@@ -395,6 +455,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     await board.placePiece(pieceToPlace, pos);
     if (actionResult?.laserPath) {
         await board.showLaserBeam(actionResult.laserPath);
+        // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
     }
 });
@@ -434,6 +495,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
     await board.rotatePiece(piece, pos, rotation);
     if (actionResult?.laserPath) {
         await board.showLaserBeam(actionResult.laserPath);
+        // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
     }
 });
@@ -483,6 +545,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
     await board.switchPieces(piece1, pos1, piece2, pos2);
     if (actionResult?.laserPath) {
         await board.showLaserBeam(actionResult.laserPath);
+        // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
     }
 });
