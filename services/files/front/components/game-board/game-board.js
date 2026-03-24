@@ -174,7 +174,7 @@ export class GameBoard extends HTMLElement {
      * @param {Coord} pos - The position where to place the piece
      */
     async placePiece(piece, pos) {
-        this.grid[pos.x][pos.y].put(piece);
+        this.getCellAt(pos).put(piece);
 
         // TODO : Uncomment once `BoardRenderer::_convCoordToCanvasCoord` is fixed
         // await this.renderer.drawPieceAt(piece, pos);
@@ -187,40 +187,6 @@ export class GameBoard extends HTMLElement {
     }
 
 
-    _convertRotationToCardinalCoordinate(orientation,rotation) {
-        let newOrientation = null;
-        switch (orientation) {
-            case "N":
-                newOrientation = (
-                    (rotation === "left")
-                    ? "W"
-                    : "E"
-                );
-                break;
-            case "S":
-                newOrientation = (
-                    (rotation === "left")
-                    ? "E"
-                    : "W"
-                );
-                break;
-            case "E":
-                newOrientation = (
-                    (rotation === "left")
-                    ? "N"
-                    : "S"
-                );
-                break;
-            case "W":
-                newOrientation = (
-                    (rotation === "left")
-                    ? "S"
-                    : "N"
-                );
-                break;
-        }
-        return newOrientation;
-    }
 
     /**
      * Apply the given rotation to the given piece at the given position
@@ -231,11 +197,13 @@ export class GameBoard extends HTMLElement {
      * @param {"left"|"right"} rotation - The rotation to apply
      */
     async rotatePiece(piece, pos, rotation) {
-        const pieceToRotate = this.getPieceAt(pos);
-        const cardinalCoordinate = this._convertRotationToCardinalCoordinate(pieceToRotate.orientation,rotation);
-        if(cardinalCoordinate){
-            pieceToRotate.rotateTo(cardinalCoordinate);
-        }
+        piece.rotate(rotation);
+
+        // TODO : Uncomment once `BoardRenderer::_convCoordToCanvasCoord` is fixed
+        // await this.renderer.clearPieceAt(pos);
+        // await this.renderer.drawPieceAt(piece, pos);
+
+        // NOTE : Temporary solution
         await this.renderer.drawBoard(this.grid);
     }
 
@@ -255,13 +223,18 @@ export class GameBoard extends HTMLElement {
         this.getCellAt(pos2).put(piece1);
         this.getCellAt(pos1).put(piece2);
 
-        await this.renderer.drawBoard(this.grid);
+        // TODO : Uncomment once `BoardRenderer::_convCoordToCanvasCoord` is fixed
+        // await this.renderer.clearPieceAt(pos1);
+        // await this.renderer.clearPieceAt(pos2);
+        // await this.renderer.drawPieceAt(piece1, pos2);
+        // await this.renderer.drawPieceAt(piece2, pos1);
 
+        // NOTE : Temporary solution
+        await this.renderer.drawBoard(this.grid);
     }
 
 
     async showLaserBeam(laserPath) {
-        console.log(laserPath);
         await this.renderer.drawLaser(laserPath);
         const delay = ms => new Promise(res => setTimeout(res, ms));
         await delay(2000);
@@ -274,6 +247,7 @@ export class GameBoard extends HTMLElement {
         await this.renderer.drawVisualisation(actions);
     }
 
+
     /**
      * Synchronise la grille locale avec l'état du serveur (post-laser).
      * @param {Object[][]} gridDTO - La grille brute renvoyée par le serveur.
@@ -281,15 +255,10 @@ export class GameBoard extends HTMLElement {
     async syncGrid(gridDTO) {
         if (!gridDTO) return;
 
-        console.log("gridDTO :",gridDTO);
-
         this.grid = gridDTO.map(row =>
             row.map(cellDTO => Cell.fromDTO(cellDTO))
         );
         await this.renderer.drawBoard(this.grid);
-
-
-        console.log("Grid sync complete after laser hit.");
     }
 }
 customElements.define('game-board', GameBoard);
