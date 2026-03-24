@@ -1,43 +1,22 @@
 import "/components/index.js"
 
-import { setCookie, getCookie, removeCookie,clearCookies } from "/utils/cookie.js";
+import { setCookie, getCookie, removeCookie, removeAllCookies } from "/utils/cookie.js";
+import { decodeJwtPayload } from "/utils/jwt";
 
 
+//
+// Auth Logic & Components
+//
 
-function decodeJwtPayload(token) {
-    try {
-        const payloadPart = token.split('.')[1];
-        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
-        const json = atob(base64);
-        return JSON.parse(json);
-    } catch (error) {
-        return null;
-    }
+
+async function signup() {
+    // TODO : Replace the signup page by a popup
+    window.location.href = "../signup/signup.html";
 }
 
-function setAuthButtonsVisibility(isLoggedIn) {
-    signup_btn.style.display = isLoggedIn ? "none" : "inline-block";
-    login_btn.style.display = isLoggedIn ? "none" : "inline-block";
-    profile_btn.style.display = isLoggedIn ? "inline-block" : "none";
-    logout_btn.style.display = isLoggedIn ? "inline-block" : "none";
-}
-
-function setSessionCookiesAndGetUserId() {
-    const token = getCookie('userToken');
-    if (!token) {
-        return null;
-    }
-
-    const payload = decodeJwtPayload(token);
-    const userId = payload?.sub;
-    if (!userId) {
-        removeCookie('userToken');
-        return null;
-    }
-
-    setCookie('userId', userId);
-    setCookie('userToken', token);
-    return userId;
+async function login() {
+    // TODO : Replace the login page by a popup
+    window.location.href = "../login/login.html";
 }
 
 async function logout() {
@@ -53,10 +32,28 @@ async function logout() {
     } catch (error) {
         console.error('Logout request failed', error);
     } finally {
-        clearCookies();
+        removeAllCookies();
         window.location.href="../login/login.html";
     }
 }
+
+
+/** @type {HTMLButtonElement} */
+const signup_btn = document.getElementById("signup-btn");
+signup_btn.onclick = async _ => await signup();
+
+/** @type {HTMLButtonElement} */
+const login_btn = document.getElementById("login-btn");
+login_btn.onclick = async _ => await login();
+
+/** @type {HTMLButtonElement} */
+const logout_btn = document.getElementById("logout-btn");
+logout_btn.onclick = async _ => await logout();
+
+
+//
+// Game Join Logic & Components
+//
 
 async function newPlayer() {
     try {
@@ -74,7 +71,6 @@ async function newPlayer() {
         throw err;
     }
 }
-
 
 async function startSoloGame() {
     const playerId = await newPlayer();
@@ -97,7 +93,6 @@ async function startSoloGame() {
 
     window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
-
 
 async function startLocalMultiplayerGame() {
     const playerId1 = await newPlayer();
@@ -122,7 +117,6 @@ async function startLocalMultiplayerGame() {
     window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
 
-
 async function joinMultiplayerGame() {
     const playerId = await newPlayer();
 
@@ -144,26 +138,63 @@ async function joinMultiplayerGame() {
 
     window.location.href = "../waiting-room-page/waiting-room-page.html";
 }
-/** @type {HTMLButtonElement} */
-const profile_btn = document.getElementById("profile-btn");
-/** @type {HTMLButtonElement} */
-const signup_btn = document.getElementById("signup-btn");
-/** @type {HTMLButtonElement} */
-const login_btn = document.getElementById("login-btn");
-/** @type {HTMLButtonElement} */
-const logout_btn = document.getElementById("logout-btn");
-logout_btn.onclick = async (_) => await logout();
-setAuthButtonsVisibility(Boolean(setSessionCookiesAndGetUserId()));
+
 
 /** @type {HTMLButtonElement} */
 const startSoloGame_btn = document.getElementById("start-solo-btn");
-startSoloGame_btn.onclick = async (_) => await startSoloGame()
-
+startSoloGame_btn.onclick = async _ => await startSoloGame()
 
 /** @type {HTMLButtonElement} */
 const startLocalMultiplayerGame_btn = document.getElementById("start-local-multiplayer-btn");
-startLocalMultiplayerGame_btn.onclick = async (_) => await startLocalMultiplayerGame()
+startLocalMultiplayerGame_btn.onclick = async _ => await startLocalMultiplayerGame()
 
 /** @type {HTMLButtonElement} */
 const joinMultiplayerGame_btn = document.getElementById("join-multiplayer-btn");
-joinMultiplayerGame_btn.onclick = async (_) => await joinMultiplayerGame()
+joinMultiplayerGame_btn.onclick = async _ => await joinMultiplayerGame()
+
+
+//
+// Others Logic & Components
+//
+
+
+/** @type {HTMLButtonElement} */
+const profile_btn = document.getElementById("profile-btn");
+profile_btn.onclick = async _ => window.location.href = "../profile-page/profile-page.html";
+
+
+//
+// Page Initialisation
+//
+
+
+/**
+ * Enables (or disables) the view when the user is authentified
+ */
+function toggleAuthentifiedView(isLoggedIn) {
+    signup_btn.style.display = isLoggedIn ? "none" : "inline-block";
+    login_btn.style.display = isLoggedIn ? "none" : "inline-block";
+    profile_btn.style.display = isLoggedIn ? "inline-block" : "none";
+    logout_btn.style.display = isLoggedIn ? "inline-block" : "none";
+}
+
+onload = async _ => {
+    const token = getCookie('userToken');
+
+    if (!token) {
+        toggleAuthentifiedView(false);
+    } else {
+        toggleAuthentifiedView(true);
+    }
+
+    const payload = decodeJwtPayload(token);
+    const userId = payload?.sub;
+    if (!userId) {
+        removeCookie('userToken');
+        return null;
+    }
+
+    // TODO : Remove need for `userId` in the game to use `userToken` instead
+    setCookie('userId', userId);
+    setCookie('userToken', token);
+}
