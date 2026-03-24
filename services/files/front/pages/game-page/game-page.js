@@ -314,7 +314,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
     // DEBUG::
     console.log("Trying to move piece:", piece, "from:", from, "to:", to);
 
-    let actionRes, laserRes;
+    let actionResult;
     try {
         const moveResponse = await fetch("/api/game-service/action", {
             method: "POST",
@@ -333,20 +333,19 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             throw moveResponse.error;
         }
 
-        laserRes = await moveResponse.json();
+        actionResult = (await moveResponse.json()).result;
     } catch (err) {
-        throw err;
+        console.error("Movement refused:", err);
+        return;
     }
 
     // DEBUG::
     console.log("Movement accepted");
 
     await board.movePiece(piece, from, to);
-    if (laserRes) {
-        await board.showLaserBeam(laserRes.path);
-        if (laserRes.grid) {
-            await board.syncGrid(laserRes.grid);
-        }
+    if (actionResult?.laserPath) {
+        await board.showLaserBeam(actionResult.laserPath);
+        await board.syncGrid(actionResult.grid);
     }
 });
 
@@ -362,7 +361,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
         pieceToPlace = activeRotation.currentPiece;
     }
 
-    let actionRes, laserRes;
+    let actionResult;
     try {
         const placeResponse = await fetch("/api/game-service/action", {
             method: "POST",
@@ -380,9 +379,10 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             throw placeResponse.error;
         }
 
-        laserRes = await placeResponse.json();
+        actionResult = (await placeResponse.json()).result;
     } catch (err) {
-        throw err;
+        console.error("Placement refused:", err);
+        return;
     }
 
     // DEBUG::
@@ -393,20 +393,17 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     player2RotationIndicator.active = false;
 
     await board.placePiece(pieceToPlace, pos);
-    if (laserRes) {
-        await board.showLaserBeam(laserRes.path);
-        if (laserRes.grid) {
-            await board.syncGrid(laserRes.grid);
-        }
+    if (actionResult?.laserPath) {
+        await board.showLaserBeam(actionResult.laserPath);
+        await board.syncGrid(actionResult.grid);
     }
-
 });
 
 stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotation}) => {
     // DEBUG::
     console.log("Trying to rotate piece:", piece, "at:", pos, "to the:", rotation);
 
-    let actionRes, laserRes;
+    let actionResult;
     try {
         const rotateResponse = await fetch("/api/game-service/action", {
             method: "POST",
@@ -425,20 +422,19 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
             throw rotateResponse.error;
         }
 
-        laserRes = await rotateResponse.json();
+        actionResult = (await rotateResponse.json()).result;
     } catch (err) {
-        throw err;
+        console.error("Rotation refused:", err);
+        return;
     }
 
     // DEBUG::
     console.log("Rotation accepted");
 
     await board.rotatePiece(piece, pos, rotation);
-    if (laserRes) {
-        await board.showLaserBeam(laserRes.path);
-        if (laserRes.grid) {
-            await board.syncGrid(laserRes.grid);
-        }
+    if (actionResult?.laserPath) {
+        await board.showLaserBeam(actionResult.laserPath);
+        await board.syncGrid(actionResult.grid);
     }
 });
 
@@ -446,7 +442,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
     // DEBUG::
     console.log("Trying to switch piece:", piece1, "at:", pos1, "with piece:", piece2, "at:", pos2);
 
-    let actionRes, laserRes;
+    let actionResult;
     try {
         const switchResponse = await fetch("/api/game-service/action", {
             method: "POST",
@@ -475,19 +471,18 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
             throw switchResponse.error;
         }
 
-        laserRes = await switchResponse.json();
+        actionResult = (await switchResponse.json()).result;
     } catch (err) {
-        throw err;
+        console.error("Switch refused:", err);
+        return;
     }
 
     // DEBUG::
     console.log("Switch accepted");
 
     await board.switchPieces(piece1, pos1, piece2, pos2);
-    if (laserRes) {
-        await board.showLaserBeam(laserRes.path);
-        if (laserRes.grid) {
-            await board.syncGrid(laserRes.grid);
-        }
+    if (actionResult?.laserPath) {
+        await board.showLaserBeam(actionResult.laserPath);
+        await board.syncGrid(actionResult.grid);
     }
 });

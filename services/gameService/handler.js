@@ -195,8 +195,8 @@ exports.HTTPHandler = {
             const game = GamesManager.getGameById(gameId);
 
             const action = await readJsonBody(req);
-            const {actionRes, laserRes} = game.onAction(action);
-            sendJson(res, 200, { ok:true, ...actionRes, ...laserRes });
+            const actionResult = game.onAction(action);
+            sendJson(res, 200, { ok:true, result: actionResult });
 
             if (!game.isFinished()) {
                 game.nextTurn();

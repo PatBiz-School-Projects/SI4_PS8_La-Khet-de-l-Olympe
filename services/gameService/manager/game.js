@@ -300,17 +300,17 @@ class Game {
     onAction(action) {
         this.actionValidator.validate(action);
 
-        if (action.method === "switch" && action.args.piece2.type === "Sphinx") {
-            return {
-                actionRes: this.ACTIONS[action.method](action.args),
-                laserRes: undefined,
-            };
-        } else {
-            return {
-                actionRes: this.ACTIONS[action.method](action.args),
-                laserRes: this._processLaserHit(),
-            };
+        this.ACTIONS[action.method](action.args);
+        let laserPath;
+        if (action.method !== "switch" || action.args.piece2.type !== "Sphinx") {
+            laserPath = this._processLaserHit().path;
         }
+
+        const result = {};
+        result.grid = this.board.toDTO().grid;
+        result.laserPath = laserPath ?? undefined;
+
+        return result;
     }
 
     buildRatedMatchPayload(){
