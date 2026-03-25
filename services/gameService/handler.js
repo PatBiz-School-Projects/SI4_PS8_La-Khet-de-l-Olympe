@@ -212,13 +212,16 @@ exports.HTTPHandler = {
         }
     },
 
-    getPiece: async (req, res) => {
+    getPieceAt: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
+        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
+        if (isNaN(x) || isNaN(y)) {
+            const err = "Missing or wrong query parameters 'x' & 'y'";
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err });
+        }
 
         const game = GamesManager.getGameById(gameId);
-
-        const body = await readJsonBody(req);
-        const {x, y} = body;
 
         try {
             const piece = game.board.getPieceAt({x, y});
@@ -239,14 +242,14 @@ exports.HTTPHandler = {
 
     getPossibleMoves: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
-        const game = GamesManager.getGameById(gameId);
-
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        const x = parseInt(url.searchParams.get('x'));
-        const y = parseInt(url.searchParams.get('y'));
+        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
         if (isNaN(x) || isNaN(y)) {
-            throw new Error("Missing coordinates 'x' or 'y' as URL parameters");
+            const err = "Missing or wrong query parameters 'x' & 'y'";
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err });
         }
+
+        const game = GamesManager.getGameById(gameId);
 
         try {
             const possibleMoves = game.getPossibleMoveForPiece({x, y});
