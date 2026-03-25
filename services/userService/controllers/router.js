@@ -1,64 +1,51 @@
-const userHandler = require('./handler');
-const friendshipHandler = require('./friendshipHandler');
+const { Router } = require("../helpers/router");
 
-const routes = {
-    "POST /api/users": async (request, response) => {
-        await userHandler.createUser(request, response);
-    },
-    "GET /api/users/connected/is-connected": async (request, response) => {
-        await userHandler.isUserConnected(request, response);
-    },
-    "GET /api/users/connected": async (request, response) => {
-        userHandler.getConnectedUsers(request, response);
-    },
-    "POST /api/users/connect" : async (request, response) => {
-        await userHandler.connectUser(request, response);
-    },
-    "POST /api/users/disconnect": async (request, response) => {
-        await userHandler.disconnectUser(request, response);
-    },
-    "GET /api/users/profile" : async (request, response) => {
-        await userHandler.getProfile(request, response);
-    },
-    "POST /api/users/elo/match-result" : async (request, response) => {
-        await userHandler.onEloChange(request, response);
-    },
-    "POST /api/users/friends/request" : async (request, response) => {
-        await friendshipHandler.handleSendRequest(request, response);
-    },
-    "POST /api/users/friends/accept" : async (request, response) => {
-        await friendshipHandler.handleAcceptRequest(request, response);
-    },
-    "DELETE /api/users/friends/request": async (request, response) => {
-        await friendshipHandler.handleDeleteRequest(request, response);
-    },
-    "DELETE /api/users/friends": async (request, response) => {
-        await friendshipHandler.handleDeleteFriend(request, response);
-    },
-    "GET /api/users/friends" : async (request, response) => {
-        await friendshipHandler.handleListFriends(request, response);
-    },
-    "GET /api/users/friends/requests" : async (request, response) => {
-        await friendshipHandler.handleListRequests(request, response);
-    }
-};
+const HTTPUsersHandler = require('./handler');
+const HTTPFriendsHandler = require('./friendshipHandler');
 
-async function manage(request, response) {
-    const url = request.url;
-    const routeKey = `${request.method} ${url}`;
 
-    if (routes[routeKey]) {
-        return await routes[routeKey](request, response);
-    }
+const ROUTER = (new Router()
+    .add("/api/users", {
+        POST: HTTPUsersHandler.createUser,
+    })
+    .add("/api/users/:userId/", {
+        GET: HTTPUsersHandler.getPublicProfile,
+    })
+    .add("/api/users/connected", {
+        GET: HTTPUsersHandler.getConnectedUsers,
+    })
+    .add("/api/users/connected/is-connected", {
+        GET: HTTPUsersHandler.isUserConnected,
+    })
+    .add("/api/users/connect", {
+        POST: HTTPUsersHandler.connectUser,
+    })
+    .add("/api/users/disconnect", {
+        POST: HTTPUsersHandler.disconnectUser,
+    })
+    .add("/api/users/profile", {
+        GET: HTTPUsersHandler.getProfile,
+    })
+    .add("/api/users/elo/match-result", {
+        POST: HTTPUsersHandler.onEloChange,
+    })
+    .add("/api/users/friends", {
+        GET: HTTPFriendsHandler.handleListFriends,
+        DELETE: HTTPFriendsHandler.handleDeleteFriend,
+    })
+    .add("/api/users/friends/accept", {
+        POST: HTTPFriendsHandler.handleAcceptRequest,
+    })
+    .add("/api/users/friends/request", {
+        POST: HTTPFriendsHandler.handleSendRequest,
+        DELETE: HTTPFriendsHandler.handleDeleteRequest,
+    })
+    .add("/api/users/friends/requests", {
+        GET: HTTPFriendsHandler.handleListRequests
+    })
+);
 
-    const userIdMatch = url.match(/^\/api\/users\/([^\/]+)$/);
-    if (request.method === "GET" && userIdMatch) {
-        request.params = { userId: userIdMatch[1] };
-        return await userHandler.getPublicProfile(request, response);
-    }
 
-    response.writeHead(404, { 'Content-Type': 'application/json' });
-    response.end(JSON.stringify({ error: 'Not Found' }));
+exports.manage = async (req, res) => {
+    ROUTER.handle(req, res);
 }
-
-module.exports = { manage };

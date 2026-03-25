@@ -1,4 +1,3 @@
-const { getDb } = require("../repositories/mongo");
 const { readJsonBody, sendJson } = require("../helpers/parser");
 const connectedUsersService = require("../managers/connectedUsersService");
 const {extractToken,extractUserId} = require("../helpers/token");
@@ -8,7 +7,7 @@ const gamesRepository = require("../repositories/gamesRepository");
 const friendshipManager = require("../managers/friendshipManager");
 
 
-async function createUser(req, res) {
+exports.createUser = async (req, res) => {
     try {
         const body = await readJsonBody(req);
         const { authId, username } = body;
@@ -39,14 +38,14 @@ async function createUser(req, res) {
     }
 }
 
-function getConnectedUsers(req,res){
+exports.getConnectedUsers = async (req, res) => {
     return sendJson(res,200,{
         ok:true,
         users: connectedUsersService.getConnectedUsers()
     });
 }
 
-async function isUserConnected(req, res) {
+exports.isUserConnected = async (req, res) => {
     try{
         const body = await readJsonBody(req);
         const { authId} = body;
@@ -58,13 +57,12 @@ async function isUserConnected(req, res) {
         return sendJson(res, 200, {
             connected: connectedUsersService.isUserConnected(authId),
         });
-    }
-    catch (error) {
+    } catch (error) {
         throw new Error(error);
     }
 }
 
-async function connectUser(req,res){
+exports.connectUser = async (req, res) => {
     try{
         const token = extractToken(req,null);
         if (!token) {
@@ -79,14 +77,13 @@ async function connectUser(req,res){
         }
         connectedUsersService.addConnectedUser(user.gameUserDTO());
         sendJson(res, 200, {});
-    }
-    catch (error) {
+    } catch (error) {
         console.log(error)
         sendJson(res, 500, {error:error});
     }
 }
 
-async function disconnectUser(req,res){
+exports.disconnectUser = async (req, res) => {
     try{
         const token = extractToken(req,null);
         if (!token) {
@@ -96,15 +93,14 @@ async function disconnectUser(req,res){
         const userId = extractUserId(token);
         connectedUsersService.disconnectUser(userId);
         sendJson(res, 200, {});
-    }
-    catch (error) {
+    } catch (error) {
         sendJson(res, 500, {});
     }
 }
 
-async function getProfile(req,res){
+exports.getProfile = async (req, res) => {
     try{
-        const token = extractToken(req,null);
+        const token = extractToken(req, null);
         if (!token) {
             sendJson(res, 401, "MISSING_TOKEN");
             return;
@@ -131,18 +127,18 @@ async function getProfile(req,res){
                     : 0,
             }
         });
-    }
-    catch (error) {
+    } catch (error) {
         console.error("getProfile error:", error);
         return sendJson(res, 500, "INTERNAL_SERVER_ERROR");
     }
 }
 
-async function getPublicProfile(req,res){
+exports.getPublicProfile = async (req, res) => {
+    const { userId } = req.routeParams;
+
     try{
-        const userId = req.params.userId;
         const user = await usersRepository.findUserByAuthId(userId);
-        if(!user){
+        if (!user) {
             sendJson(res, 404, "USER_NOT_FOUND");
             return;
         }
@@ -160,25 +156,24 @@ async function getPublicProfile(req,res){
                     : 0,
             }
         })
-    }
-    catch (error) {
+    } catch (error) {
         console.error("getPublicProfile error:", error);
         return sendJson(res, 500, "INTERNAL_SERVER_ERROR");
     }
 }
 
-async function onEloChange(req,res){
+exports.onEloChange = async (req, res) => {
     try{
         const body = await readJsonBody(req);
         console.log(body)
         const {gameId,winnerId,loserId}=body;
         const winnerUser = await usersRepository.findUserByAuthId(winnerId);
         const loserUser = await usersRepository.findUserByAuthId(loserId);
-        if(!winnerUser || !loserUser){
+        if (!winnerUser || !loserUser) {
             return sendJson(res, 404, "ONE_USER_NOT_FOUND");
         }
         const game = await gamesRepository.findGameById(gameId);
-        if(game){
+        if (game) {
             return sendJson(res, 200, {
                 ok: true,
                 applied: false,
@@ -209,8 +204,7 @@ async function onEloChange(req,res){
             applied: true,
             match : matchRecord
         });
-    }
-    catch (error) {
+    } catch (error) {
         console.error("applyMatchResult error:", error);
         return sendJson(res, 500, {
             ok: false,
@@ -218,6 +212,3 @@ async function onEloChange(req,res){
         });
     }
 }
-
-
-module.exports = { createUser ,getConnectedUsers,isUserConnected,connectUser,disconnectUser,getProfile,getPublicProfile,onEloChange };
