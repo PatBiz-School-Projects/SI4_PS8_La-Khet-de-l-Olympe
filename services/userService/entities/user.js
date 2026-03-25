@@ -1,13 +1,13 @@
 class User {
-    constructor({ id, username, elo, profilePicture,ratedGames,wins,losses,draws,winStreak }) {
+    constructor({ id, username, elo, profilePicture,totalGames,totalWins,totalLosses,totalDraws,winStreak }) {
         this.id = id;
         this.username = username;
         this.elo = elo;
         this.profilePicture = profilePicture;
-        this.ratedGames = ratedGames;
-        this.wins = wins;
-        this.losses = losses;
-        this.draws = draws;
+        this.totalGames = totalGames;
+        this.totalWins = totalWins;
+        this.totalLosses = totalLosses;
+        this.totalDraws = totalDraws;
         this.winStreak = winStreak;
     }
 
@@ -21,10 +21,10 @@ class User {
             username: document.username,
             elo: document.elo,
             profilePicture: document.profilePicture,
-            ratedGames: document.ratedGames,
-            wins: document.wins,
-            losses: document.losses,
-            draws: document.draws,
+            totalGames: document.totalGames,
+            totalWins: document.totalWins,
+            totalLosses: document.totalLosses,
+            totalDraws: document.totalDraws,
             winStreak: document.winStreak
         });
     }
@@ -38,7 +38,7 @@ class User {
     }
 
     getWinrate(){
-        return this.wins/this.ratedGames;
+        return this.totalWins/this.totalGames;
     }
 }
 

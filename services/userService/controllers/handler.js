@@ -1,9 +1,8 @@
 const { readJsonBody, sendJson } = require("../helpers/parser");
+const { extractToken, extractUserId } = require("../helpers/token");
+
 const connectedUsersService = require("../managers/connectedUsersService");
-const {extractToken,extractUserId} = require("../helpers/token");
 const usersRepository = require("../repositories/userRepository");
-const {computeEloWithWinStreak} = require("../utils/elo");
-const gamesRepository = require("../repositories/gamesRepository");
 const friendshipManager = require("../managers/friendshipManager");
 
 
@@ -118,18 +117,19 @@ exports.getProfile = async (req, res) => {
             elo: user.elo,
             friends: userFriends,
             stats:{
-                totalGames: user.ratedGames,
-                totalLosses: user.losses,
-                totalWins : user.wins,
                 winStreak: user.winStreak,
-                winRate: user.ratedGames > 0
-                    ? Math.round(((user.wins ?? 0) / user.ratedGames) * 100)
+                totalGames: user.totalGames,
+                totalLosses: user.totalLosses,
+                totalWins : user.totalWins,
+                winRate: user.totalGames > 0
+                    ? Math.round(((user.totalWins ?? 0) / user.totalGames) * 100)
                     : 0,
             }
         });
     } catch (error) {
         console.error("getProfile error:", error);
-        return sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+        sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+        return;
     }
 }
 
@@ -147,68 +147,109 @@ exports.getPublicProfile = async (req, res) => {
             elo:user.elo,
             profilePicture: user.profilePicture,
             stats:{
-                totalGames: user.ratedGames,
-                totalWins : user.wins,
-                totalLosses: user.losses,
+                totalGames: user.totalGames,
+                totalWins : user.totalWins,
+                totalLosses: user.totalLosses,
                 winStreak: user.winStreak,
-                winRate: user.ratedGames > 0
-                    ? Math.round(((user.wins ?? 0) / user.ratedGames) * 100)
+                winRate: user.totalGames > 0
+                    ? Math.round(((user.totalWins ?? 0) / user.totalGames) * 100)
                     : 0,
             }
-        })
+        });
     } catch (error) {
         console.error("getPublicProfile error:", error);
-        return sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+        sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+        return;
     }
 }
 
-exports.onEloChange = async (req, res) => {
-    try{
-        const body = await readJsonBody(req);
-        console.log(body)
-        const {gameId,winnerId,loserId}=body;
-        const winnerUser = await usersRepository.findUserByAuthId(winnerId);
-        const loserUser = await usersRepository.findUserByAuthId(loserId);
-        if (!winnerUser || !loserUser) {
-            return sendJson(res, 404, "ONE_USER_NOT_FOUND");
+exports.getUserMinimalProfile = async (req, res) => {
+    const { userId } = req.routeParams;
+
+    let user;
+    try {
+        user = await usersRepository.findUserByAuthId(userId);
+        if (!user) {
+            throw new Error(`No user found with id: '${userId}'`);
         }
-        const game = await gamesRepository.findGameById(gameId);
-        if (game) {
-            return sendJson(res, 200, {
-                ok: true,
-                applied: false,
-                reason: "ALREADY_PROCESSED",
-                match: game,
-            });
-        }
-        const {winner,loser} = computeEloWithWinStreak({
-            winnerRating : winnerUser.elo,
-            loserRating: loserUser.elo,
-            winnerWinStreak: winnerUser.winStreak
-        })
-
-        const matchRecord = {
-            gameId,
-            winnerId,
-            loserId,
-            winner,
-            loser,
-        };
-
-        await gamesRepository.createGame(matchRecord);
-
-        await usersRepository.updateWinnerElo(winnerId,winner.newRating);
-        await usersRepository.updateLoserElo(loserId,loser.newRating);
-        return sendJson(res, 200, {
-            ok: true,
-            applied: true,
-            match : matchRecord
-        });
-    } catch (error) {
-        console.error("applyMatchResult error:", error);
-        return sendJson(res, 500, {
-            ok: false,
-            error: String(error?.message ?? error),
-        });
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 404, {ok: false, error: err.message});
+        return;
     }
+
+    sendJson(res, 200, {
+        username: user.username,
+        profilePicture: user.profilePicture,
+    });
+}
+
+exports.getUserStats = async (req, res) => {
+    const { userId } = req.routeParams;
+
+    let user;
+    try {
+        user = await usersRepository.findUserByAuthId(userId);
+        if (!user) {
+            throw new Error(`No user found with id: '${userId}'`);
+        }
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 404, {ok: false, error: err.message});
+        return;
+    }
+
+    sendJson(res,200,{
+        totalGames: user.totalGames,
+        totalWins : user.totalWins,
+        totalLosses: user.totalLosses,
+        winStreak: user.winStreak,
+        winRate: user.totalGames > 0
+            ? Math.round(((user.totalWins ?? 0) / user.totalGames) * 100)
+            : 0,
+    });
+}
+
+exports.getUserLiveStats = async (req, res) => {
+    const { userId } = req.routeParams;
+
+    let user;
+    try {
+        user = await usersRepository.findUserByAuthId(userId);
+        if (!user) {
+            throw new Error(`No user found with id: '${userId}'`);
+        }
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 404, {ok: false, error: err.message});
+        return;
+    }
+
+    sendJson(res, 200, {
+        elo: user.elo,
+        liveWinStreak: user.winStreak,
+        // Add more if needed
+    });
+}
+
+exports.updateUserStats = async (req, res) => {
+    const { userId } = req.routeParams;
+
+    let user;
+    try {
+        user = await usersRepository.findUserByAuthId(userId);
+        if (!user) {
+            throw new Error(`No user found with id: '${userId}'`);
+        }
+    } catch (err) {
+        console.error(err);
+        sendJson(res, 404, {ok: false, error: err.message});
+        return;
+    }
+
+    const update = await readJsonBody(req);
+
+    await usersRepository.updateUserStats(userId, update);
+
+    sendJson(res, 200, {ok: true, success: true});
 }
