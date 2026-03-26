@@ -73,37 +73,6 @@ const player1RotationIndicator = document.querySelector("#player1-rotation-indic
 /** @type { GameRotationIndicator } */
 const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
 
-const gameOverOverlay = document.querySelector("#game-over-overlay");
-const gameOverMessage = document.querySelector("#game-over-message");
-let isGameOver = false;
-
-function formatRatingUpdate(ratingUpdate) {
-    if (!ratingUpdate) {
-        return "";
-    }
-
-    const signedDelta = ratingUpdate.delta >= 0 ? `+${ratingUpdate.delta}` : `${ratingUpdate.delta}`;
-    return ` ELO ${signedDelta} · nouveau score ${ratingUpdate.newRating}.`;
-}
-
-function showGameOver({ state, winnerId, ratingUpdate }) {
-    isGameOver = true;
-    const isDraw = state === "DRAW";
-    const didIWin = winnerId === CLIENT_PLAYER_ID;
-
-    // REVIEW : What happens if the game was a local multiplayer game
-
-    const baseMessage = (
-        isDraw
-            ? "Match nul."
-            : didIWin
-                ? "Victoire !"
-                : "Défaite..."
-    );
-    gameOverMessage.textContent = `${baseMessage}${formatRatingUpdate(ratingUpdate)}`;
-    gameOverOverlay.classList.remove("hidden");
-}
-
 
 //
 // Reloads support
@@ -298,12 +267,7 @@ socket.on("game-over", gameEventQueue.enqueue(payload => {
     showGameOver(payload);
 }));
 
-
 onclick = (event) => {
-    if (isGameOver) {
-        return;
-    }
-
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
@@ -549,3 +513,38 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
         await board.syncGrid(actionResult.grid);
     }
 });
+
+
+//
+// Game Over Logic & Components
+//
+
+
+const gameOverOverlay = document.querySelector("#game-over-overlay");
+const gameOverMessage = document.querySelector("#game-over-message");
+
+function formatRating(rating) {
+    if (!rating) {
+        return "";
+    }
+
+    const signedDelta = rating.delta >= 0 ? `+${rating.delta}` : `${rating.delta}`;
+    return ` ELO ${signedDelta} · nouveau score ${rating.newRating}.`;
+}
+
+function showGameOver({ state, winnerId, rating }) {
+    const isDraw = state === "DRAW";
+    const didIWin = winnerId === CLIENT_PLAYER_ID;
+
+    // REVIEW : What happens if the game was a local multiplayer game
+
+    const baseMessage = (
+        isDraw
+            ? "Match nul."
+            : didIWin
+                ? "Victoire !"
+                : "Défaite..."
+    );
+    gameOverMessage.textContent = `${baseMessage}${formatRating(rating)}`;
+    gameOverOverlay.classList.remove("hidden");
+}
