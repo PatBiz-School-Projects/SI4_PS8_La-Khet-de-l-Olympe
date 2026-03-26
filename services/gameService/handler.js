@@ -206,16 +206,8 @@ exports.HTTPHandler = {
             const game = GamesManager.getGameById(gameId);
 
             const action = await readJsonBody(req);
-            const actionResult = game.onAction(action);
-            sendJson(res, 200, { ok: true, result: actionResult });
-
-            if (!game.isFinished()) {
-                game.nextTurn();
-            }
-
-            if (game.isFinished()) {
-                game.onGameOver();
-            }
+            const actionResult = game.onPlayerAction(action);
+            sendJson(res, 200, { ok:true, result: actionResult });
         } catch (err) {
             console.error(err)
             sendJson(res, 400, { ok: false, error: err.message });

@@ -131,7 +131,7 @@ class Bot extends Player {
                         // }));
                         // console.log("\n\nAI WORKS PERFECTLY\n\n");
 
-                        game.onAction(this._ai.computeNextAction());
+                        game.onPlayerAction(this._ai.computeNextAction());
                         break;
 
                     // Add more if needed ...
