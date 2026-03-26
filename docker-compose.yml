@@ -41,7 +41,7 @@ services:
       FILES_SERVICE_URL: *files-url
       GAMES_SERVICE_URL: *games-url
       AUTH_SERVICE_URL:  *auth-url
-      USER_SERVICE_URL:  *users-url
+      USERS_SERVICE_URL: *users-url
     depends_on:
       - games-service
       - auth-service
@@ -99,12 +99,12 @@ services:
     networks:
       - internal
     environment:
-      PORT:             *auth-port
-      JWT_SECRET:       ${JWT_SECRET}
-      TOKEN_EXPIRY:     ${TOKEN_EXPIRY}
-      DB_URL:           *mongo-url
-      DB_NAME:          *auth-db
-      USER_SERVICE_URL: *users-url
+      PORT:              *auth-port
+      JWT_SECRET:        ${JWT_SECRET}
+      TOKEN_EXPIRY:      ${TOKEN_EXPIRY}
+      DB_URL:            *mongo-url
+      DB_NAME:           *auth-db
+      USERS_SERVICE_URL: *users-url
     depends_on:
       mongo:
         condition: service_healthy

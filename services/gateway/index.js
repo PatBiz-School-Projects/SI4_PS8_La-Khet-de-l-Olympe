@@ -7,7 +7,7 @@ const proxy = httpProxy.createProxyServer();
 const gameServiceTarget = process.env.GAMES_SERVICE_URL;
 const filesServiceTarget = process.env.FILES_SERVICE_URL;
 const authServiceTarget = process.env.AUTH_SERVICE_URL;
-const userServiceTarget = process.env.USER_SERVICE_URL;
+const userServiceTarget = process.env.USERS_SERVICE_URL;
 
 const server = http.createServer(function (request, response) {
     // First, let's check the URL to see if it's a REST request or a file request.

@@ -1,4 +1,4 @@
-const userServiceUrl = process.env.USER_SERVICE_URL;
+const userServiceUrl = process.env.USERS_SERVICE_URL;
 
 async function createUserProfile({ authId, username }) {
     const payload = { authId, username };
