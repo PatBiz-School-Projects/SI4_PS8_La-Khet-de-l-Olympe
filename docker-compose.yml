@@ -48,8 +48,10 @@ services:
     networks:
       - internal
     environment:
+        DB_URL: mongodb://mongo:27017
+        DB_NAME: games
         PORT: 8002
-        USER_SERVICE_URL: http://user-service:8004
+        USERS_SERVICE_URL: http://user-service:8004
 
   auth-service:
     build:

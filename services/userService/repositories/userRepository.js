@@ -21,42 +21,46 @@ async function createUser(authId,username) {
         createdAt: new Date(),
         elo : 1000,
         profilePicture : 'img.png',
-        ratedGames: 0,
-        wins:0,
-        losses:0,
-        draws:0,
+        totalGames: 0,
+        totalWins:0,
+        totalLosses:0,
+        totalDraws:0,
         winStreak: 0,
     });
 }
 
-async function updateWinnerElo(winnerId,newElo){
+async function updateUserStats(userId, {newElo, won, lost, drew}) {
     const usersCollection = await getUsersCollection();
-    return usersCollection.updateOne({_id: winnerId,},
-        {
+    if (won) {
+        usersCollection.updateOne({_id: userId,}, {
             $set: {elo: newElo},
             $inc: {
-                wins:1,
-                ratedGames:1,
-                winStreak:1
-            }
+                winStreak: 1,
+                totalGames:1,
+                totalWins:1,
+            },
         });
-}
-
-async function updateLoserElo(loserId,newElo){
-    const usersCollection = await getUsersCollection();
-    return usersCollection.updateOne({_id: loserId,},
-        {
-            $set: {elo: newElo,winStreak:0},
+    } else if (lost) {
+        usersCollection.updateOne({_id: userId,}, {
+            $set: {elo: newElo, winStreak: 0},
             $inc: {
-                losses:1,
-                ratedGames:1
-            }
+                totalGames:1,
+                totalLosses:1,
+            },
         });
+    } else if (drew) {
+        usersCollection.updateOne({_id: userId,}, {
+            $set: {elo: newElo, winStreak: 0},
+            $inc: {
+                totalGames:1,
+                totalDraws:1,
+            },
+        });
+    }
 }
 
 module.exports = {
-    findUserByAuthId,
     createUser,
-    updateWinnerElo,
-    updateLoserElo
+    findUserByAuthId,
+    updateUserStats,
 };
