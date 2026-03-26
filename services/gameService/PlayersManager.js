@@ -16,9 +16,9 @@ class PlayersManager {
      *
      * @returns {Player}
      */
-    static newPlayer(userId, userToken) {
+    static newPlayer(userId, userToken, userProfile) {
         const playerId = randomUUID();
-        const player = new Player(playerId, userId, userToken);
+        const player = new Player(playerId, userId, userToken, userProfile);
         this._players[playerId] = player;
         return player;
     }
