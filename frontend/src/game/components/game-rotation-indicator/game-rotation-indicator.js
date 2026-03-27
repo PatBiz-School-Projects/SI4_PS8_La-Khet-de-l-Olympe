@@ -1,6 +1,8 @@
 import { RotationRenderer } from "./RotationRenderer.js";
-import { GamePageActionType } from "/game/pages/game-page/GamePageStateMachine/GamePageAction.js";
+
 import { Piece } from "/game/logic/board/Piece.js";
+
+import { GamePageActionType } from "/game/pages/game-page/GamePageStateMachine/GamePageAction.js";
 
 
 export class GameRotationIndicator extends HTMLElement {
@@ -16,9 +18,12 @@ export class GameRotationIndicator extends HTMLElement {
 
     async connectedCallback() {
         try{
+            // Load the component's HTML template & CSS style
 
-            const [htmlResponse, cssResponse] = await Promise.all([fetch("/components/game-rotation-indicator/game-rotation-indicator.html"),
-                fetch("/components/game-rotation-indicator/game-rotation-indicator.css"),]);
+            const [htmlResponse, cssResponse] = await Promise.all([
+                fetch("/game/components/game-rotation-indicator/game-rotation-indicator.html"),
+                fetch("/game/components/game-rotation-indicator/game-rotation-indicator.css"),
+            ]);
 
             const html = await htmlResponse.text();
             const css = await cssResponse.text();

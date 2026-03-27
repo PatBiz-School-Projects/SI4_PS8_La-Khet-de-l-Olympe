@@ -25,8 +25,8 @@ export class GameBoard extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/components/game-board/game-board.html"),
-                fetch("/components/game-board/game-board.css"),
+                fetch("/game/components/game-board/game-board.html"),
+                fetch("/game/components/game-board/game-board.css"),
             ]);
 
             const html = await htmlResponse.text();

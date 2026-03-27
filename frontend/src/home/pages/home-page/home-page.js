@@ -1,6 +1,4 @@
-import "/components/index.js"
-
-import { setCookie,removeAllCookies } from "/utils/cookie.js";
+import { setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
 import {ensureValidAccessToken,clearAuthTokens} from "/utils/auth.js";
 
@@ -12,12 +10,12 @@ import {ensureValidAccessToken,clearAuthTokens} from "/utils/auth.js";
 
 async function signup() {
     // TODO : Replace the signup page by a popup
-    window.location.href = "../signup/signup.html";
+    window.location.href = "/home/auth/pages/signup/signup.html";
 }
 
 async function login() {
     // TODO : Replace the login page by a popup
-    window.location.href = "../login/login.html";
+    window.location.href = "/home/auth/pages/login/login.html";
 }
 
 async function logout() {
@@ -35,7 +33,7 @@ async function logout() {
     } finally {
         clearAuthTokens();
         removeAllCookies();
-        window.location.href="../login/login.html";
+        window.location.href="/home/auth/pages/login/login.html";
     }
 }
 
@@ -115,7 +113,7 @@ async function startSoloGame(difficulty) {
         throw err;
     }
 
-    window.location.href = "../waiting-room-page/waiting-room-page.html";
+    window.location.href = "/waiting-room/pages/waiting-room-page/waiting-room-page.html";
 }
 
 async function startLocalMultiplayerGame() {
@@ -138,7 +136,7 @@ async function startLocalMultiplayerGame() {
         throw err;
     }
 
-    window.location.href = "../waiting-room-page/waiting-room-page.html";
+    window.location.href = "/waiting-room/pages/waiting-room-page/waiting-room-page.html";
 }
 
 async function joinMultiplayerGame() {
@@ -160,7 +158,7 @@ async function joinMultiplayerGame() {
         throw err;
     }
 
-    window.location.href = "../waiting-room-page/waiting-room-page.html";
+    window.location.href = "/waiting-room/pages/waiting-room-page/waiting-room-page.html";
 }
 
 
@@ -187,7 +185,7 @@ joinMultiplayerGame_btn.onclick = async _ => await joinMultiplayerGame()
 
 /** @type {HTMLButtonElement} */
 const profile_btn = document.getElementById("profile-btn");
-profile_btn.onclick = async _ => window.location.href = "../profile-page/profile-page.html";
+profile_btn.onclick = async _ => window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
 
 
 //

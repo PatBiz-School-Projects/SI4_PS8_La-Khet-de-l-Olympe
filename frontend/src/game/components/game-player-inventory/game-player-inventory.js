@@ -33,8 +33,8 @@ export class GamePlayerInventory extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/components/game-player-inventory/game-player-inventory.html"),
-                fetch("/components/game-player-inventory/game-player-inventory.css"),
+                fetch("/game/components/game-player-inventory/game-player-inventory.html"),
+                fetch("/game/components/game-player-inventory/game-player-inventory.css"),
             ]);
 
             const html = await htmlResponse.text();

@@ -1,4 +1,4 @@
-import { Coord } from "../game/logic/board/Coord.js";
+import { Coord } from "./Coord.js";
 import { Piece, PieceDTO } from "./Piece.js";
 
 

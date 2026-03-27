@@ -1,10 +1,10 @@
 import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/game/components/index.js";
 
 import { Piece } from "/game/logic/board/Piece.js";
+import { GameActionType } from "/game/logic/GameAction.js";
 
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
-import { GameActionType } from "./GamePageStateMachine/GameAction.js";
 import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 

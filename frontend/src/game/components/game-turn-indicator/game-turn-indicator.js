@@ -14,8 +14,8 @@ export class GameTurnIndicator extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/components/game-turn-indicator/game-turn-indicator.html"),
-                fetch("/components/game-turn-indicator/game-turn-indicator.css"),
+                fetch("/game/components/game-turn-indicator/game-turn-indicator.html"),
+                fetch("/game/components/game-turn-indicator/game-turn-indicator.css"),
             ]);
 
             const html = await htmlResponse.text();

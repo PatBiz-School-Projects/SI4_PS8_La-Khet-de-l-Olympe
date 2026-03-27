@@ -20,12 +20,12 @@ onload = async _ => {
     }
 
     if (hasStarted) {
-        window.location.href = "../game-page/game-page.html";
+        window.location.href = "/game/pages/game-page/game-page.html";
     }
 }
 
 socket.on("start-game", async _ => {
-    window.location.href = "../game-page/game-page.html";
+    window.location.href = "/game/pages/game-page/game-page.html";
 });
 
 

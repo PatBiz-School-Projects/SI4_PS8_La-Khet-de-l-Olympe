@@ -61,7 +61,7 @@ async function handleSubmit(event) {
         if (accessToken) {
             setAuthTokens(accessToken, refreshToken);
             setStatus(payload.detail || 'Connexion réussie.', 'ok');
-            window.location.href = '/pages/home-page/home-page.html';
+            window.location.href = '/home/pages/home-page/home-page.html';
             return;
         }
 

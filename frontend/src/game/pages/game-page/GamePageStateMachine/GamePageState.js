@@ -1,5 +1,6 @@
+import { GameAction, GameActionType } from "/game/logic/GameAction.js";
+
 import { GamePageAction, GamePageActionType } from "./GamePageAction.js";
-import { GameAction, GameActionType } from "./GameAction.js";
 import { UIAction, UIActionType } from "./UIAction.js";
 
 
