@@ -1,6 +1,6 @@
-import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/components/index.js";
+import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/game/components/index.js";
 
-import { Piece } from "/components/game-board/Piece.js";
+import { Piece } from "/game/logic/board/Piece.js";
 
 import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";

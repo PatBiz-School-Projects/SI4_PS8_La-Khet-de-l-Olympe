@@ -1,5 +1,5 @@
-import { Coord } from "/components/game-board/Coord.js";
-import { Piece } from "/components/game-board/Piece.js";
+import { Coord } from "/game/logic/board/Coord.js";
+import { Piece } from "/game/logic/board/Piece.js";
 
 
 export type UIActionType = typeof UIActionType[keyof typeof UIActionType];

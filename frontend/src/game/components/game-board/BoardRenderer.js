@@ -1,6 +1,6 @@
-import { Cell } from "./Cell.js";
-import { Coord } from "./Coord.js"
-import { Piece } from "./Piece.js";
+import { Cell } from "/game/logic/board/Cell.js";
+import { Coord } from "/game/logic/board/Coord.js"
+import { Piece } from "/game/logic/board/Piece.js";
 
 
 /**

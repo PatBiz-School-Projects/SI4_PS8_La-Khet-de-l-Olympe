@@ -1,7 +1,7 @@
-import { Piece } from "../game-board/Piece.js";
+import { Piece } from "/game/logic/board/Piece.js";
 
 import { InventoryRenderer } from "./InventoryRenderer.js";
-import {GamePageActionType} from "../../pages/game-page/GamePageStateMachine/GamePageAction.js";
+import { GamePageActionType } from "/game/pages/game-page/GamePageStateMachine/GamePageAction.js";
 
 
 export class GamePlayerInventory extends HTMLElement {

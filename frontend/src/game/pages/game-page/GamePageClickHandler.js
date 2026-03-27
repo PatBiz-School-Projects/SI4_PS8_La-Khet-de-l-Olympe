@@ -1,8 +1,8 @@
-import { GameBoard, GamePlayerInventory } from "/components/index.js";
+import { GameBoard, GamePlayerInventory } from "/game/components/index.js";
 
 import { GamePageAction, GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 
-import { Coord } from "/components/game-board/Coord.js"
+import { Coord } from "/game/logic/board/Coord.js"
 
 
 export class GamePageClickHandler {

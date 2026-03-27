@@ -1,5 +1,5 @@
-import { Coord } from "/components/game-board/Coord.js";
-import { Piece } from "/components/game-board/Piece.js";
+import { Coord } from "./board/Coord.js";
+import { Piece } from "./board/Piece.js";
 
 
 export type GameActionType = typeof GameActionType[keyof typeof GameActionType];

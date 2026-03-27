@@ -1,6 +1,7 @@
-import {RotationRenderer} from "./RotationRenderer.js";
-import {GamePageActionType} from "../../pages/game-page/GamePageStateMachine/GamePageAction.js";
-import {Piece} from "../game-board/Piece.js";
+import { RotationRenderer } from "./RotationRenderer.js";
+import { GamePageActionType } from "/game/pages/game-page/GamePageStateMachine/GamePageAction.js";
+import { Piece } from "/game/logic/board/Piece.js";
+
 
 export class GameRotationIndicator extends HTMLElement {
     constructor() {

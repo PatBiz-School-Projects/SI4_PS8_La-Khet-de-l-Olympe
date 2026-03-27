@@ -1,7 +1,7 @@
 /**
  * @enum {typeof PieceOrientation[keyof typeof PieceOrientation]}
  */
-export const PieceOrientation = /** @type {const}*/ ({
+export const PieceOrientation = Object.freeze({
     N: 'N',
     W: 'W',
     E: 'E',
@@ -12,7 +12,7 @@ export const PieceOrientation = /** @type {const}*/ ({
 /**
  * @enum {typeof PieceType[keyof typeof PieceType]}
  */
-export const PieceType = /** @type {const}*/ ({
+export const PieceType = Object.freeze({
     Anubis: "Anubis",
     Pharaoh: "Pharaoh",
     Pyramid: "Pyramid",
