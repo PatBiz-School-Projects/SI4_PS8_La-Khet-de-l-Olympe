@@ -9,13 +9,24 @@ const assert = require("assert");
 const PlayerID = undefined;
 
 
+/**
+ * @typedef {Object} UserProfile_InGame
+ *
+ * @prop {string} username
+ * @prop {string} profilePicture
+ * @prop {number} elo
+ * @prop {number} liveWinStreak
+ */
+
+
 class Player {
     /**
      * @param {PlayerID} playerId
      * @param {UserID} userId
      * @param {UserToken} userToken
+     * @param {UserProfile_InGame} userProfile
      */
-    constructor(playerId, userId, userToken) {
+    constructor(playerId, userId, userToken, userProfile) {
         /** @private @type {PlayerID} */
         this._playerId = playerId;
 
@@ -24,6 +35,9 @@ class Player {
 
         /** @private @type {UserToken} */
         this._userToken = userToken;
+
+        /** @private @type {unknown} */
+        this._userProfile = userProfile;
 
         /** @private @type {GameID} */
         this._gameId; // will be set once the player is registered in a room/game
@@ -47,6 +61,11 @@ class Player {
         return this._userToken;
     }
 
+    /** @type {UserProfile_InGame} */
+    get userProfile() {
+        return this._userProfile;
+    }
+
     /** @type {GameID} */
     get gameId() {
         return this._gameId;
@@ -61,8 +80,17 @@ class Player {
 
 
 class Bot extends Player {
+    static genUserProfile() {
+        return {
+            username: "Bot",
+            profilePicture: "", // TODO : Add a pp for bots
+            elo: 0,             // TODO (maybe) : Set different ELO based on the level of the AI
+            liveWinStreak: 0,
+        }
+    }
+
     constructor (playerId, AI_Impl) {
-        super(playerId, playerId, playerId);
+        super(playerId, playerId, playerId, Bot.genUserProfile());
         this._ai;
 
         // Fake socket to be notified of game's updates
@@ -108,7 +136,7 @@ class Bot extends Player {
                         // }));
                         // console.log("\n\nAI WORKS PERFECTLY\n\n");
 
-                        game.onAction(this._ai.computeNextAction());
+                        game.onPlayerAction(this._ai.computeNextAction());
                         break;
 
                     // Add more if needed ...

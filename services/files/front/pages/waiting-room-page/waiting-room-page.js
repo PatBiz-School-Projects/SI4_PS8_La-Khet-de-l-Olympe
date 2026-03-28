@@ -1,8 +1,13 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-let socket;
 
-onload = async (_) => {
+const socket = io({
+    path: "/api/game-service/socket.io",
+    query: { inWaitingRoom: true },
+});
+
+
+onload = async _ => {
     let hasStarted;
     try {
         const hasStartedResponse = await fetch("/api/game-service/game-has-started");
@@ -16,14 +21,18 @@ onload = async (_) => {
 
     if (hasStarted) {
         window.location.href = "../game-page/game-page.html";
-    } else {
-        // Create a socket only if necessary
-        socket = io({ path: "/api/game-service/socket.io" });
-        socket.on("start-game", async _ => {
-            window.location.href = "../game-page/game-page.html";
-        });
     }
 }
+
+socket.on("start-game", async _ => {
+    window.location.href = "../game-page/game-page.html";
+});
+
+
+//
+// Animation :
+//
+
 
 const LOADING_MSGS = [
     "Invocation de la partie en cours",
@@ -39,23 +48,31 @@ const LOADING_MSGS = [
     "Vella code l'arène",
 ];
 
+// Shuffle messages (Fisher-Yates)
+const SHUFFLED_LOADING_MSGS = [...LOADING_MSGS].sort(() => Math.random() - 0.5);
 
-// Pick a random message
-const label = document.getElementById('waiting-label');
-label.textContent = LOADING_MSGS[Math.floor(Math.random() * LOADING_MSGS.length)];
-
+const waitingLabel = document.getElementById('waiting-label');
 const dots = [
     document.getElementById('d1'),
     document.getElementById('d2'),
     document.getElementById('d3'),
 ];
-let current = 0;
 
-function tick() {
-    dots.forEach(d => d.classList.remove('lit'));
-    dots[current].classList.add('lit');
-    current = (current + 1) % 3;
+let msgIdx = 0;
+function updateWaitingLabel() {
+    waitingLabel.textContent = SHUFFLED_LOADING_MSGS[msgIdx];
+    msgIdx = (msgIdx + 1) % SHUFFLED_LOADING_MSGS.length;
 }
 
-tick();
-setInterval(tick, 420);
+let dotIdx = 0;
+function animateDots() {
+    dots.forEach(d => d.classList.remove('lit'));
+    dots[dotIdx].classList.add('lit');
+    dotIdx = (dotIdx + 1) % 3;
+}
+
+animateDots();
+setInterval(animateDots, 420);
+
+updateWaitingLabel();
+setInterval(updateWaitingLabel, 10000);

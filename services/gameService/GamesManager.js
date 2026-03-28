@@ -1,7 +1,9 @@
-const { Game, GameID, GameMode } = require('./manager/game');
-const { Player } = require('./Player');
+const { Game, GameID, GameMode } = require("./manager/game");
+const { Player } = require("./Player");
 
-const { randomUUID } = require('node:crypto');
+const { GameSummariesRepository } = require("./repositories/GameSummaryRepository");
+
+const { randomUUID } = require("node:crypto");
 
 
 class WaitingRoom {
@@ -191,9 +193,41 @@ class GamesManager {
      * Ends a given game.
      *
      * @param {GameID} gameId
+     * @param {unknown} summary
      */
-    static endGame(gameId) {
-        delete this._games[gameId];
+    static endGame(gameId, summary=undefined) {
+        if (summary) {
+            GameSummariesRepository.save(gameId, summary)
+                .then(
+                    _ => console.log(`Successfully saved game w/ id '${gameId}'`)
+                )
+                .catch(
+                    err => console.error(`Failed to save game w/ id '${gameId}' bcs:`, err)
+                );
+
+            const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
+
+            for (const player of this._games[gameId].players) {
+                fetch(`${USERS_SERVICE_URL}/api/users/${player.userId}/stats`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(summary.statsUpdates[player.playerId]),
+                })
+                    .then(
+                        ans => (
+                            (ans.ok)
+                            ? console.log(`Successfully updated stats of user w/ id '${player.userId}'`)
+                            : console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, ans.error)
+                        )
+                    )
+                    .catch(
+                        err => console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, err)
+                    );
+            }
+        }
+
+        // TODO : Delete game only when both player have left the game (be cautious of involuntary disconnection)
+        // delete this._games[gameId];
     }
 }
 

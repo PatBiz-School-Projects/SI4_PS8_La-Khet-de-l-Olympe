@@ -168,10 +168,6 @@ export class GamePlayerInventory extends HTMLElement {
     }
 
     _onPyramidClicked() {
-
-
-        console.log("Inventory clicked");
-
         const pyramidPiece = Piece.fromDTO({
             type: "Pyramid",
             owner: this.owner,

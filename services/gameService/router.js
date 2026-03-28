@@ -1,4 +1,4 @@
-const { sendJson } = require("./helpers/parser");
+const { Router } = require("./helpers/router");
 
 const {
     HTTPMiddelware_OutsideGame,
@@ -7,72 +7,68 @@ const {
     HTTPHandler,
     SocketIOMiddelware,
     SocketIOHandler,
-} = require('./handler.js');
+} = require("./handler.js");
 
-const ROUTES = {
+
+const ROUTER = (new Router()
     //
     // Outside a game
     //
 
-    '/api/game-service/new-player': HTTPMiddelware_OutsideGame(
-        HTTPHandler.newPlayer
-    ),
-    '/api/game-service/start-solo-game': HTTPMiddelware_OutsideGame(
-        HTTPHandler.startSoloGame
-    ),
-    '/api/game-service/start-local-multiplayer-game': HTTPMiddelware_OutsideGame(
-        HTTPHandler.startLocalMultiplayerGame
-    ),
-    '/api/game-service/join-multiplayer-game': HTTPMiddelware_OutsideGame(
-        HTTPHandler.joinMultiplayerGame
-    ),
+    .add("/api/game-service/new-player", {
+        POST: HTTPMiddelware_OutsideGame(HTTPHandler.newPlayer),
+    })
+    .add("/api/game-service/start-solo-game", {
+        POST: HTTPMiddelware_OutsideGame(HTTPHandler.startSoloGame),
+    })
+    .add("/api/game-service/start-local-multiplayer-game", {
+        POST: HTTPMiddelware_OutsideGame(HTTPHandler.startLocalMultiplayerGame),
+    })
+    .add("/api/game-service/join-multiplayer-game", {
+        POST: HTTPMiddelware_OutsideGame(HTTPHandler.joinMultiplayerGame),
+    })
 
     //
     // Inside a waiting room
     //
 
-    '/api/game-service/game-has-started': HTTPMiddelware_InsideWaitingRoom(
-        HTTPHandler.hasGameStarted
-    ),
+    .add("/api/game-service/game-has-started", {
+        GET: HTTPMiddelware_InsideWaitingRoom(HTTPHandler.hasGameStarted),
+    })
 
     //
     // Inside a game
     //
 
-    '/api/game-service/action': HTTPMiddelware_InsideGame(
-        HTTPHandler.action
-    ),
-    '/api/game-service/board/piece': HTTPMiddelware_InsideGame(
-        HTTPHandler.getPiece
-    ),
-    '/api/game-service/possible-actions': HTTPMiddelware_InsideGame(
-        HTTPHandler.getPossibleMoves
-    ),
-    '/api/game-service/board': HTTPMiddelware_InsideGame(
-        HTTPHandler.getBoard
-    ),
-    '/api/game-service/inventory': HTTPMiddelware_InsideGame(
-        HTTPHandler.getInventoryOfPlayer
-    ),
-    '/api/game-service/players': HTTPMiddelware_InsideGame(
-        HTTPHandler.getPlayers
-    ),
-    '/api/game-service/active-player': HTTPMiddelware_InsideGame(
-        HTTPHandler.getCurrActivePlayer
-    ),
-    '/api/game-service/player': HTTPMiddelware_InsideGame(
-        HTTPHandler.getPlayerOfClient
-    ),
-};
+    .add("/api/game-service/action", {
+        POST: HTTPMiddelware_InsideGame(HTTPHandler.action),
+    })
+    .add("/api/game-service/board/piece?x={}&y={}", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPieceAt),
+    })
+    .add("/api/game-service/possible-actions?x={}&y={}", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPossibleMoves),
+    })
+    .add("/api/game-service/board", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getBoard),
+    })
+    .add("/api/game-service/inventory", {
+        POST: HTTPMiddelware_InsideGame(HTTPHandler.getInventoryOfPlayer),
+    })
+    .add("/api/game-service/players", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPlayers),
+    })
+    .add("/api/game-service/active-player", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getCurrActivePlayer),
+    })
+    .add("/api/game-service/player", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPlayerOfClient),
+    })
+);
 
 
 exports.manage = async (req,res) => {
-    const path = req.url.split('?')[0];
-    if (ROUTES[path]) {
-        await ROUTES[path](req, res);
-    } else {
-        sendJson(res, 404, {ok: false, error: 'Not Found'});
-    }
+    await ROUTER.handle(req, res);
 }
 
 

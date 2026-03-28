@@ -9,24 +9,12 @@ const {applyMatchResult} = require("./userClient");
 const {MiniMaxAI} = require("./ai/ai");
 
 
+const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
+
+
 //
 // HTTP
 //
-
-async function finalizeRatedGame(game) {
-    const ratedMatchPayload = game.buildRatedMatchPayload();
-    if (!ratedMatchPayload) {
-        return {};
-    }
-
-    try {
-        const ratingResponse = await applyMatchResult(ratedMatchPayload);
-        return game.applyRatingResult(ratingResponse.match);
-    } catch (error) {
-        console.error(`Unable to apply Elo result for game=${game.id}:`, error);
-        return {};
-    }
-}
 
 
 exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
@@ -115,9 +103,33 @@ exports.HTTPHandler = {
     newPlayer: async (req, res) => {
         const { userId, userToken } = parseCookies(req.headers.cookie);
 
-        const player = PlayersManager.newPlayer(userId, userToken);
+        let userProfile;
+        {
+            let userMinimalProfile;
+            try {
+                const response = await fetch(`${USERS_SERVICE_URL}/api/users/${userId}/minimal-profile`);
+                userMinimalProfile = await response.json();
+            } catch (err) {
+                console.error(err);
+                sendJson(res, 500, { ok: false, error: err.message });
+                return;
+            }
 
-        sendJson(res, 200, { ok:true, playerId: player.playerId });
+            let userLiveStats;
+            try {
+                const response = await fetch(`${USERS_SERVICE_URL}/api/users/${userId}/live-stats`);
+                userLiveStats = await response.json();
+            } catch (err) {
+                console.error(err);
+                sendJson(res, 500, { ok: false, error: err.message });
+                return;
+            }
+
+            userProfile = {...userMinimalProfile, ...userLiveStats};
+        }
+
+        const player = PlayersManager.newPlayer(userId, userToken, userProfile);
+        sendJson(res, 200, { ok: true, playerId: player.playerId });
     },
 
     startSoloGame: async (req, res) => {
@@ -143,7 +155,7 @@ exports.HTTPHandler = {
         GamesManager.registerPlayerInRoom(player, gameId);
         GamesManager.registerPlayerInRoom(bot, gameId);
 
-        sendJson(res, 200, { ok:true, gameId });
+        sendJson(res, 200, { ok: true, gameId });
     },
 
     startLocalMultiplayerGame: async (req, res) => {
@@ -162,7 +174,7 @@ exports.HTTPHandler = {
         GamesManager.registerPlayerInRoom(player1, gameId);
         GamesManager.registerPlayerInRoom(player2, gameId);
 
-        sendJson(res, 200, { ok:true, gameId });
+        sendJson(res, 200, { ok: true, gameId });
     },
 
     joinMultiplayerGame: async (req, res) => {
@@ -178,7 +190,7 @@ exports.HTTPHandler = {
 
         const gameId = GamesManager.findRoomFor(player);
 
-        sendJson(res, 200, { ok:true, gameId });
+        sendJson(res, 200, { ok: true, gameId });
     },
 
     //
@@ -188,7 +200,7 @@ exports.HTTPHandler = {
     hasGameStarted: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
 
-        sendJson(res, 200, { ok:true, hasStarted: GamesManager.runningGamesId.includes(gameId) });
+        sendJson(res, 200, { ok: true, hasStarted: GamesManager.runningGamesId.includes(gameId) });
     },
 
     //
@@ -201,34 +213,28 @@ exports.HTTPHandler = {
             const game = GamesManager.getGameById(gameId);
 
             const action = await readJsonBody(req);
-            const {actionRes, laserRes} = game.onAction(action);
-            sendJson(res, 200, { ok:true, ...actionRes, ...laserRes });
-
-            if (!game.isFinished()) {
-                game.nextTurn();
-            }
-
-            if (game.isFinished()) {
-                const ratingUpdatesByPlayerId = await finalizeRatedGame(game);
-                game.onGameOver(ratingUpdatesByPlayerId);
-            }
+            const actionResult = game.onPlayerAction(action);
+            sendJson(res, 200, { ok:true, result: actionResult });
         } catch (err) {
             console.error(err)
             sendJson(res, 400, { ok: false, error: err.message });
         }
     },
 
-    getPiece: async (req, res) => {
+    getPieceAt: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
+        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
+        if (isNaN(x) || isNaN(y)) {
+            const err = "Missing or wrong query parameters 'x' & 'y'";
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err });
+        }
 
         const game = GamesManager.getGameById(gameId);
 
-        const body = await readJsonBody(req);
-        const {x, y} = body;
-
         try {
             const piece = game.board.getPieceAt({x, y});
-            sendJson(res, 200, { ok:true, ...piece.toDTO() });
+            sendJson(res, 200, { ok: true, ...piece.toDTO() });
         } catch (err) {
             console.error(err);
             sendJson(res, 400, { ok: false, error: err.message });
@@ -240,19 +246,19 @@ exports.HTTPHandler = {
 
         const game = GamesManager.getGameById(gameId);
 
-        sendJson(res, 200, { ok:true, ...game.board.toDTO() });
+        sendJson(res, 200, { ok: true, ...game.board.toDTO() });
     },
 
     getPossibleMoves: async (req, res) => {
         const { gameId } = parseCookies(req.headers.cookie);
-        const game = GamesManager.getGameById(gameId);
-
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        const x = parseInt(url.searchParams.get('x'));
-        const y = parseInt(url.searchParams.get('y'));
+        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
         if (isNaN(x) || isNaN(y)) {
-            throw new Error("Missing coordinates 'x' or 'y' as URL parameters");
+            const err = "Missing or wrong query parameters 'x' & 'y'";
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err });
         }
+
+        const game = GamesManager.getGameById(gameId);
 
         try {
             const possibleMoves = game.getPossibleMoveForPiece({x, y});
@@ -270,7 +276,7 @@ exports.HTTPHandler = {
 
         try {
             const inventory = game.getInventoryOfPlayer(playerId);
-            sendJson(res, 200, { ok:true, inventory:inventory.toDTO() });
+            sendJson(res, 200, { ok: true, inventory:inventory.toDTO() });
         } catch (err) {
             console.error(err);
             sendJson(res, 400, { ok:false, error: err.message });
@@ -282,7 +288,7 @@ exports.HTTPHandler = {
 
         const game = GamesManager.getGameById(gameId);
 
-        sendJson(res, 200, { ok:true, playersId: game.players.map(player => player.playerId) });
+        sendJson(res, 200, { ok: true, playersId: game.players.map(player => player.playerId) });
     },
 
     getCurrActivePlayer: async (req, res) => {
@@ -290,7 +296,7 @@ exports.HTTPHandler = {
 
         const game = GamesManager.getGameById(gameId);
 
-        sendJson(res, 200, { ok:true, playerId: game.currActivePlayer.playerId });
+        sendJson(res, 200, { ok: true, playerId: game.currActivePlayer.playerId });
     },
 
     getPlayerOfClient: async (req, res) => {
@@ -315,7 +321,7 @@ exports.HTTPHandler = {
                 }
             }
 
-        sendJson(res, 200, { ok:true, playerId: playerOfClient.playerId });
+        sendJson(res, 200, { ok: true, playerId: playerOfClient.playerId });
     },
 };
 
@@ -328,7 +334,7 @@ exports.HTTPHandler = {
 exports.SocketIOMiddelware = (socket, next) => {
     try {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
-        const { waiting } = socket.handshake.query;
+        const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
 
         if (!userId) {
             throw new Error("Missing 'userId' cookie");
@@ -339,11 +345,14 @@ exports.SocketIOMiddelware = (socket, next) => {
         if (!gameId) {
             throw new Error("Missing 'gameId' cookie");
         }
-        if (waiting && !GamesManager.waitingRoomsId.includes(gameId)) {
-            throw new Error(`No waiting room with id=${gameId}`);
-        }
-        if (!GamesManager.runningGamesId.includes(gameId)) {
-            throw new Error(`No running game with id=${gameId}`);
+        if (inWaitingRoom) {
+            if (!GamesManager.waitingRoomsId.includes(gameId)) {
+                throw new Error(`No waiting room with id=${gameId}`);
+            }
+        } else {
+            if (!GamesManager.runningGamesId.includes(gameId)) {
+                throw new Error(`No running game with id=${gameId}`);
+            }
         }
     } catch (err) {
         console.error("Rejected socket bcs:", err);
@@ -361,10 +370,10 @@ exports.SocketIOHandler = {
 
     onConnection: async (io, socket, msgPayload) => {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
-        const { waiting } = socket.handshake.query;
+        const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
 
         const game = (
-            (waiting)
+            (inWaitingRoom)
             ? GamesManager.getWaitingRoomById(gameId)
             : GamesManager.getGameById(gameId)
         );

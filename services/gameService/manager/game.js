@@ -7,6 +7,8 @@ const { Piece }     = require("../entities/piece");
 const { LaserService } = require("./laserService");
 const { ActionValidator } = require("./ActionValidator");
 
+const { computeEloWithWinStreak, computeEloOnDraw } = require("./elo");
+
 const assert = require("assert")
 
 
@@ -218,7 +220,7 @@ class Game {
     }
 
     isRated(){
-        return this._mode===GameMode.MULTIPLAYER && this.players.every(player => player.constructor.name !== "Bot");
+        return this._mode===GameMode.MULTIPLAYER;
     }
 
     /**
@@ -246,10 +248,6 @@ class Game {
         this._turnCount++;
         this._currActivePlayer = this._players[(this._turnCount-1)%2];
 
-        this._currActivePlayer.socket.emit("start-turn", {
-            playerId: this._currActivePlayer.playerId
-        });
-
         for (const player of this._players) {
             this._playersSwapCooldowns[player.playerId]--;
         }
@@ -257,6 +255,10 @@ class Game {
         if (this._turnCount > Game.TURN_LIMIT) {
             this._state = GameState.DRAW;
         }
+
+        this._currActivePlayer.socket.emit("start-turn", {
+            playerId: this._currActivePlayer.playerId
+        });
     }
 
 
@@ -296,69 +298,119 @@ class Game {
         return { path, grid};
     }
 
-
-    onAction(action) {
+    onPlayerAction(action) {
         this.actionValidator.validate(action);
 
-        if (action.method === "switch" && action.args.piece2.type === "Sphinx") {
-            return {
-                actionRes: this.ACTIONS[action.method](action.args),
-                laserRes: undefined,
-            };
-        } else {
-            return {
-                actionRes: this.ACTIONS[action.method](action.args),
-                laserRes: this._processLaserHit(),
-            };
+        this.ACTIONS[action.method](action.args);
+        let laserPath;
+        if (action.method !== "switch" || action.args.piece2.type !== "Sphinx") {
+            laserPath = this._processLaserHit().path;
         }
+
+        const result = {};
+        result.grid = this.board.toDTO().grid;
+        result.laserPath = laserPath ?? undefined;
+
+        const currInactivePlayer = this._players[this._turnCount%2];
+        currInactivePlayer.socket.emit("opponent-action", {
+            ...action, // other player needs to know which action happened
+            result,
+        });
+
+        this.nextTurn();
+
+        if (this.isFinished()) {
+            this.onGameOver();
+        }
+
+        return result;
     }
 
-    buildRatedMatchPayload(){
-        if(!this.isRated()|| this._state!==GameState.GAME_OVER){
-            return null;
+
+    /**
+     * @private
+     */
+    _summarize() {
+        if (this.state === GameState.DRAW) {
+            const player1 = this._players[0];
+            const player2 = this._players[1];
+
+            const eloComputation = computeEloOnDraw(
+                player1.playerId,
+                player1.userProfile.elo,
+
+                player2.playerId,
+                player2.userProfile.elo,
+            );
+
+            return {
+                player1Id: player1.playerId,
+                player2Id: player2.playerId,
+                users: {
+                    [player1.playerId]: player1.userId,
+                    [player2.playerId]: player2.userId,
+                },
+                results: {
+                    [player1.playerId]: eloComputation[player1.playerId],
+                    [player2.playerId]: eloComputation[player2.playerId],
+                },
+                statsUpdates: {
+                    [winner.playerId]: {drew: true, newELO: eloComputation[player1.playerId].newELO},
+                    [loser.playerId]: {drew: true, newELO: eloComputation[player2.playerId].newELO},
+                },
+            };
         }
+
+        const winner = this._winner;
         const loser = this.players.find(player => player.playerId !== this._winner.playerId);
-        if(!loser){ // pê cas draw dcp ?
-            return null; //TODO:changer
-        }
+
+        const eloComputation = computeEloWithWinStreak(
+            winner.playerId,
+            winner.userProfile.elo,
+
+            loser.playerId,
+            loser.userProfile.elo,
+
+            winner.userProfile.liveWinStreak,
+        );
+
         return {
-            gameId: this._gameId,
-            winnerId: this._winner.userId,
-            loserId: loser.userId,
+            winnerId: winner.playerId,
+            loserId: loser.playerId,
+            users: {
+                [winner.playerId]: winner.userId,
+                [loser.playerId]: loser.userId,
+            },
+            results: {
+                [winner.playerId]: eloComputation[winner.playerId],
+                [loser.playerId]: eloComputation[winner.playerId],
+            },
+            statsUpdates: {
+                [winner.playerId]: {won: true, newELO: eloComputation[winner.playerId].newELO},
+                [loser.playerId]: {lost: true, newELO: eloComputation[loser.playerId].newELO},
+            },
         };
     }
 
-    applyRatingResult(matchRecord) {
-        if (!matchRecord) {
-            return {};
-        }
+    onGameOver() {
+        const { GamesManager } = require("../GamesManager")
 
-        const ratingUpdatesByPlayerId = {};
-        const playerMappings = [
-            [matchRecord.winnerId, matchRecord.winner],
-            [matchRecord.loserId, matchRecord.loser],
-        ];
+        const summary = this._summarize();
 
-        for (const [userId, ratingUpdate] of playerMappings) {
-            const player = this.players.find(candidate => candidate.userId === userId);
-            if (!player) {
-                continue;
-            }
-            ratingUpdatesByPlayerId[player.playerId] = ratingUpdate;
-        }
-        return ratingUpdatesByPlayerId;
-    }
-
-
-    onGameOver(ratingUpdatesByPlayerId) {
         for (const player of this.players) {
             if (player.socket) {
                 player.socket.emit("game-over", {
                     state: this._state,
                     winnerId: this._winner?.playerId,
-                    ratingUpdate : ratingUpdatesByPlayerId[player.playerId] ?? null
+                    rating: summary.results[player.playerId] ?? null
                 });
             }
+        }
+
+        if (this.isRated()) {
+            GamesManager.endGame(this._gameId, summary);
+        } else {
+            GamesManager.endGame(this._gameId);
         }
     }
 }

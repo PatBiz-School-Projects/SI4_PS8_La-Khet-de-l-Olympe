@@ -94,9 +94,23 @@ export class Piece {
 
 
     /**
-     * @param {PieceOrientation} newOrientation
+     * @param {"left"|"right"} rotation
      */
-    rotateTo(newOrientation) {
-        this._orientation = newOrientation;
+    rotate(rotation) {
+        const posMod = (dividend, divisor) => ((dividend % divisor) + divisor) % divisor;
+
+        const ORDERED_ORIENTATIONS = [PieceOrientation.N, PieceOrientation.E, PieceOrientation.S, PieceOrientation.W];
+
+        const currOrientationIdx = ORDERED_ORIENTATIONS.indexOf(this._orientation );
+        switch (rotation) {
+            case "left":
+                return ORDERED_ORIENTATIONS[
+                    posMod(currOrientationIdx-1, ORDERED_ORIENTATIONS.length)
+                ];
+            case "right":
+                return ORDERED_ORIENTATIONS[
+                    posMod(currOrientationIdx+1, ORDERED_ORIENTATIONS.length)
+                ];
+        }
     }
 }

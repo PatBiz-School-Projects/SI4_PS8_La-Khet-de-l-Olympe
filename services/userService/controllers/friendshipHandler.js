@@ -17,7 +17,7 @@ async function parseBodyAndExtractUserId(req){
     };
 }
 
-async function handleSendRequest(req, res) {
+exports.handleSendRequest = async (req, res) => {
     try {
         const { currentUserId, body } = await parseBodyAndExtractUserId(req);
         const targetUserId = body.targetUserId;
@@ -34,7 +34,7 @@ async function handleSendRequest(req, res) {
     }
 }
 
-async function handleAcceptRequest(req, res) {
+exports.handleAcceptRequest = async (req, res) => {
     try {
         const { currentUserId, body } = await parseBodyAndExtractUserId(req);
         const requestUserId = body.requestUserId;
@@ -54,7 +54,7 @@ async function handleAcceptRequest(req, res) {
     }
 }
 
-async function handleDeleteRequest(req, res) {
+exports.handleDeleteRequest = async (req, res) => {
     try {
         const { currentUserId, body } = await parseBodyAndExtractUserId(req);
         const userId = body.userId;
@@ -71,7 +71,7 @@ async function handleDeleteRequest(req, res) {
     }
 }
 
-async function handleDeleteFriend(req, res) {
+exports.handleDeleteFriend = async (req, res) => {
     try {
         const { currentUserId, body } = await parseBodyAndExtractUserId(req);
         const friendId = body.friendId;
@@ -88,7 +88,7 @@ async function handleDeleteFriend(req, res) {
     }
 }
 
-async function handleListFriends(req, res) {
+exports.handleListFriends = async (req, res) => {
     try {
         const { currentUserId } = await parseBodyAndExtractUserId(req, {});
         const friends = await friendshipService.getAllFriends(currentUserId);
@@ -99,7 +99,7 @@ async function handleListFriends(req, res) {
     }
 }
 
-async function handleListRequests(req, res) {
+exports.handleListRequests = async (req, res) => {
     try {
         const { currentUserId } = await parseBodyAndExtractUserId(req, {});
         const requests = await friendshipService.listReceivedRequests(currentUserId);
@@ -109,7 +109,3 @@ async function handleListRequests(req, res) {
         return sendJson(res, status, { ok: false, error: message });
     }
 }
-
-module.exports = {handleAcceptRequest, handleDeleteRequest,handleListRequests,handleListFriends,handleDeleteFriend,handleSendRequest};
-
-
