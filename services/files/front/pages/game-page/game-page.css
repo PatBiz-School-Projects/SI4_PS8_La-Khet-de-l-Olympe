@@ -165,6 +165,14 @@ header {
         font-size: 1.5rem;
     }
 
+    & #game-over-actions {
+        display: flex;
+        gap: 0.8rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    & #game-over-challenge-btn,
     & #game-over-home-btn {
         border: 1px solid var(--gold);
         background: #1a1208;
@@ -172,6 +180,17 @@ header {
         font-family: 'Cinzel', serif;
         padding: 0.8rem 1.3rem;
         cursor: pointer;
+    }
+
+    & #game-over-challenge-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    & #game-over-status {
+        margin: 0;
+        color: var(--text);
+        font-family: 'Cinzel', serif;
     }
 }
 

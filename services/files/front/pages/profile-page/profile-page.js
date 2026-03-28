@@ -1,5 +1,5 @@
 import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
-
+import {sendChallenge} from "/utils/challenge.js";
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
 const pictureEl = document.getElementById('profile-picture');
@@ -31,6 +31,20 @@ function getPictureUrl(profilePicture) {
 function setStatus(message, isError = true) {
     statusEl.textContent = message;
     statusEl.style.color = isError ? '#ffb3b3' : '#b8f7c5';
+}
+
+async function challengeUser(friendId) {
+    const result = await sendChallenge(friendId);
+
+    if (!result.ok) {
+        const errorMessage = result.payload?.error || (result.error === 'MISSING_TOKEN'
+            ? 'Session expirée. Veuillez vous reconnecter.'
+            : 'Impossible de défier');
+        setStatus(errorMessage);
+        return;
+    }
+
+    setStatus('Défi envoyé avec succès.', false);
 }
 
 function createFriendItem({ id, username, elo, profilePicture }, actions = []) {
@@ -71,6 +85,10 @@ function renderFriends(friends, token) {
 
     friends.forEach((friend) => {
         const item = createFriendItem(friend, [
+            {
+                label: "Défier",
+                onClick: challengeUser,
+            },
             {
                 label: 'Voir le profil',
                 onClick: (friendId) => {

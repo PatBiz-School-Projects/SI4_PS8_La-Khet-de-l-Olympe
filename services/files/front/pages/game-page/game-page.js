@@ -9,6 +9,7 @@ import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import {sendChallenge} from "/utils/challenge.js"
 
 
 class EventQueue {
@@ -75,7 +76,43 @@ const player2RotationIndicator = document.querySelector("#player2-rotation-indic
 
 const gameOverOverlay = document.querySelector("#game-over-overlay");
 const gameOverMessage = document.querySelector("#game-over-message");
+const gameOverChallengeButton = document.querySelector("#game-over-challenge-btn");
+const gameOverStatus = document.querySelector("#game-over-status");
 let isGameOver = false;
+gameOverChallengeButton.addEventListener('click', challengeOpponent);
+
+function getOpponentId() {
+    return PLAYERS_ID.find(playerId => playerId !== CLIENT_PLAYER_ID);
+}
+
+function setGameOverStatus(message, isError = false) {
+    gameOverStatus.textContent = message;
+    gameOverStatus.style.color = isError ? '#ffb3b3' : '#b8f7c5';
+}
+
+async function challengeOpponent() {
+    const opponentId = getOpponentId();
+
+    if (!opponentId) {
+        setGameOverStatus('Adversaire introuvable.', true);
+        return;
+    }
+
+    gameOverChallengeButton.disabled = true;
+    const result = await sendChallenge(opponentId);
+
+    if (!result.ok) {
+        const message = result.payload?.error || (result.error === 'MISSING_TOKEN'
+            ? 'Session expirée. Veuillez vous reconnecter.'
+            : 'Impossible de défier');
+        setGameOverStatus(message, true);
+        gameOverChallengeButton.disabled = false;
+        return;
+    }
+
+    setGameOverStatus('Défi envoyé avec succès.');
+    gameOverChallengeButton.textContent = 'Défi envoyé';
+}
 
 function formatRatingUpdate(ratingUpdate) {
     if (!ratingUpdate) {
