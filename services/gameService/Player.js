@@ -105,10 +105,15 @@ class Bot extends Player {
                         console.log("Initialising bot's AI");
                         console.log("\n..................................................\n\n");
 
+                        const opponent = game.players.find(p => p.playerId !== this._playerId);
+                        const opponentId = opponent ? opponent.playerId : null;
+
                         this._ai = new AI_Impl(
                             this._playerId,
                             game.board,                                 // TODO : Giving an immutable reference of the board
                             game.getInventoryOfPlayer(this._playerId),  // TODO : Giving an immutable reference of the inventory
+                            game.getInventoryOfPlayer(opponentId),
+                            opponentId
                         );
 
                         assert(this._ai !== undefined, "[Bot::socket <- \"start-game\"]: AI shouldn't be undefined");

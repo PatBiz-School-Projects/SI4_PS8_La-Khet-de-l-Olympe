@@ -5,6 +5,8 @@ const { GameMode } = require("./manager/game");
 const { PlayersManager } = require("./PlayersManager");
 
 const { RandomAI } = require("./ai/ai");
+const {applyMatchResult} = require("./userClient");
+const {MiniMaxAI} = require("./ai/ai");
 
 
 const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
@@ -132,9 +134,11 @@ exports.HTTPHandler = {
 
     startSoloGame: async (req, res) => {
         let player;
+        let difficultyMode;
         try {
-            const { playerId } = await readJsonBody(req);
+            const { playerId,difficulty } = await readJsonBody(req);
             player = PlayersManager.getPlayerById(playerId);
+            difficultyMode = difficulty;
         } catch (err) {
             console.error(err)
             sendJson(res, 400, { ok: false, error: err.message });
@@ -142,7 +146,10 @@ exports.HTTPHandler = {
         }
 
         // TODO : Using a better AI than a random one
-        const bot = PlayersManager.newBot(RandomAI);
+        const AiClass = difficultyMode === "hard" ? MiniMaxAI : RandomAI;
+
+        console.log("DIFFICULTÉ REÇUE :", difficultyMode, "-> IA CHOISIE :", AiClass.name);
+        const bot = PlayersManager.newBot(AiClass);
 
         const gameId = GamesManager.newGame(GameMode.SOLO);
         GamesManager.registerPlayerInRoom(player, gameId);
