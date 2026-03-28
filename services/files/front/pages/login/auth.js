@@ -1,4 +1,4 @@
-import {setCookie} from "/utils/cookie.js";
+import { setAuthTokens } from '/utils/auth.js';
 const form = document.querySelector('form');
 const statusEl = document.querySelector('[data-status]');
 
@@ -57,7 +57,7 @@ async function handleSubmit(event) {
         }
 
         if (payload.token) {
-            setCookie('userToken', payload.token);
+            setAuthTokens(payload.token, payload.token);
             setStatus(payload.detail || 'Connexion réussie.', 'ok');
             window.location.href = '/pages/home-page/home-page.html';
             return;

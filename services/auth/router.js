@@ -7,10 +7,10 @@ const routes = {
     "/api/auth/signup" : (req, res) => {
         handler.register(req, res);
     },
-    "api/auth/renew" : (req, res) => {
+    "/api/auth/renew" : (req, res) => {
         handler.renewToken(req, res);
     },
-    "api/auth/check" : (req, res) => {
+    "/api/auth/check" : (req, res) => {
         handler.checkToken(req, res);
     },
     "/api/auth/forgot-password" : (req, res) => {

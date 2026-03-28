@@ -1,7 +1,8 @@
 import "/components/index.js"
 
-import { setCookie, getCookie, removeCookie, removeAllCookies } from "/utils/cookie.js";
+import { setCookie,removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
+import {ensureValidAccessToken,clearAuthTokens} from "/utils/auth.js";
 
 
 //
@@ -21,7 +22,7 @@ async function login() {
 
 async function logout() {
     try {
-        const token = getCookie('userToken');
+        const token = await ensureValidAccessToken();
         await fetch('/api/auth/logout', {
             method: 'POST',
             headers: {
@@ -32,6 +33,7 @@ async function logout() {
     } catch (error) {
         console.error('Logout request failed', error);
     } finally {
+        clearAuthTokens();
         removeAllCookies();
         window.location.href="../login/login.html";
     }
@@ -204,22 +206,22 @@ function toggleAuthentifiedView(isLoggedIn) {
 }
 
 onload = async _ => {
-    const token = getCookie('userToken');
+    const token = await ensureValidAccessToken();
 
     if (!token) {
         toggleAuthentifiedView(false);
-    } else {
-        toggleAuthentifiedView(true);
+        return;
     }
+
+    toggleAuthentifiedView(true);
 
     const payload = decodeJwtPayload(token);
     const userId = payload?.sub;
     if (!userId) {
-        removeCookie('userToken');
+        clearAuthTokens();
         return null;
     }
 
     // TODO : Remove need for `userId` in the game to use `userToken` instead
     setCookie('userId', userId);
-    setCookie('userToken', token);
 }
