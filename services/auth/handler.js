@@ -122,6 +122,9 @@ async function checkToken(req, res) {
         }
 
         const payload = jwt.verify(token, jwtSecret);
+        if (payload.type === 'refresh') {
+            return sendJson(res, 401, { ok: false, error: 'INVALID_TOKEN_TYPE' });
+        }
         return sendJson(res, 200, { ok: true, payload });
     } catch (error) {
         return sendJson(res, 401, { ok: false, error: 'INVALID_TOKEN' });
