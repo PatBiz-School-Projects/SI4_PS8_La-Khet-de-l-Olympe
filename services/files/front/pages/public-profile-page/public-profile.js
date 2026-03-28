@@ -1,4 +1,4 @@
-import {getCookie} from "/utils/cookie.js";
+import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
@@ -24,7 +24,7 @@ function getPictureUrl(profilePicture) {
 }
 
 async function sendFriendRequest(userId) {
-    const token = getCookie('userToken');
+    const token = await ensureValidAccessToken();
     if (!token) {
         setStatus('Connectez-vous pour ajouter cet utilisateur en ami.');
         return;
@@ -33,14 +33,18 @@ async function sendFriendRequest(userId) {
     addFriendButton.disabled = true;
 
     try {
-        const response = await fetch('/api/users/friends/request', {
+        const response = await authenticatedFetch('/api/users/friends/request', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify({ targetUserId: userId })
         });
+        if (!response) {
+            setStatus('Session expirée. Veuillez vous reconnecter.');
+            addFriendButton.disabled = false;
+            return;
+        }
         const payload = await response.json();
 
         if (!response.ok) {

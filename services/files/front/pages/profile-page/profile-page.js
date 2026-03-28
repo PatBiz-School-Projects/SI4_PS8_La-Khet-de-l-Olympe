@@ -1,4 +1,4 @@
-import { getCookie } from '/utils/cookie.js';
+import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
@@ -27,12 +27,6 @@ function getPictureUrl(profilePicture) {
     return `/assets/${profilePicture}`;
 }
 
-function getAuthHeaders(token) {
-    return {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-    };
-}
 
 function setStatus(message, isError = true) {
     statusEl.textContent = message;
@@ -87,11 +81,15 @@ function renderFriends(friends, token) {
                 label: 'Retirer',
                 className: 'danger',
                 onClick: async (friendId) => {
-                    const response = await fetch('/api/users/friends', {
+                    const response = await authenticatedFetch('/api/users/friends', {
                         method: 'DELETE',
-                        headers: getAuthHeaders(token),
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ friendId })
                     });
+                    if (!response) {
+                        setStatus('Session expirée. Veuillez vous reconnecter.');
+                        return;
+                    }
                     const payload = await response.json();
 
                     if (!response.ok) {
@@ -117,11 +115,15 @@ function renderRequests(requests, token) {
             {
                 label: 'Accepter',
                 onClick: async (requestUserId) => {
-                    const response = await fetch('/api/users/friends/accept', {
+                    const response = await authenticatedFetch('/api/users/friends/accept', {
                         method: 'POST',
-                        headers: getAuthHeaders(token),
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ requestUserId })
                     });
+                    if (!response) {
+                        setStatus('Session expirée. Veuillez vous reconnecter.');
+                        return;
+                    }
                     const payload = await response.json();
 
                     if (!response.ok) {
@@ -137,11 +139,15 @@ function renderRequests(requests, token) {
                 label: 'Refuser',
                 className: 'danger',
                 onClick: async (userId) => {
-                    const response = await fetch('/api/users/friends/request', {
+                    const response = await authenticatedFetch('/api/users/friends/request', {
                         method: 'DELETE',
-                        headers: getAuthHeaders(token),
+                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId })
                     });
+                    if (!response) {
+                        setStatus('Session expirée. Veuillez vous reconnecter.');
+                        return;
+                    }
                     const payload = await response.json();
 
                     if (!response.ok) {
@@ -161,15 +167,19 @@ function renderRequests(requests, token) {
 async function loadFriendData(token) {
     try {
         const [friendsResponse, requestsResponse] = await Promise.all([
-            fetch('/api/users/friends', {
+            authenticatedFetch('/api/users/friends', {
                 method: 'GET',
-                headers: getAuthHeaders(token)
+                headers: { 'Content-Type': 'application/json' }
             }),
-            fetch('/api/users/friends/requests', {
+            authenticatedFetch('/api/users/friends/requests', {
                 method: 'GET',
-                headers: getAuthHeaders(token)
+                headers: { 'Content-Type': 'application/json' }
             })
         ]);
+
+        if (!friendsResponse || !requestsResponse) {
+            throw new Error('Session expirée.');
+        }
 
         const friendsPayload = await friendsResponse.json();
         const requestsPayload = await requestsResponse.json();
@@ -193,21 +203,23 @@ function setStatValue(element, value, suffix = '') {
     element.textContent = `${value ?? 0}${suffix}`;
 }
 
+
 async function loadProfile() {
-    const token = getCookie('userToken');
+    const token = await ensureValidAccessToken();
     if (!token) {
         statusEl.textContent = 'Utilisateur non connecté.';
         return;
     }
 
     try {
-        const response = await fetch('/api/users/profile', {
+        const response = await authenticatedFetch('/api/users/profile', {
             method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            }
+            headers: { 'Content-Type': 'application/json' }
         });
+        if (!response) {
+            statusEl.textContent = 'Session expirée. Veuillez vous reconnecter.';
+            return;
+        }
         const payload = await response.json();
         const stats = payload.stats;
         usernameEl.textContent = payload.username;
