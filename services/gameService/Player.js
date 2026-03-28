@@ -84,6 +84,7 @@ class Bot extends Player {
                             this._playerId,
                             game.board,                                 // TODO : Giving an immutable reference of the board
                             game.getInventoryOfPlayer(this._playerId),  // TODO : Giving an immutable reference of the inventory
+                            game.getInventoryOfPlayer(opponentId),
                             opponentId
                         );
 
