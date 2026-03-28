@@ -56,8 +56,10 @@ async function handleSubmit(event) {
             return;
         }
 
-        if (payload.token) {
-            setAuthTokens(payload.token, payload.token);
+        const accessToken = payload.accessToken;
+        const refreshToken = payload.refreshToken;
+        if (accessToken) {
+            setAuthTokens(accessToken, refreshToken);
             setStatus(payload.detail || 'Connexion réussie.', 'ok');
             window.location.href = '/pages/home-page/home-page.html';
             return;
