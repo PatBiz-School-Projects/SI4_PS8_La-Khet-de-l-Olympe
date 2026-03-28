@@ -5,7 +5,6 @@ const { GameMode } = require("./manager/game");
 const { PlayersManager } = require("./PlayersManager");
 
 const { RandomAI } = require("./ai/ai");
-const {applyMatchResult} = require("./userClient");
 const {MiniMaxAI} = require("./ai/ai");
 
 
@@ -179,6 +178,26 @@ exports.HTTPHandler = {
 
     joinMultiplayerGame: async (req, res) => {
         let player;
+        let requestedGameId;
+        try {
+            const { playerId, gameId } = await readJsonBody(req);
+            player = PlayersManager.getPlayerById(playerId);
+            requestedGameId = gameId;
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err.message });
+            return;
+        }
+
+        const gameId = requestedGameId
+            ? GamesManager.registerPlayerInRoom(player, requestedGameId)
+            : GamesManager.findRoomFor(player);
+
+        sendJson(res, 200, { ok: true, gameId: requestedGameId || gameId });
+    },
+
+    openMultiplayerRoom: async (req, res) => {
+        let player;
         try {
             const { playerId } = await readJsonBody(req);
             player = PlayersManager.getPlayerById(playerId);
@@ -188,7 +207,8 @@ exports.HTTPHandler = {
             return;
         }
 
-        const gameId = GamesManager.findRoomFor(player);
+        const gameId = GamesManager.newGame(GameMode.MULTIPLAYER);
+        GamesManager.registerPlayerInRoom(player, gameId);
 
         sendJson(res, 200, { ok: true, gameId });
     },
