@@ -72,7 +72,7 @@ async function loadPublicProfile() {
     }
 
     try {
-        const response = await fetch(`/api/users/${encodeURIComponent(userId)}`, {
+        const response = await fetch(`/api/users/${encodeURIComponent(userId)}/public-profile`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'
