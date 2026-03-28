@@ -6,7 +6,25 @@ const {createUserProfile, markUserConnected,markUserDisconnected} = require("./u
 const {extractToken} = require("./helpers/token")
 
 const jwtSecret = process.env.JWT_SECRET;
-const tokenExpiry = process.env.TOKEN_EXPIRY;
+const accessTokenExpiry = process.env.ACCESS_TOKEN_EXPIRY;
+const refreshTokenExpiry = process.env.REFRESH_TOKEN_EXPIRY;
+
+
+function createAccessToken(user) {
+    return jwt.sign(
+        { sub: user._id.toString(), username: user.username, type: 'access' },
+        jwtSecret,
+        { expiresIn: accessTokenExpiry }
+    );
+}
+
+function createRefreshToken(user) {
+    return jwt.sign(
+        { sub: user._id.toString(), username: user.username, type: 'refresh' },
+        jwtSecret,
+        { expiresIn: refreshTokenExpiry }
+    );
+}
 
 async function register(req, res) {
     try {
@@ -78,12 +96,15 @@ async function login(req, res) {
         if(hashedPassword!==user.password) {
             return sendJson(res, 409, {ok:false, error: "INVALID_PASSWORD" });
         }
-
-        const token = jwt.sign({ sub: user._id.toString(), username: user.username }, jwtSecret, {
-            expiresIn: tokenExpiry
+        const accessToken = createAccessToken(user);
+        const refreshToken = createRefreshToken(user);
+        await markUserConnected(accessToken);
+        return sendJson(res, 200, {
+            ok: true,
+            accessToken: accessToken,
+            refreshToken: refreshToken,
+            detail : "Vous êtes connecté ! :)"
         });
-        await markUserConnected(token);
-        return sendJson(res, 200, { ok: true, token , detail : "Vous êtes connecté ! :)"});
     } catch (error) {
         return sendJson(res, 500, {
             ok: false,
@@ -101,6 +122,9 @@ async function checkToken(req, res) {
         }
 
         const payload = jwt.verify(token, jwtSecret);
+        if (payload.type === 'refresh') {
+            return sendJson(res, 401, { ok: false, error: 'INVALID_TOKEN_TYPE' });
+        }
         return sendJson(res, 200, { ok: true, payload });
     } catch (error) {
         return sendJson(res, 401, { ok: false, error: 'INVALID_TOKEN' });
@@ -116,10 +140,12 @@ async function renewToken(req, res) {
         }
 
         const payload = jwt.verify(token, jwtSecret);
-        const newToken = jwt.sign({ sub: payload.sub, username: payload.username }, jwtSecret, {
-            expiresIn: tokenExpiry
-        });
-        return sendJson(res, 200, { ok: true, token: newToken });
+        const newAccessToken = jwt.sign(
+            { sub: payload.sub, username: payload.username, type: 'access' },
+            jwtSecret,
+            { expiresIn: accessTokenExpiry }
+        );
+        return sendJson(res, 200, { ok: true, token: newAccessToken, accessToken: newAccessToken });
     } catch (error) {
         return sendJson(res, 401, { ok: false, error: 'INVALID_TOKEN' });
     }

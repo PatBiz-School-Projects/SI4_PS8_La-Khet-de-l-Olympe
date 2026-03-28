@@ -63,12 +63,12 @@ export async function renewToken(refreshToken) {
         }
 
         const payload = await response.json();
-        const newToken = payload?.token;
+        const newToken = payload?.accessToken || payload?.token;
         if (!newToken) {
             return null;
         }
 
-        setAuthTokens(newToken, newToken);
+        setAuthTokens(newToken, refreshToken);
         return newToken;
     } catch (error) {
         return null;

@@ -101,7 +101,8 @@ services:
     environment:
       PORT:              *auth-port
       JWT_SECRET:        ${JWT_SECRET}
-      TOKEN_EXPIRY:      ${TOKEN_EXPIRY}
+      ACCESS_TOKEN_EXPIRY:      ${ACCESS_TOKEN_EXPIRY}
+      REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY}
       DB_URL:            *mongo-url
       DB_NAME:           *auth-db
       USERS_SERVICE_URL: *users-url
