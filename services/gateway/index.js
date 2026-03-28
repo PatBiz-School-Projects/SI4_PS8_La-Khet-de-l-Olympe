@@ -8,6 +8,7 @@ const GAMES_SERVICE_URL = process.env.GAMES_SERVICE_URL;
 const FILES_SERVICE_URL = process.env.FILES_SERVICE_URL;
 const AUTH_SERVICE_URL  = process.env.AUTH_SERVICE_URL;
 const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
+const CHALLENGE_SERVICE_URL = process.env.CHALLENGE_SERVICE_URL;
 
 const server = http.createServer(function (request, response) {
     // First, let's check the URL to see if it's a REST request or a file request.
@@ -31,6 +32,10 @@ const server = http.createServer(function (request, response) {
                 case "users" :
                     console.log("-> Redirection vers UsersService (8004)");
                     proxy.web(request, response, { target : USERS_SERVICE_URL });
+                    break;
+                case "challenge-service" :
+                    console.log("-> Redirection challengeService (8005)");
+                    proxy.web(request, response, { target: CHALLENGE_SERVICE_URL });
                     break;
             }
 

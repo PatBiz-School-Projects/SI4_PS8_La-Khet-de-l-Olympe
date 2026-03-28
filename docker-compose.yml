@@ -11,6 +11,7 @@ x-ports:
   - &games-port "8002"
   - &auth-port  "8003"
   - &users-port "8004"
+  - &challenge-port "8005"
 
 x-urls:
   - &files-url http://files-service:8001
@@ -18,6 +19,7 @@ x-urls:
   - &auth-url  http://auth-service:8003
   - &users-url http://users-service:8004
   - &mongo-url mongodb://mongo:27017
+  - &challenge-url http://challenge-service:8005
 
 x-dbs:
   - &games-db games
@@ -42,11 +44,13 @@ services:
       GAMES_SERVICE_URL: *games-url
       AUTH_SERVICE_URL:  *auth-url
       USERS_SERVICE_URL: *users-url
+      CHALLENGE_SERVICE_URL: *challenge-url
     depends_on:
       - games-service
       - auth-service
       - files-service
       - users-service
+      - challenge-service
     networks:
       - internal
       - public
@@ -90,6 +94,18 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
+
+  challenge-service:
+    <<: *common
+    build:
+      context: ./services
+      dockerfile: ./challengeService/Dockerfile
+    networks:
+      - internal
+    environment:
+      PORT: *challenge-port
+      USERS_SERVICE_URL: *users-url
+      GAMES_SERVICE_URL: *games-url
 
   auth-service:
     <<: *common
