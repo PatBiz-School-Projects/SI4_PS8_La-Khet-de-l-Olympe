@@ -59,6 +59,7 @@ services:
       PORT: *files-port
     volumes:
       - ./frontend/src:/app/front
+      - ./frontend/assets:/app/front/assets
     networks:
       - internal
 
