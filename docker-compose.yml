@@ -11,6 +11,7 @@ x-ports:
   - &games-port "8002"
   - &auth-port  "8003"
   - &users-port "8004"
+  - &challenge-port "8005"
 
 x-urls:
   - &files-url http://files-service:8001
@@ -18,6 +19,7 @@ x-urls:
   - &auth-url  http://auth-service:8003
   - &users-url http://users-service:8004
   - &mongo-url mongodb://mongo:27017
+  - &challenge-url http://challenge-service:8005
 
 x-dbs:
   - &games-db games
@@ -35,18 +37,20 @@ services:
     <<: *common
     build:
       context: ./services/gateway
-    depends_on:
-      - games-service
-      - auth-service
-      - files-service
-      - users-service
+    ports:
+      - "8000:8000"
     environment:
       FILES_SERVICE_URL: *files-url
       GAMES_SERVICE_URL: *games-url
       AUTH_SERVICE_URL:  *auth-url
       USERS_SERVICE_URL: *users-url
-    ports:
-      - "8000:8000"
+      CHALLENGE_SERVICE_URL: *challenge-url
+    depends_on:
+      - games-service
+      - auth-service
+      - files-service
+      - users-service
+      - challenge-service
     networks:
       - internal
       - public
@@ -68,40 +72,51 @@ services:
     build:
       context: ./services
       dockerfile: ./userService/Dockerfile
-    depends_on:
-      mongo:
-        condition: service_healthy
+    networks:
+      - internal
     environment:
       PORT:    *users-port
       DB_URL:  *mongo-url
       DB_NAME: *users-db
-    networks:
-      - internal
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   games-service:
     <<: *common
     build:
       context: ./services
       dockerfile: ./gameService/Dockerfile
-    depends_on:
-      mongo:
-        condition: service_healthy
+    networks:
+      - internal
     environment:
       PORT:              *games-port
       DB_URL:            *mongo-url
       DB_NAME:           *games-db
       USERS_SERVICE_URL: *users-url
+    depends_on:
+      mongo:
+        condition: service_healthy
+
+  challenge-service:
+    <<: *common
+    build:
+      context: ./services
+      dockerfile: ./challengeService/Dockerfile
     networks:
       - internal
+    environment:
+      PORT: *challenge-port
+      USERS_SERVICE_URL: *users-url
+      GAMES_SERVICE_URL: *games-url
 
   auth-service:
     <<: *common
     build:
       context: ./services
       dockerfile: ./auth/Dockerfile
-    depends_on:
-      mongo:
-        condition: service_healthy
+    networks:
+      - internal
     environment:
       PORT:              *auth-port
       JWT_SECRET:        ${JWT_SECRET}
@@ -110,35 +125,36 @@ services:
       DB_URL:            *mongo-url
       DB_NAME:           *auth-db
       USERS_SERVICE_URL: *users-url
-    networks:
-      - internal
+    depends_on:
+      mongo:
+        condition: service_healthy
 
   mongo:
     <<: *common
     image: mongo:7.0
+    volumes:
+      - ./data/db:/data/db
     command: ["mongod", "--quiet", "--logpath", "/dev/null"]
+    networks:
+      - internal
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      - ./data/db:/data/db
-    networks:
-      - internal
 
   mongo-express:
     <<: *common
     image: mongo-express:1.0.2-20-alpine3.19
-    depends_on:
-      mongo:
-        condition: service_healthy
+    ports:
+      - "8081:8081"
     environment:
       ME_CONFIG_MONGODB_URL:        *mongo-url
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
-    ports:
-      - "8081:8081"
+    depends_on:
+      mongo:
+        condition: service_healthy
     networks:
       - internal
       - public

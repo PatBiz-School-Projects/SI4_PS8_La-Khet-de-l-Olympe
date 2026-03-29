@@ -9,6 +9,7 @@ import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import {sendChallenge} from "/utils/challenge.js"
 
 
 class EventQueue {
@@ -267,7 +268,12 @@ socket.on("game-over", gameEventQueue.enqueue(payload => {
     showGameOver(payload);
 }));
 
+
 onclick = (event) => {
+    if (isGameOver) {
+        return;
+    }
+
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
@@ -514,25 +520,61 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
     }
 });
 
-
 //
 // Game Over Logic & Components
 //
 
-
 const gameOverOverlay = document.querySelector("#game-over-overlay");
 const gameOverMessage = document.querySelector("#game-over-message");
+const gameOverChallengeButton = document.querySelector("#game-over-challenge-btn");
+const gameOverStatus = document.querySelector("#game-over-status");
+let isGameOver = false;
+gameOverChallengeButton.addEventListener('click', challengeOpponent);
 
-function formatRating(rating) {
-    if (!rating) {
+function getOpponentId() {
+    return PLAYERS_ID.find(playerId => playerId !== CLIENT_PLAYER_ID);
+}
+
+function setGameOverStatus(message, isError = false) {
+    gameOverStatus.textContent = message;
+    gameOverStatus.style.color = isError ? '#ffb3b3' : '#b8f7c5';
+}
+
+async function challengeOpponent() {
+    const opponentId = getOpponentId();
+
+    if (!opponentId) {
+        setGameOverStatus('Adversaire introuvable.', true);
+        return;
+    }
+
+    gameOverChallengeButton.disabled = true;
+    const result = await sendChallenge(opponentId);
+
+    if (!result.ok) {
+        const message = result.payload?.error || (result.error === 'MISSING_TOKEN'
+            ? 'Session expirée. Veuillez vous reconnecter.'
+            : 'Impossible de défier');
+        setGameOverStatus(message, true);
+        gameOverChallengeButton.disabled = false;
+        return;
+    }
+
+    setGameOverStatus('Défi envoyé avec succès.');
+    gameOverChallengeButton.textContent = 'Défi envoyé';
+}
+
+function formatRatingUpdate(ratingUpdate) {
+    if (!ratingUpdate) {
         return "";
     }
 
-    const signedDelta = rating.delta >= 0 ? `+${rating.delta}` : `${rating.delta}`;
-    return ` ELO ${signedDelta} · nouveau score ${rating.newRating}.`;
+    const signedDelta = ratingUpdate.delta >= 0 ? `+${ratingUpdate.delta}` : `${ratingUpdate.delta}`;
+    return ` ELO ${signedDelta} · nouveau score ${ratingUpdate.newRating}.`;
 }
 
-function showGameOver({ state, winnerId, rating }) {
+function showGameOver({ state, winnerId, ratingUpdate }) {
+    isGameOver = true;
     const isDraw = state === "DRAW";
     const didIWin = winnerId === CLIENT_PLAYER_ID;
 
@@ -545,6 +587,6 @@ function showGameOver({ state, winnerId, rating }) {
                 ? "Victoire !"
                 : "Défaite..."
     );
-    gameOverMessage.textContent = `${baseMessage}${formatRating(rating)}`;
+    gameOverMessage.textContent = `${baseMessage}${formatRatingUpdate(ratingUpdate)}`;
     gameOverOverlay.classList.remove("hidden");
 }

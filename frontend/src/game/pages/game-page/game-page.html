@@ -10,15 +10,18 @@
 </head>
 
 <body>
-    <dialog id="game-over-overlay" class="hidden" aria-live="polite">
+    <div id="game-over-overlay" class="hidden" aria-live="polite">
         <img id="game-over-asset" src="/assets/game-over-banner.svg" alt="Game over">
         <p id="game-over-message"></p>
-        <button id="game-over-home-btn" onclick="window.location.href='/home/pages/home-page/home-page.html'">Retour à l'accueil</button>
-    </dialog>
-
+        <div id="game-over-actions">
+            <button id="game-over-challenge-btn" type="button">Défier cet adversaire</button>
+            <button id="game-over-home-btn" onclick="window.location.href='../home-page/home-page.html'">Retour à l'accueil</button>
+        </div>
+        <p id="game-over-status" aria-live="polite"></p>
+    </div>
     <header>
         <div id="header-btns">
-            <!-- home button --> <button id="home-btn" onclick="window.location.href='/home/pages/home-page/home-page.html'"></button>
+            <!-- home button --> <button id="home-btn" onclick="window.location.href='../home-page/home-page.html'"></button>
             <!-- info button --> <button id="info-btn" onclick="alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`)"></button>
         </div>
 

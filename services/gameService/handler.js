@@ -177,6 +177,35 @@ exports.HTTPHandler = {
 
     joinMultiplayerGame: async (req, res) => {
         let player;
+        let requestedGameId;
+        try {
+            const { playerId, gameId } = await readJsonBody(req);
+            player = PlayersManager.getPlayerById(playerId);
+            requestedGameId = gameId;
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err.message });
+            return;
+        }
+
+        try {
+            if (requestedGameId) {
+                GamesManager.registerPlayerInRoom(player, requestedGameId);
+                sendJson(res, 200, { ok: true, gameId: requestedGameId });
+                return;
+            }
+
+            const resolvedGameId = GamesManager.findRoomFor(player);
+            console.log(GamesManager.waitingRoomsId)
+            sendJson(res, 200, { ok: true, gameId: resolvedGameId });
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err.message });
+        }
+    },
+
+    openMultiplayerRoom: async (req, res) => {
+        let player;
         try {
             const { playerId } = await readJsonBody(req);
             player = PlayersManager.getPlayerById(playerId);
@@ -186,7 +215,8 @@ exports.HTTPHandler = {
             return;
         }
 
-        const gameId = GamesManager.findRoomFor(player);
+        const gameId = GamesManager.newGame(GameMode.MULTIPLAYER);
+        GamesManager.registerPlayerInRoom(player, gameId);
 
         sendJson(res, 200, { ok: true, gameId });
     },
