@@ -2,8 +2,6 @@ const { Router } = require('../helpers/router');
 const {
     handleCreateChallenge,
     handleListIncomingChallenges,
-    handleListOutgoingChallenges,
-    handleGetChallenge,
     handleAcceptChallenge,
     handleDeclineChallenge,
     handleCancelChallenge,
@@ -15,12 +13,6 @@ const ROUTER = new Router()
     })
     .add('/api/challenge-service/challenges/incoming', {
         GET: handleListIncomingChallenges,
-    })
-    .add('/api/challenge-service/challenges/outgoing', {
-        GET: handleListOutgoingChallenges,
-    })
-    .add('/api/challenge-service/challenges/:challengeId', {
-        GET: handleGetChallenge,
     })
     .add('/api/challenge-service/challenges/:challengeId/accept', {
         POST: handleAcceptChallenge,

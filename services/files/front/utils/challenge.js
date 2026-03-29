@@ -58,15 +58,6 @@ export async function listIncomingChallenges() {
     });
 }
 
-export async function listOutgoingChallenges() {
-    return performChallengeRequest('/api/challenge-service/challenges/outgoing', {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-}
-
 export async function acceptChallenge(challengeId) {
     return performChallengeRequest(`/api/challenge-service/challenges/${encodeURIComponent(challengeId)}/accept`, {
         method: 'POST',
