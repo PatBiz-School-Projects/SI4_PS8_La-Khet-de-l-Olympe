@@ -22,6 +22,9 @@ const server = http.createServer(function (request, response) {
         if (filePath[1] === "api") {
             switch(filePath[2]) {
                 case "game-service":
+                    console.warn(`Deprecated request to game-service received: "${request.url}"`);
+                    /* continue in "games" case */
+                case "games":
                     console.log("-> Redirection vers GamesService (8002)");
                     proxy.web(request, response, { target: GAMES_SERVICE_URL });
                     break;
@@ -60,6 +63,9 @@ server.on("upgrade", function (request, socket, head) {
     if (filePath[1] === "api") {
         switch(filePath[2]) {
             case "game-service":
+                console.warn("Deprecated socket connection method used");
+                /* continue in "games" case */
+            case "games":
                 console.log("-> WS Upgrade vers GamesService (8002)");
                 proxy.ws(request, socket, head, { target: GAMES_SERVICE_URL });
                 break;
