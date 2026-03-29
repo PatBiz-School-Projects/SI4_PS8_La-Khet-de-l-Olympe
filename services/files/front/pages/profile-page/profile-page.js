@@ -1,8 +1,8 @@
 import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
+import { setCookie} from "/utils/cookie.js";
 import {
     sendChallenge,
     listIncomingChallenges,
-    listOutgoingChallenges,
     acceptChallenge,
     declineChallenge,
     cancelChallenge,
@@ -23,9 +23,6 @@ const requestsListEl = document.getElementById('requests-list');
 const requestsEmptyEl = document.getElementById('requests-empty');
 const incomingChallengesListEl = document.getElementById('incoming-challenges-list');
 const incomingChallengesEmptyEl = document.getElementById('incoming-challenges-empty');
-const outgoingChallengesListEl = document.getElementById('outgoing-challenges-list');
-const outgoingChallengesEmptyEl = document.getElementById('outgoing-challenges-empty');
-
 let challengeSocket = null;
 
 
@@ -136,9 +133,17 @@ function renderIncomingChallenges(challenges) {
                         setStatus(response.payload?.error || 'Impossible d’accepter le défi.');
                         return;
                     }
-
+                    console.log(response)
                     setStatus('Défi accepté.', false);
-                    await loadChallengeData();
+                    const gameId = response.payload?.challenge?.gameId;
+                    if (!gameId) {
+                        setStatus('Défi accepté, mais aucun identifiant de partie n’a été renvoyé.');
+                        await loadChallengeData();
+                        return;
+                    }
+
+                    setCookie('gameId', gameId);
+                    window.location.href = '../waiting-room-page/waiting-room-page.html';
                 },
             },
             {
@@ -161,31 +166,6 @@ function renderIncomingChallenges(challenges) {
     });
 }
 
-function renderOutgoingChallenges(challenges) {
-    outgoingChallengesListEl.innerHTML = '';
-    outgoingChallengesEmptyEl.style.display = challenges.length ? 'none' : 'block';
-
-    challenges.forEach((challenge) => {
-        const item = createChallengeItem(challenge, [
-            {
-                label: 'Annuler',
-                className: 'danger',
-                onClick: async (challengeId) => {
-                    const response = await cancelChallenge(challengeId);
-                    if (!response.ok) {
-                        setStatus(response.payload?.error || 'Impossible d’annuler le défi.');
-                        return;
-                    }
-
-                    setStatus('Défi annulé.', false);
-                    await loadChallengeData();
-                },
-            },
-        ]);
-
-        outgoingChallengesListEl.appendChild(item);
-    });
-}
 
 function renderFriends(friends, token) {
     friendsListEl.innerHTML = '';
@@ -234,21 +214,13 @@ function renderFriends(friends, token) {
 
 async function loadChallengeData() {
     try {
-        const [incomingResponse, outgoingResponse] = await Promise.all([
-            listIncomingChallenges(),
-            listOutgoingChallenges(),
-        ]);
+        const incomingResponse = await listIncomingChallenges();
 
         if (!incomingResponse.ok) {
             throw new Error(incomingResponse.payload?.error || 'Impossible de charger les défis reçus.');
         }
 
-        if (!outgoingResponse.ok) {
-            throw new Error(outgoingResponse.payload?.error || 'Impossible de charger les défis envoyés.');
-        }
-
-        renderIncomingChallenges(incomingResponse.payload?.challenges || []);
-        renderOutgoingChallenges(outgoingResponse.payload?.challenges || []);
+        renderIncomingChallenges(incomingResponse.payload.challenges || []);
     } catch (error) {
         console.error(error);
         setStatus('Impossible de charger les défis.');
@@ -267,7 +239,16 @@ function bindChallengeSocket() {
     };
 
     challengeSocket.on('challenge:incoming', refresh);
-    challengeSocket.on('challenge:accepted', refresh);
+    challengeSocket.on('challenge:accepted', (payload) => {
+        const gameId = payload?.challenge?.gameId;
+        if (!gameId) {
+            refresh();
+            return;
+        }
+
+        setCookie('gameId', gameId);
+        window.location.href = '../waiting-room-page/waiting-room-page.html';
+    });
     challengeSocket.on('challenge:declined', refresh);
     challengeSocket.on('challenge:cancelled', refresh);
     challengeSocket.on('challenge:updated', refresh);
