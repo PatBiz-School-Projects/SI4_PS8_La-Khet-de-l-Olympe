@@ -59,10 +59,13 @@ services:
     <<: *common
     build:
       context: ./services/files
-    networks:
-      - internal
     environment:
       PORT: *files-port
+    volumes:
+      - ./frontend/src:/app/front
+      - ./frontend/assets:/app/front/assets
+    networks:
+      - internal
 
   users-service:
     <<: *common

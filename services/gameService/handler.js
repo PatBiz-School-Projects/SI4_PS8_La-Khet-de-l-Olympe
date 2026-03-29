@@ -4,8 +4,7 @@ const { GamesManager } = require("./GamesManager");
 const { GameMode } = require("./manager/game");
 const { PlayersManager } = require("./PlayersManager");
 
-const { RandomAI } = require("./ai/ai");
-const {MiniMaxAI} = require("./ai/ai");
+const { RandomAI, MiniMaxAI } = require("./ai/ai");
 
 
 const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
