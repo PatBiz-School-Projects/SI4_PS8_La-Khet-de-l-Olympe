@@ -63,6 +63,10 @@ server.on("upgrade", function (request, socket, head) {
                 console.log("-> WS Upgrade vers GamesService (8002)");
                 proxy.ws(request, socket, head, { target: GAMES_SERVICE_URL });
                 break;
+            case "challenge-service":
+                console.log("-> WS Upgrade vers ChallengeService (8005)");
+                proxy.ws(request, socket, head, { target: CHALLENGE_SERVICE_URL });
+                break;
         }
     }
 });
