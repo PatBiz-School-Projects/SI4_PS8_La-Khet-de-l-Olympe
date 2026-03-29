@@ -189,19 +189,20 @@ exports.HTTPHandler = {
             return;
         }
 
-        const resolvedGameId = GamesManager.findRoomFor(player);
-
-        if (requestedGameId) {
-            try {
+        try {
+            if (requestedGameId) {
                 GamesManager.registerPlayerInRoom(player, requestedGameId);
-            } catch (err) {
-                console.error(err)
-                sendJson(res, 400, { ok: false, error: err.message });
+                sendJson(res, 200, { ok: true, gameId: requestedGameId });
                 return;
             }
-        }
 
-        sendJson(res, 200, { ok: true, gameId: resolvedGameId });
+            const resolvedGameId = GamesManager.findRoomFor(player);
+            console.log(GamesManager.waitingRoomsId)
+            sendJson(res, 200, { ok: true, gameId: resolvedGameId });
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err.message });
+        }
     },
 
     openMultiplayerRoom: async (req, res) => {
