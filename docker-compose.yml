@@ -35,18 +35,18 @@ services:
     <<: *common
     build:
       context: ./services/gateway
-    ports:
-      - "8000:8000"
-    environment:
-      FILES_SERVICE_URL: *files-url
-      GAMES_SERVICE_URL: *games-url
-      AUTH_SERVICE_URL:  *auth-url
-      USERS_SERVICE_URL: *users-url
     depends_on:
       - games-service
       - auth-service
       - files-service
       - users-service
+    environment:
+      FILES_SERVICE_URL: *files-url
+      GAMES_SERVICE_URL: *games-url
+      AUTH_SERVICE_URL:  *auth-url
+      USERS_SERVICE_URL: *users-url
+    ports:
+      - "8000:8000"
     networks:
       - internal
       - public
@@ -55,49 +55,53 @@ services:
     <<: *common
     build:
       context: ./services/files
-    networks:
-      - internal
     environment:
       PORT: *files-port
+    volumes:
+      - ./frontend/src:/app/front
+      - ./frontend/assets:/app/front/assets
+    networks:
+      - internal
 
   users-service:
     <<: *common
     build:
       context: ./services
       dockerfile: ./userService/Dockerfile
-    networks:
-      - internal
+    depends_on:
+      mongo:
+        condition: service_healthy
     environment:
       PORT:    *users-port
       DB_URL:  *mongo-url
       DB_NAME: *users-db
-    depends_on:
-      mongo:
-        condition: service_healthy
+    networks:
+      - internal
 
   games-service:
     <<: *common
     build:
       context: ./services
       dockerfile: ./gameService/Dockerfile
-    networks:
-      - internal
+    depends_on:
+      mongo:
+        condition: service_healthy
     environment:
       PORT:              *games-port
       DB_URL:            *mongo-url
       DB_NAME:           *games-db
       USERS_SERVICE_URL: *users-url
-    depends_on:
-      mongo:
-        condition: service_healthy
+    networks:
+      - internal
 
   auth-service:
     <<: *common
     build:
       context: ./services
       dockerfile: ./auth/Dockerfile
-    networks:
-      - internal
+    depends_on:
+      mongo:
+        condition: service_healthy
     environment:
       PORT:              *auth-port
       JWT_SECRET:        ${JWT_SECRET}
@@ -106,36 +110,35 @@ services:
       DB_URL:            *mongo-url
       DB_NAME:           *auth-db
       USERS_SERVICE_URL: *users-url
-    depends_on:
-      mongo:
-        condition: service_healthy
+    networks:
+      - internal
 
   mongo:
     <<: *common
     image: mongo:7.0
-    volumes:
-      - ./data/db:/data/db
     command: ["mongod", "--quiet", "--logpath", "/dev/null"]
-    networks:
-      - internal
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - ./data/db:/data/db
+    networks:
+      - internal
 
   mongo-express:
     <<: *common
     image: mongo-express:1.0.2-20-alpine3.19
-    ports:
-      - "8081:8081"
+    depends_on:
+      mongo:
+        condition: service_healthy
     environment:
       ME_CONFIG_MONGODB_URL:        *mongo-url
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
-    depends_on:
-      mongo:
-        condition: service_healthy
+    ports:
+      - "8081:8081"
     networks:
       - internal
       - public

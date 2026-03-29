@@ -2,8 +2,8 @@ const { getDb } = require("./mongo");
 const hash = require("js-sha256");
 const { readJsonBody, sendJson } = require("./helpers/parser");
 const jwt = require("jsonwebtoken");
-const {createUserProfile, markUserConnected,markUserDisconnected} = require("./userClient")
-const {extractToken} = require("./helpers/token")
+const {createUserProfile, markUserConnected,markUserDisconnected} = require("./userClient");
+const {extractToken} = require("./helpers/token");
 
 const jwtSecret = process.env.JWT_SECRET;
 const accessTokenExpiry = process.env.ACCESS_TOKEN_EXPIRY;

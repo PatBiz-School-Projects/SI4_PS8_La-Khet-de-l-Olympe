@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Page</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fauna+One&display=swap" rel="stylesheet">
+
+    <link href="./game-page.css" rel="stylesheet">
+    <script type="module" src="./game-page.js" defer></script>
+</head>
+
+<body>
+    <dialog id="game-over-overlay" class="hidden" aria-live="polite">
+        <img id="game-over-asset" src="/assets/game-over-banner.svg" alt="Game over">
+        <p id="game-over-message"></p>
+        <button id="game-over-home-btn" onclick="window.location.href='/home/pages/home-page/home-page.html'">Retour à l'accueil</button>
+    </dialog>
+
+    <header>
+        <div id="header-btns">
+            <!-- home button --> <button id="home-btn" onclick="window.location.href='/home/pages/home-page/home-page.html'"></button>
+            <!-- info button --> <button id="info-btn" onclick="alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`)"></button>
+        </div>
+
+        <div id="indicators">
+            <game-turn-indicator></game-turn-indicator>
+            <!-- timer --> <p id="timer">--:--</p>
+        </div>
+
+        <div style="width: 7vw;"></div>
+    </header>
+
+    <div class="game-container">
+        <game-rotation-indicator id="player1-rotation-indicator"></game-rotation-indicator>
+        <game-player-inventory id="player1-inventory"></game-player-inventory>
+        <game-board></game-board>
+        <game-player-inventory id="player2-inventory"></game-player-inventory>
+        <game-rotation-indicator id="player2-rotation-indicator"></game-rotation-indicator>
+    </div>
+</body>
+</html>
