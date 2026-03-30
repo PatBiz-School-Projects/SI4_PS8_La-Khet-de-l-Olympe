@@ -205,10 +205,10 @@ class GamesManager {
                     err => console.error(`Failed to save game w/ id '${gameId}' bcs:`, err)
                 );
 
-            const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
+            const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 
             for (const player of this._games[gameId].players) {
-                fetch(`${USERS_SERVICE_URL}/api/users/${player.userId}/stats`, {
+                fetch(`${USER_SERVICE_URL}/api/users/${player.userId}/stats`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(summary.statsUpdates[player.playerId]),

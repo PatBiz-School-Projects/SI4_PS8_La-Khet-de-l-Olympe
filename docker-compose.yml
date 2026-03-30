@@ -14,10 +14,10 @@ x-ports:
   - &challenge-port "8005"
 
 x-urls:
-  - &files-url http://files-service:8001
-  - &games-url http://games-service:8002
+  - &files-url http://file-service:8001
+  - &games-url http://game-service:8002
   - &auth-url  http://auth-service:8003
-  - &users-url http://users-service:8004
+  - &users-url http://user-service:8004
   - &mongo-url mongodb://mongo:27017
   - &challenge-url http://challenge-service:8005
 
@@ -37,25 +37,23 @@ services:
     <<: *common
     build:
       context: ./services/gateway
+    depends_on:
+      - game-service
+      - auth-service
+      - file-service
+      - user-service
+    environment:
+      FILE_SERVICE_URL: *files-url
+      GAME_SERVICE_URL: *games-url
+      AUTH_SERVICE_URL: *auth-url
+      USER_SERVICE_URL: *users-url
     ports:
       - "8000:8000"
-    environment:
-      FILES_SERVICE_URL: *files-url
-      GAMES_SERVICE_URL: *games-url
-      AUTH_SERVICE_URL:  *auth-url
-      USERS_SERVICE_URL: *users-url
-      CHALLENGE_SERVICE_URL: *challenge-url
-    depends_on:
-      - games-service
-      - auth-service
-      - files-service
-      - users-service
-      - challenge-service
     networks:
       - internal
       - public
 
-  files-service:
+  file-service:
     <<: *common
     build:
       context: ./services/files
@@ -67,7 +65,7 @@ services:
     networks:
       - internal
 
-  users-service:
+  user-service:
     <<: *common
     build:
       context: ./services
@@ -82,7 +80,7 @@ services:
       mongo:
         condition: service_healthy
 
-  games-service:
+  game-service:
     <<: *common
     build:
       context: ./services
@@ -90,10 +88,10 @@ services:
     networks:
       - internal
     environment:
-      PORT:              *games-port
-      DB_URL:            *mongo-url
-      DB_NAME:           *games-db
-      USERS_SERVICE_URL: *users-url
+      PORT:             *games-port
+      DB_URL:           *mongo-url
+      DB_NAME:          *games-db
+      USER_SERVICE_URL: *users-url
     depends_on:
       mongo:
         condition: service_healthy
@@ -107,27 +105,24 @@ services:
       - internal
     environment:
       PORT: *challenge-port
-      USERS_SERVICE_URL: *users-url
-      GAMES_SERVICE_URL: *games-url
+      USER_SERVICE_URL: *users-url
+      GAME_SERVICE_URL: *games-url
 
   auth-service:
     <<: *common
     build:
       context: ./services
       dockerfile: ./auth/Dockerfile
+    environment:
+      PORT:                 *auth-port
+      JWT_SECRET:           ${JWT_SECRET}
+      ACCESS_TOKEN_EXPIRY:  ${ACCESS_TOKEN_EXPIRY}
+      REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY}
+      DB_URL:               *mongo-url
+      DB_NAME:              *auth-db
+      USER_SERVICE_URL:     *users-url
     networks:
       - internal
-    environment:
-      PORT:              *auth-port
-      JWT_SECRET:        ${JWT_SECRET}
-      ACCESS_TOKEN_EXPIRY:      ${ACCESS_TOKEN_EXPIRY}
-      REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY}
-      DB_URL:            *mongo-url
-      DB_NAME:           *auth-db
-      USERS_SERVICE_URL: *users-url
-    depends_on:
-      mongo:
-        condition: service_healthy
 
   mongo:
     <<: *common

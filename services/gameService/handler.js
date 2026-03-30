@@ -7,7 +7,7 @@ const { PlayersManager } = require("./PlayersManager");
 const { RandomAI, MiniMaxAI } = require("./ai/ai");
 
 
-const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 
 
 //
@@ -119,7 +119,7 @@ exports.HTTPHandler = {
         {
             let userMinimalProfile;
             try {
-                const response = await fetch(`${USERS_SERVICE_URL}/api/users/${userId}/minimal-profile`);
+                const response = await fetch(`${USER_SERVICE_URL}/api/users/${userId}/minimal-profile`);
                 userMinimalProfile = await response.json();
             } catch (err) {
                 console.error(err);
@@ -129,7 +129,7 @@ exports.HTTPHandler = {
 
             let userLiveStats;
             try {
-                const response = await fetch(`${USERS_SERVICE_URL}/api/users/${userId}/live-stats`);
+                const response = await fetch(`${USER_SERVICE_URL}/api/users/${userId}/live-stats`);
                 userLiveStats = await response.json();
             } catch (err) {
                 console.error(err);

@@ -1,7 +1,7 @@
-const GAMES_SERVICE_URL = process.env.GAMES_SERVICE_URL;
+const GAME_SERVICE_URL = process.env.GAME_SERVICE_URL;
 
 async function createPlayerForChallenger(cookieHeader) {
-    const response = await fetch(`${GAMES_SERVICE_URL}/api/game-service/new-player`, {
+    const response = await fetch(`${GAME_SERVICE_URL}/api/game-service/new-player`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -20,7 +20,7 @@ async function createPlayerForChallenger(cookieHeader) {
 }
 
 async function openMultiplayerRoom(playerId, cookieHeader) {
-    const response = await fetch(`${GAMES_SERVICE_URL}/api/game-service/open-multiplayer-room`, {
+    const response = await fetch(`${GAME_SERVICE_URL}/api/game-service/open-multiplayer-room`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -39,7 +39,7 @@ async function openMultiplayerRoom(playerId, cookieHeader) {
 }
 
 async function joinSpecificMultiplayerRoom(playerId, gameId, cookieHeader) {
-    const response = await fetch(`${GAMES_SERVICE_URL}/api/game-service/join-multiplayer-game`, {
+    const response = await fetch(`${GAME_SERVICE_URL}/api/game-service/join-multiplayer-game`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
