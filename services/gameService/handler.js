@@ -7,7 +7,7 @@ const { PlayersManager } = require("./PlayersManager");
 const { RandomAI, MiniMaxAI } = require("./ai/ai");
 
 
-const USERS_SERVICE_URL = process.env.USERS_SERVICE_URL;
+const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 
 
 //
@@ -39,15 +39,22 @@ exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
 
 exports.HTTPMiddelware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
     try {
-        const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
+        const { userId, userToken } = parseCookies(req.headers.cookie);
+
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+            if (!gameId) {
+                throw new Error("Missing 'gameId' cookie");
+            }
+        }
+
         if (!userId) {
             throw new Error("Missing 'userId' cookie");
         }
         if (!userToken) {
             throw new Error("Missing 'userToken' cookie");
-        }
-        if (!gameId) {
-            throw new Error("Missing 'gameId' cookie");
         }
         if (!GamesManager.waitingRoomsId.includes(gameId) && !GamesManager.runningGamesId.includes(gameId)) {
             throw new Error(`No waiting room nor game with id=${gameId}`);
@@ -67,15 +74,22 @@ exports.HTTPMiddelware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
 
 exports.HTTPMiddelware_InsideGame = (handlerCb) => async (req, res) => {
     try {
-        const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
+        const { userId, userToken } = parseCookies(req.headers.cookie);
+
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+            if (!gameId) {
+                throw new Error("Missing 'gameId' cookie");
+            }
+        }
+
         if (!userId) {
             throw new Error("Missing 'userId' cookie");
         }
         if (!userToken) {
             throw new Error("Missing 'userToken' cookie");
-        }
-        if (!gameId) {
-            throw new Error("Missing 'gameId' cookie");
         }
         if (!GamesManager.runningGamesId.includes(gameId)) {
             throw new Error(`No running game with id=${gameId}`);
@@ -105,7 +119,7 @@ exports.HTTPHandler = {
         {
             let userMinimalProfile;
             try {
-                const response = await fetch(`${USERS_SERVICE_URL}/api/users/${userId}/minimal-profile`);
+                const response = await fetch(`${USER_SERVICE_URL}/api/users/${userId}/minimal-profile`);
                 userMinimalProfile = await response.json();
             } catch (err) {
                 console.error(err);
@@ -115,7 +129,7 @@ exports.HTTPHandler = {
 
             let userLiveStats;
             try {
-                const response = await fetch(`${USERS_SERVICE_URL}/api/users/${userId}/live-stats`);
+                const response = await fetch(`${USER_SERVICE_URL}/api/users/${userId}/live-stats`);
                 userLiveStats = await response.json();
             } catch (err) {
                 console.error(err);
@@ -226,7 +240,11 @@ exports.HTTPHandler = {
     //
 
     hasGameStarted: async (req, res) => {
-        const { gameId } = parseCookies(req.headers.cookie);
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
 
         sendJson(res, 200, { ok: true, hasStarted: GamesManager.runningGamesId.includes(gameId) });
     },
@@ -236,10 +254,15 @@ exports.HTTPHandler = {
     //
 
     action: async (req, res) => {
-        try {
-            const { gameId } = parseCookies(req.headers.cookie);
-            const game = GamesManager.getGameById(gameId);
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
 
+        const game = GamesManager.getGameById(gameId);
+
+        try {
             const action = await readJsonBody(req);
             const actionResult = game.onPlayerAction(action);
             sendJson(res, 200, { ok:true, result: actionResult });
@@ -250,7 +273,12 @@ exports.HTTPHandler = {
     },
 
     getPieceAt: async (req, res) => {
-        const { gameId } = parseCookies(req.headers.cookie);
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
+
         const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
         if (isNaN(x) || isNaN(y)) {
             const err = "Missing or wrong query parameters 'x' & 'y'";
@@ -270,7 +298,11 @@ exports.HTTPHandler = {
     },
 
     getBoard: async (req, res) => {
-        const { gameId } = parseCookies(req.headers.cookie);
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
 
         const game = GamesManager.getGameById(gameId);
 
@@ -278,7 +310,12 @@ exports.HTTPHandler = {
     },
 
     getPossibleMoves: async (req, res) => {
-        const { gameId } = parseCookies(req.headers.cookie);
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
+
         const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
         if (isNaN(x) || isNaN(y)) {
             const err = "Missing or wrong query parameters 'x' & 'y'";
@@ -297,8 +334,17 @@ exports.HTTPHandler = {
     },
 
     getInventoryOfPlayer: async (req, res) => {
-        const { gameId } = parseCookies(req.headers.cookie);
-        const { playerId } = await readJsonBody(req);
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
+
+        let { playerId } = req.routeParams;
+        if (!playerId) {
+            // If old route was used
+            ({ playerId } = await readJsonBody(req));
+        }
 
         const game = GamesManager.getGameById(gameId);
 
@@ -312,23 +358,37 @@ exports.HTTPHandler = {
     },
 
     getPlayers: async (req, res) => {
-        const { gameId } = parseCookies(req.headers.cookie);
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
 
         const game = GamesManager.getGameById(gameId);
 
         sendJson(res, 200, { ok: true, playersId: game.players.map(player => player.playerId) });
     },
 
-    getCurrActivePlayer: async (req, res) => {
-        const { gameId } = parseCookies(req.headers.cookie);
+    getActivePlayer: async (req, res) => {
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
 
         const game = GamesManager.getGameById(gameId);
 
         sendJson(res, 200, { ok: true, playerId: game.currActivePlayer.playerId });
     },
 
-    getPlayerOfClient: async (req, res) => {
-        const { userId, userToken, gameId } = parseCookies(req.headers.cookie);
+    getClientPlayer: async (req, res) => {
+        const { userId, userToken } = parseCookies(req.headers.cookie);
+
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
 
         const game = GamesManager.getGameById(gameId);
 
@@ -397,7 +457,13 @@ exports.SocketIOHandler = {
     //
 
     onConnection: async (io, socket, msgPayload) => {
-        const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
+        const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        let { gameId } = socket.handshake.query;
+        if (!gameId) {
+            // If old socket connection route was used
+            ({ gameId } = parseCookies(socket.handshake.headers.cookie || ""));
+        }
+
         const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
 
         const game = (

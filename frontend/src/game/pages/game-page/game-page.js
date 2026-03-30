@@ -1,3 +1,5 @@
+import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+
 import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/game/components/index.js";
 
 import { Piece } from "/game/logic/board/Piece.js";
@@ -8,32 +10,22 @@ import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachin
 import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
-import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+import { getCookie } from "/utils/cookie";
+import { EventQueue } from "/utils/event";
+// REVIEW : It's a feature instead of an utils
 import {sendChallenge} from "/utils/challenge.js"
 
 
-class EventQueue {
-    constructor() {
-        this.queue = [];
-        this.running = false;
-    }
-
-    enqueue(fn) {
-        return async (...args) => {
-            this.queue.push(() => fn(...args));
-            if (this.running) return;
-
-            this.running = true;
-            while (this.queue.length) {
-                await this.queue.shift()();
-            }
-            this.running = false;
-        };
-    }
-}
+// TODO : Remove `gameId` & use local storage instead to enable simultaneous games
+const GAME_ID = getCookie("gameId");
 
 
-const socket = io({ path: "/api/game-service/socket.io" });
+const socket = io({
+    path: "/api/game-service/socket.io",
+    query: {
+        gameId: GAME_ID,
+    },
+});
 const clickHandler = new GamePageClickHandler(document);
 const stateMachine = new GamePageStateMachine();
 
@@ -98,7 +90,7 @@ async function fetchPlayersId() {
 async function fetchClientPlayerId() {
     let playerId;
     try {
-        const playerResponse = await fetch("/api/game-service/player");
+        const playerResponse = await fetch("/api/game-service/client-player");
         if (!playerResponse.ok) {
             throw playerResponse.error;
         }

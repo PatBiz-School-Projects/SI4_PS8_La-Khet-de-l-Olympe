@@ -1,9 +1,17 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
+import { getCookie } from "/utils/cookie";
+
+// TODO : Remove `gameId` & use local storage instead to enable simultaneous games
+const GAME_ID = getCookie("gameId");
+
 
 const socket = io({
     path: "/api/game-service/socket.io",
-    query: { inWaitingRoom: true },
+    query: {
+        gameId: GAME_ID,
+        inWaitingRoom: true,
+    },
 });
 
 
