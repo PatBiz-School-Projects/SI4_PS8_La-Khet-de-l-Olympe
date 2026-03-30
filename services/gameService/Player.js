@@ -8,9 +8,8 @@ const assert = require("assert");
  */
 const PlayerID = undefined;
 
-
 /**
- * @typedef {Object} UserProfile_InGame
+ * @typedef {Object} InGameProfile
  *
  * @prop {string} username
  * @prop {string} profilePicture
@@ -19,12 +18,22 @@ const PlayerID = undefined;
  */
 
 
+/**
+ * @typedef {Object} PlayerDTO
+ *
+ * @prop {PlayerID} playerId
+ * @prop {UserID} userId
+ * @prop {InGameProfile} profile
+ */
+const PlayerDTO = undefined;
+
+
 class Player {
     /**
      * @param {PlayerID} playerId
      * @param {UserID} userId
      * @param {UserToken} userToken
-     * @param {UserProfile_InGame} userProfile
+     * @param {InGameProfile} profile
      */
     constructor(playerId, userId, userToken, userProfile) {
         /** @private @type {PlayerID} */
@@ -36,8 +45,8 @@ class Player {
         /** @private @type {UserToken} */
         this._userToken = userToken;
 
-        /** @private @type {unknown} */
-        this._userProfile = userProfile;
+        /** @private @type {InGameProfile} */
+        this._profile = userProfile;
 
         /** @private @type {GameID} */
         this._gameId; // will be set once the player is registered in a room/game
@@ -61,9 +70,9 @@ class Player {
         return this._userToken;
     }
 
-    /** @type {UserProfile_InGame} */
-    get userProfile() {
-        return this._userProfile;
+    /** @type {InGameProfile} */
+    get profile() {
+        return this._profile;
     }
 
     /** @type {GameID} */
@@ -75,6 +84,22 @@ class Player {
             throw new Error("Cannot reassign player property 'gameId'");
         }
         this._gameId = gameId;
+    }
+
+    /**
+     * @returns {PlayerDTO}
+     */
+    toDTO() {
+        return {
+            playerId: this.playerId,
+            userId: this.userId,
+            profile: {
+                username: this.profile.username,
+                profilePicture: this.profile.profilePicture,
+                elo: this.profile.elo,
+                liveWinStreak: this.profile.liveWinStreak,
+            },
+        };
     }
 }
 
@@ -153,4 +178,4 @@ class Bot extends Player {
     }
 }
 
-module.exports = { Player, Bot, PlayerID };
+module.exports = { Player, Bot, PlayerID, PlayerDTO };

@@ -1,6 +1,6 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-import { getCookie } from "/utils/cookie";
+import { getCookie } from "/utils/cookie.js";
 
 // TODO : Remove `gameId` & use local storage instead to enable simultaneous games
 const GAME_ID = getCookie("gameId");

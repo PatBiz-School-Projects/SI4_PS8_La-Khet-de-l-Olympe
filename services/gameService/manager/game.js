@@ -343,10 +343,10 @@ class Game {
 
             const eloComputation = computeEloOnDraw(
                 player1.playerId,
-                player1.userProfile.elo,
+                player1.profile.elo,
 
                 player2.playerId,
-                player2.userProfile.elo,
+                player2.profile.elo,
             );
 
             return {
@@ -372,12 +372,12 @@ class Game {
 
         const eloComputation = computeEloWithWinStreak(
             winner.playerId,
-            winner.userProfile.elo,
+            winner.profile.elo,
 
             loser.playerId,
-            loser.userProfile.elo,
+            loser.profile.elo,
 
-            winner.userProfile.liveWinStreak,
+            winner.profile.liveWinStreak,
         );
 
         return {
