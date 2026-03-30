@@ -243,6 +243,11 @@ class Game {
 
 
     nextTurn() {
+
+        if (this.isFinished()) {
+            return;
+        }
+
         this._currActivePlayer.socket.emit("end-turn", {});
 
         this._turnCount++;
@@ -255,10 +260,11 @@ class Game {
         if (this._turnCount > Game.TURN_LIMIT) {
             this._state = GameState.DRAW;
         }
-
-        this._currActivePlayer.socket.emit("start-turn", {
-            playerId: this._currActivePlayer.playerId
-        });
+        setTimeout(()=> {
+            this._currActivePlayer.socket.emit("start-turn", {
+                playerId: this._currActivePlayer.playerId
+            });
+        },500);
     }
 
 
