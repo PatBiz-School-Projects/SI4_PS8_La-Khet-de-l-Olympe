@@ -378,7 +378,11 @@ class MiniMaxAI extends AI {
     evaluatePosition(board,playerId){
         let score = 0;
         const king = board.getPharaohByOwner(playerId);
-        score += this.evaluateKingPosition(board,playerId,king);
+
+        if(king!=null){
+            score += this.evaluateKingPosition(board,playerId,king);
+        }
+
         return score;
 
     }
@@ -391,8 +395,11 @@ class MiniMaxAI extends AI {
             {x:pos.x-1, y:pos.y},
             {x:pos.x, y:pos.y-1},
         ];
+
+        const isWithinBounds = (p) => p.x >= 0 && p.x < Board.GRID_LEN && p.y >= 0 && p.y < Board.GRID_LEN;
         const orthogonalPosition = computeOrthogonalNeighbourPositions({x:king.x, y:king.y});
-        orthogonalPosition.filter(pos=>pos.x<Board.GRID_LEN && pos.y<Board.GRID_LEN &&board.getPieceAt(pos)!=null)
+
+        orthogonalPosition.filter(pos=>isWithinBounds(pos)&&board.hasPieceAt(pos)&&board.getPieceAt(pos).owner===playerId)
             .forEach(()=> score += 40);
         return score;
     }
