@@ -39,6 +39,8 @@ const ROUTER = (new Router()
         GET: HTTPUsersHandler.getUserStats,
         POST: HTTPUsersHandler.updateUserStats,
     })
+    .add("/api/users/:userId/profile", {
+        POST: HTTPUsersHandler.updateUserProfilePicture})
     .add("/api/users/:userId/live-stats", {
         GET: HTTPUsersHandler.getUserLiveStats,
     })

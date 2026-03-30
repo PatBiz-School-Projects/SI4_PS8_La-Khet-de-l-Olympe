@@ -1,4 +1,4 @@
-import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
+import { authenticatedFetch, ensureValidAccessToken,getUserIdFromToken } from '/utils/auth.js';
 import { setCookie} from "/utils/cookie.js";
 import {
     sendChallenge,
@@ -23,8 +23,50 @@ const requestsListEl = document.getElementById('requests-list');
 const requestsEmptyEl = document.getElementById('requests-empty');
 const incomingChallengesListEl = document.getElementById('incoming-challenges-list');
 const incomingChallengesEmptyEl = document.getElementById('incoming-challenges-empty');
+
 let challengeSocket = null;
 
+
+const openAvatarModal = () => document.getElementById('avatar-modal')?.classList.remove('hidden');
+const closeAvatarModal = () => document.getElementById('avatar-modal')?.classList.add('hidden');
+
+async function handleAvatarSelection(event) {
+    const newPicture = event.target.getAttribute('src');
+
+    pictureEl.src = newPicture;
+    closeAvatarModal();
+
+    const token = await ensureValidAccessToken();
+    const userId = getUserIdFromToken(token);
+
+    if (!userId) {
+        setStatus('Erreur : Impossible de récupérer ton identifiant.');
+        return;
+    }
+
+    await syncProfilePicture(userId, newPicture);
+}
+
+function bindAvatarModalEvents() {
+    const editPpBtn = document.getElementById('edit-pp-btn');
+    const avatarModal = document.getElementById('avatar-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const avatarOptions = document.querySelectorAll('.avatar-option');
+
+    if (!editPpBtn || !avatarModal) return;
+
+    editPpBtn.addEventListener('click', openAvatarModal);
+
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeAvatarModal);
+
+    avatarModal.addEventListener('click', (e) => {
+        if (e.target === avatarModal) closeAvatarModal();
+    });
+
+    avatarOptions.forEach(option => {
+        option.addEventListener('click', handleAvatarSelection);
+    });
+}
 
 function getPictureUrl(profilePicture) {
     if (!profilePicture) {
@@ -36,6 +78,36 @@ function getPictureUrl(profilePicture) {
     }
 
     return `/assets/${profilePicture}`;
+}
+
+async function syncProfilePicture(userId,pictureUrl) {
+    try{
+        const token = ensureValidAccessToken()
+        const response = await authenticatedFetch(`/api/users/${userId}/profile`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({profilePicture: pictureUrl })
+        });
+        if (!response) {
+            setStatus('Session expirée. Impossible de sauvegarder la photo.');
+            return;
+        }
+
+        const payload = await response.json();
+
+        if (!response.ok) {
+
+            setStatus(payload.error || 'Erreur lors de la sauvegarde de la photo.');
+            return;
+        }
+
+        setStatus('Photo de profil mise à jour avec succès.', false);
+
+    } catch (error) {
+        console.error("Erreur réseau :", error);
+        setStatus("Impossible de joindre le serveur pour sauvegarder la photo.");
+    }
+
 }
 
 
@@ -370,17 +442,6 @@ async function loadProfile() {
             return;
         }
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const ppSelector = document.getElementById('pp-selector');
-            const profilePicture = document.getElementById('profile-picture');
-
-            if (ppSelector && profilePicture) {
-                ppSelector.addEventListener('change', (event) => {
-                    profilePicture.src = event.target.value;
-                    // (Optionnel) Ici tu pourras aussi faire un fetch() pour sauvegarder le choix dans ta base de données
-                });
-            }
-        });
         const payload = await response.json();
         const stats = payload.stats;
         usernameEl.textContent = payload.username;
@@ -394,6 +455,11 @@ async function loadProfile() {
         pictureEl.onerror = () => {
             pictureEl.src = '/assets/pharaoh-blue.png';
         };
+
+        if (ppSelector) {
+            ppSelector.value = getPictureUrl(payload.profilePicture);
+        }
+
         await loadFriendData(token);
         await loadChallengeData();
         bindChallengeSocket();
@@ -402,5 +468,5 @@ async function loadProfile() {
         statusEl.textContent = 'Impossible de charger le profile.';
     }
 }
-
+bindAvatarModalEvents();
 loadProfile();

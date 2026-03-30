@@ -29,6 +29,13 @@ async function createUser(authId,username) {
     });
 }
 
+async function updateProfilePicture(userId,newProfilePicture){
+    const userCollection = await getUsersCollection();
+    userCollection.updateOne({_id: userId,},{
+        $set: {profilePicture: newProfilePicture}
+    })
+}
+
 async function updateUserStats(userId, {newElo, won, lost, drew}) {
     const usersCollection = await getUsersCollection();
     if (won) {
@@ -63,4 +70,5 @@ module.exports = {
     createUser,
     findUserByAuthId,
     updateUserStats,
+    updateProfilePicture
 };

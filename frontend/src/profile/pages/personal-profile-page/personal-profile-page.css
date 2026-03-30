@@ -182,6 +182,7 @@ body {
         flex-direction: column;
         text-align: center;
     }
+
     .friend-item,
     .friend-main {
         flex-direction: column;
@@ -192,4 +193,96 @@ body {
         width: 100%;
         justify-content: flex-start;
     }
+}
+
+/* --- Bouton de modification --- */
+.edit-pp-btn {
+    margin-top: 10px;
+    padding: 8px 16px;
+    background-color: #d4af37; /* Or typique mythologie, à adapter à ton thème */
+    color: #111;
+    border: none;
+    border-radius: 4px;
+    font-family: 'Cinzel', serif;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.edit-pp-btn:hover {
+    background-color: #f1c40f;
+}
+
+/* --- Modale (Popup) --- */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 1;
+    transition: opacity 0.3s ease;
+}
+.modal.hidden {
+    opacity: 0;
+    pointer-events: none; /* Empêche de cliquer quand c'est caché */
+}
+
+.modal-content {
+    background-color: #1a1a1a; /* Fond sombre */
+    border: 2px solid #d4af37;
+    border-radius: 8px;
+    padding: 20px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #333;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+.modal-header h2 {
+    margin: 0;
+    color: #d4af37;
+    font-size: 1.5rem;
+}
+.close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+}
+.close-btn:hover {
+    color: #ffb3b3;
+}
+
+/* --- Grille d'Avatars --- */
+.avatar-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+    gap: 15px;
+}
+.avatar-option {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: contain;
+    border: 2px solid transparent;
+    border-radius: 50%;
+    cursor: pointer;
+    background-color: #2a2a2a;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+.avatar-option:hover {
+    transform: scale(1.1);
+    border-color: #d4af37;
 }
