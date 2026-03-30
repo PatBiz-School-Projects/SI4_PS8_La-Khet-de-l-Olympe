@@ -369,6 +369,18 @@ async function loadProfile() {
             statusEl.textContent = 'Session expirée. Veuillez vous reconnecter.';
             return;
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const ppSelector = document.getElementById('pp-selector');
+            const profilePicture = document.getElementById('profile-picture');
+
+            if (ppSelector && profilePicture) {
+                ppSelector.addEventListener('change', (event) => {
+                    profilePicture.src = event.target.value;
+                    // (Optionnel) Ici tu pourras aussi faire un fetch() pour sauvegarder le choix dans ta base de données
+                });
+            }
+        });
         const payload = await response.json();
         const stats = payload.stats;
         usernameEl.textContent = payload.username;
