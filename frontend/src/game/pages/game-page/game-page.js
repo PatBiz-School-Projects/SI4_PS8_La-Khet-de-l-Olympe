@@ -198,8 +198,11 @@ onload = async _ => {
     }
 
     // Initialising turn indicator
-    // TODO : Manage case of a local multiplayer game
-    turnIndicator.activePlayerName = activePlayer.profile.username;
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+    } else {
+        turnIndicator.activePlayerName = activePlayer.profile.username;
+    }
     turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
     // Initialising players' inventory
@@ -237,8 +240,12 @@ socket.on("start-turn", gameEventQueue.enqueue(async payload => {
 
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
 
-    // TODO : Manage case of a local multiplayer game
-    turnIndicator.activePlayerName = activePlayer.profile.username;
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+    } else {
+        turnIndicator.activePlayerName = activePlayer.profile.username;
+    }
+    turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
     turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
     if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
@@ -258,8 +265,12 @@ socket.on("end-turn", gameEventQueue.enqueue(async _ => {
 
     stateMachine.on({ type: GamePageActionType.END_TURN })
 
-    // TODO : Manage case of a local multiplayer game
-    turnIndicator.activePlayerName = activePlayer.profile.username;
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+    } else {
+        turnIndicator.activePlayerName = activePlayer.profile.username;
+    }
+    turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
     turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = false;
