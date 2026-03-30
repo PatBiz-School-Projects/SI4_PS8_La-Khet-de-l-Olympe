@@ -14,11 +14,32 @@
 
     <section class="profile-card">
         <img id="profile-picture" class="profile-picture" alt="Photo de profil" src="/assets/pharaoh-blue.png" />
+        <button id="edit-pp-btn" class="edit-pp-btn">Modifier l'avatar</button>
         <div class="profile-info">
             <h1 id="profile-username">Utilisateur</h1>
             <p id="profile-elo">ELO: --</p>
         </div>
     </section>
+    <div id="avatar-modal" class="modal hidden" aria-hidden="true">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Choisir un avatar</h2>
+                <button id="close-modal-btn" class="close-btn" aria-label="Fermer">&times;</button>
+            </div>
+            <div class="avatar-grid">
+                <img src="/assets/anubis-blue.png" class="avatar-option" alt="Anubis Bleu" />
+                <img src="/assets/anubis-red.png" class="avatar-option" alt="Anubis Rouge" />
+                <img src="/assets/pharaoh-blue.png" class="avatar-option" alt="Pharaon Bleu" />
+                <img src="/assets/pharaoh-red.png" class="avatar-option" alt="Pharaon Rouge" />
+                <img src="/assets/scarab-blue.png" class="avatar-option" alt="Scarabée Bleu" />
+                <img src="/assets/scarab-red.png" class="avatar-option" alt="Scarabée Rouge" />
+                <img src="/assets/sphinx-blue.png" class="avatar-option" alt="Sphinx Bleu" />
+                <img src="/assets/sphinx-red.png" class="avatar-option" alt="Sphinx Rouge" />
+                <img src="/assets/pyramid-blue.png" class="avatar-option" alt="Pyramide Bleue" />
+                <img src="/assets/pyramid-red.png" class="avatar-option" alt="Pyramide Rouge" />
+            </div>
+        </div>
+    </div>
     <section class="stats-card" aria-labelledby="profile-stats-title">
         <h2 id="profile-stats-title">Statistiques</h2>
         <div class="stats-grid">

@@ -118,3 +118,17 @@ export async function authenticatedFetch(url, options = {}) {
         }
     });
 }
+export function getUserIdFromToken(token) {
+    if (!token) return null;
+    try {
+        const payloadPart = token.split('.')[1];
+        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        const json = atob(base64);
+        const payload = JSON.parse(json);
+
+        return payload.sub;
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}

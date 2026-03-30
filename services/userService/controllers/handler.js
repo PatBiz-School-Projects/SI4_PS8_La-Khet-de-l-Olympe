@@ -231,21 +231,52 @@ exports.getUserLiveStats = async (req, res) => {
         // Add more if needed
     });
 }
+exports.updateUserProfilePicture = async (req,res) =>{
+    try{
 
-exports.updateUserStats = async (req, res) => {
-    const { userId } = req.routeParams;
+        const userId =  await checkExistingUser(req,res);
+        if(!userId) return;
+        const body = await readJsonBody(req);
+        const { profilePicture } = body;
 
-    let user;
-    try {
-        user = await usersRepository.findUserByAuthId(userId);
-        if (!user) {
-            throw new Error(`No user found with id: '${userId}'`);
+        if (!profilePicture) {
+            return sendJson(res, 400, { ok: false, error: "Profile Picture is missing." });
         }
-    } catch (err) {
+
+        await usersRepository.updateProfilePicture(userId,profilePicture);
+
+        sendJson(res, 200, {ok: true, success: true});
+
+    }catch (err){
+        console.error(err);
+        sendJson(res, 500, { ok: false, error: "Update Profile Picture Impossible." });
+    }
+
+
+}
+
+checkExistingUser = async (req, res) => {
+    const { userId } = req.routeParams;
+    let user;
+    try{
+        user = await usersRepository.findUserByAuthId(userId);
+
+        if (!user) {
+            sendJson(res, 404, { ok: false, error: `No user found with id: '${userId}'` });
+            return null;
+        }
+
+        return userId
+
+    }catch (err){
         console.error(err);
         sendJson(res, 404, {ok: false, error: err.message});
-        return;
     }
+}
+
+exports.updateUserStats = async (req, res) => {
+    const userId = await checkExistingUser(req,res);
+    if(!userId) return;
 
     const update = await readJsonBody(req);
 
