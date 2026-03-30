@@ -105,9 +105,6 @@ const ROUTER = (new Router()
     .add("/api/games/:gameId/action", {
         POST: HTTPMiddelware_InsideGame(HTTPHandler.action),
     })
-    .add("/api/games/:gameId/possible-actions?x={}&y={}", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPossibleMoves),
-    })
     .add("/api/games/:gameId/board", {
         GET: HTTPMiddelware_InsideGame(HTTPHandler.getBoard),
     })
@@ -120,6 +117,9 @@ const ROUTER = (new Router()
     .add("/api/games/:gameId/inventories/:ownerId", {
         POST: HTTPMiddelware_InsideGame(HTTPHandler.getInventoryOfPlayer),
     })
+    .add("/api/games/:gameId/mode", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getGameMode),
+    })
     .add("/api/games/:gameId/players", {
         GET: HTTPMiddelware_InsideGame(HTTPHandler.getPlayers),
     })
@@ -131,6 +131,9 @@ const ROUTER = (new Router()
     })
     .add("/api/games/:gameId/players/:playerId", {
         GET: HTTPMiddelware_InsideGame(HTTPHandler.getPlayerById),
+    })
+    .add("/api/games/:gameId/possible-actions?x={}&y={}", {
+        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPossibleMoves),
     })
 );
 

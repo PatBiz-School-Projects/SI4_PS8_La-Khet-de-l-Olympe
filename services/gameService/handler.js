@@ -333,6 +333,23 @@ exports.HTTPHandler = {
         }
     },
 
+    getInventories: async (req, res) => {
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
+
+        const game = GamesManager.getGameById(gameId);
+
+        const inventories = [];
+        for (const player of game.players) {
+            inventories.push(game.getInventoryOfPlayer(player.playerId));
+        }
+
+        sendJson(res, 200, { ok: true, inventories: inventories.map(inv => inv.toDTO()) });
+    },
+
     getInventoryOfPlayer: async (req, res) => {
         let { gameId } = req.routeParams;
         if (!gameId) {
@@ -350,7 +367,7 @@ exports.HTTPHandler = {
 
         try {
             const inventory = game.getInventoryOfPlayer(playerId);
-            sendJson(res, 200, { ok: true, inventory:inventory.toDTO() });
+            sendJson(res, 200, { ok: true, inventory: inventory.toDTO() });
         } catch (err) {
             console.error(err);
             sendJson(res, 400, { ok:false, error: err.message });
@@ -366,7 +383,7 @@ exports.HTTPHandler = {
 
         const game = GamesManager.getGameById(gameId);
 
-        sendJson(res, 200, { ok: true, playersId: game.players.map(player => player.playerId) });
+        sendJson(res, 200, { ok: true, players: game.players.map(player => player.toDTO()) });
     },
 
     getActivePlayer: async (req, res) => {
@@ -378,7 +395,7 @@ exports.HTTPHandler = {
 
         const game = GamesManager.getGameById(gameId);
 
-        sendJson(res, 200, { ok: true, playerId: game.currActivePlayer.playerId });
+        sendJson(res, 200, { ok: true, player: game.currActivePlayer.toDTO() });
     },
 
     getClientPlayer: async (req, res) => {
@@ -409,7 +426,42 @@ exports.HTTPHandler = {
                 }
             }
 
-        sendJson(res, 200, { ok: true, playerId: playerOfClient.playerId });
+        sendJson(res, 200, { ok: true, player: playerOfClient.toDTO() });
+    },
+
+    getPlayerById: async (req, res) => {
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
+
+        let { playerId } = req.routeParams;
+        if (!playerId) {
+            // If old route was used
+            ({ playerId } = await readJsonBody(req));
+        }
+
+        const game = GamesManager.getGameById(gameId);
+
+        const player = game.players.filter(player => player.playerId === playerId);
+        if (!player) {
+            sendJson(res, 404, { ok: false, error: `No player of id '${playerId}' in game of id '${gameId}' found` });
+        }
+
+        sendJson(res, 200, { ok: true, player: player.toDTO() });
+    },
+
+    getGameMode: async (req, res) => {
+        let { gameId } = req.routeParams;
+        if (!gameId) {
+            // If old route was used
+            ({ gameId } = parseCookies(req.headers.cookie));
+        }
+
+        const game = GamesManager.getGameById(gameId);
+
+        sendJson(res, 200, { ok: true, mode: game.mode });
     },
 };
 
