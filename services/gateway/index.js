@@ -88,10 +88,7 @@ if (IS_PROD) {
 
     // HTTP server to redirect client to the HTTPS server
     const httpServer = http.createServer((req, res) => {
-        const httpsUrl = `https://${req.headers.host}${request.url}`;
-
-        const host = req.headers.host.replace(/:8000$/, ':8443');
-        const redirectUrl = `https://${host}${req.url}`;
+        const redirectUrl = `https://${req.headers.host}${req.url}`;
         console.log(`Redirect to HTTPS: ${req} --> ${redirectUrl}`);
         res.writeHead(301, { 'Location': redirectUrl });
         res.end();
@@ -113,8 +110,3 @@ if (IS_PROD) {
     // For the server to be listening to request, it needs a port, which is set thanks to the listen function.
     httpServer.listen(8000);
 }
-
-
-
-
-
