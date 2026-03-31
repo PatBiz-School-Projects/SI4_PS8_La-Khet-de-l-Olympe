@@ -29,27 +29,16 @@ const socket = io({
 const clickHandler = new GamePageClickHandler(document);
 const stateMachine = new GamePageStateMachine();
 
+import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 
-/**
- * @typedef {string} PlayerID
- */
-
-
-/** @type {PlayerID[]} */
-let PLAYERS_ID;
-
-/** @type {PlayerID} */
-let CLIENT_PLAYER_ID;
-
-/** @type { Record<PlayerID, GamePlayerInventory> } */
-let PLAYERS_INVENTORY = {};
-
-/** @type { Record<PlayerID, GameRotationIndicator> } */
-let PLAYERS_ROTATION_INDICATOR = {};
+import { getCookie } from "/utils/cookie.js";
+import { EventQueue } from "/utils/event.js";
+// REVIEW : It should be a feature not an utils
+import {sendChallenge} from "/utils/challenge.js"
 
 
 //
-// Game page's components
+// Game-page's DOM Components
 //
 
 
@@ -68,91 +57,190 @@ const player2RotationIndicator = document.querySelector("#player2-rotation-indic
 
 
 //
-// Reloads support
+// Utils
 //
 
 
-async function fetchPlayersId() {
-    let playersId;
+/**
+ * @returns {Promise<GameMode>}
+ */
+async function fetchGameMode() {
+    let mode;
     try {
-        const playersResponse = await fetch("/api/game-service/players");
+        const modeResponse = await fetch(`/api/games/${GAME_ID}/mode`);
+        if (!modeResponse.ok) {
+            throw modeResponse.error;
+        }
+        ({ mode } = await modeResponse.json());
+    } catch (err) {
+        throw err;
+    }
+
+    return mode;
+}
+
+/**
+ * @returns {Promise<PlayerDTO[]>}
+ */
+async function fetchPlayers() {
+    let players;
+    try {
+        const playersResponse = await fetch(`/api/games/${GAME_ID}/players`);
         if (!playersResponse.ok) {
             throw playersResponse.error;
         }
-        ({ playersId } = await playersResponse.json());
+        ({ players } = await playersResponse.json());
     } catch (err) {
         throw err;
     }
 
-    return playersId;
+    return players;
 }
 
-async function fetchClientPlayerId() {
-    let playerId;
+/**
+ * @returns {Promise<PlayerDTO>}
+ */
+async function fetchClientPlayer() {
+    let player;
     try {
-        const playerResponse = await fetch("/api/game-service/client-player");
+        const playerResponse = await fetch(`/api/games/${GAME_ID}/players/client`);
         if (!playerResponse.ok) {
             throw playerResponse.error;
         }
-        ({ playerId } = await playerResponse.json());
+        ({ player } = await playerResponse.json());
     } catch (err) {
         throw err;
     }
 
-    return playerId;
+    return player;
 }
 
+/**
+ * @returns {Promise<PlayerDTO>}
+ */
 async function askWhoIsPlaying() {
-    let playerId;
+    let player;
     try {
-        const activePlayerResponse = await fetch("/api/game-service/active-player");
+        const activePlayerResponse = await fetch(`/api/games/${GAME_ID}/players/active`);
         if (!activePlayerResponse.ok) {
             throw activePlayerResponse.error;
         }
-        ({ playerId } = await activePlayerResponse.json());
+        ({ player } = await activePlayerResponse.json());
     } catch (err) {
         throw err;
     }
 
-    return playerId;
+    return player;
 }
 
+
+//
+// Game-page's State Variables
+//
+
+
+// TODO : Remove `gameId` from the cookies & use local storage instead to enable simultaneous games
+const GAME_ID = getCookie("gameId");
+
+/** @type {GameMode} */
+let GAME_MODE;
+
+/** @type {PlayerDTO[]} */
+let PLAYERS;
+
+/** @type {PlayerID[]} */
+let PLAYERS_ID;
+
+/** @type {Record<PlayerID, PlayerDTO>} */
+let PLAYERS_BY_ID;
+
+/** @type {PlayerDTO} */
+let CLIENT_PLAYER;
+
+/** @type {Record<PlayerID, "red"|"blue">} */
+let PLAYERS_COLOR_BY_ID;
+
+/** @type { Record<PlayerID, GamePlayerInventory> } */
+let PLAYERS_INVENTORY_BY_ID;
+
+/** @type { Record<PlayerID, GameRotationIndicator> } */
+let PLAYERS_ROTATION_INDICATOR_BY_ID;
+
+async function setupVariables() {
+    GAME_MODE = await fetchGameMode();
+
+    PLAYERS = await fetchPlayers();
+
+    PLAYERS_ID = PLAYERS.map(player => player.playerId);
+
+    PLAYERS_BY_ID = Object.fromEntries(PLAYERS.map(player => [player.playerId, player]));
+
+    CLIENT_PLAYER = await fetchClientPlayer();
+
+    PLAYERS_COLOR_BY_ID = { [PLAYERS_ID[0]]: "blue", [PLAYERS_ID[1]]: "red" };
+
+    PLAYERS_INVENTORY_BY_ID = { [PLAYERS_ID[0]]: player1Inventory, [PLAYERS_ID[1]]: player2Inventory };
+
+    PLAYERS_ROTATION_INDICATOR_BY_ID = { [PLAYERS_ID[0]]: player1RotationIndicator, [PLAYERS_ID[1]]: player2RotationIndicator };
+}
+
+
+//
+// Game page's logical components
+//
+
+
+const socket = io({
+    path: "/api/game-service/socket.io",
+    query: {
+        gameId: GAME_ID,
+    },
+});
+const clickHandler = new GamePageClickHandler(document);
+const stateMachine = new GamePageStateMachine();
+
+
+//
+// Reloads Support
+//
+
+
 onload = async _ => {
-    PLAYERS_ID = await fetchPlayersId();
-    CLIENT_PLAYER_ID = await fetchClientPlayerId();
+    await setupVariables();
 
-    const activePlayerId = await askWhoIsPlaying();
-
-    if (CLIENT_PLAYER_ID === activePlayerId) {
+    const activePlayer = await askWhoIsPlaying();
+    if (CLIENT_PLAYER.playerId === activePlayer.playerId) {
         // DEBUG::
-        console.log(`Faked reception of 'start-turn' event for player with id=${CLIENT_PLAYER_ID}`);
+        console.log(`Faked reception of 'start-turn' event for player with id=${CLIENT_PLAYER.playerId}`);
 
-        stateMachine.on({ type: GamePageActionType.START_TURN, payload: {playerId: CLIENT_PLAYER_ID} });
+        stateMachine.on({ type: GamePageActionType.START_TURN, payload: {playerId: CLIENT_PLAYER.playerId} });
     }
 
-    // TODO (in the backend): Supporting player name
-    turnIndicator.activePlayerName = activePlayerId.slice(0, 7);
-    turnIndicator.color = PLAYERS_ID.indexOf(activePlayerId) === 1 ? "red" : "blue";
+    // Initialising turn indicator
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+    } else {
+        turnIndicator.activePlayerName = activePlayer.profile.username;
+    }
+    turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
-    PLAYERS_INVENTORY[PLAYERS_ID[0]] = player1Inventory;
-    player1Inventory.owner = PLAYERS_ID[0];
-    player1Inventory.color = "blue";
-    player1Inventory.active = true;
-    await player1Inventory.actualise();
+    // Initialising players' inventory
+    for (const playerId of PLAYERS_ID) {
+        const playerInventory = PLAYERS_INVENTORY_BY_ID[playerId];
 
-    PLAYERS_INVENTORY[PLAYERS_ID[1]] = player2Inventory;
-    player2Inventory.owner = PLAYERS_ID[1];
-    player2Inventory.color = "red";
-    player2Inventory.active = false;
-    await player2Inventory.actualise();
+        playerInventory.owner = playerId;
+        playerInventory.color = PLAYERS_COLOR_BY_ID[playerId];
+        playerInventory.active = (playerId === activePlayer.playerId);
+        await playerInventory.actualise();
+    }
 
-    PLAYERS_ROTATION_INDICATOR[PLAYERS_ID[0]] = player1RotationIndicator;
-    player1RotationIndicator.owner = PLAYERS_ID[0];
-    player1RotationIndicator.active = false;
+    // Initialising players' rotation indicator
+    for (const playerId of PLAYERS_ID) {
+        const playerRotationIndicator = PLAYERS_ROTATION_INDICATOR_BY_ID[playerId]
 
-    PLAYERS_ROTATION_INDICATOR[PLAYERS_ID[1]] = player2RotationIndicator;
-    player2RotationIndicator.owner = PLAYERS_ID[1];
-    player2RotationIndicator.active = false;
+        playerRotationIndicator.owner = playerId;
+        playerRotationIndicator.active = false;
+    }
 }
 
 
@@ -167,33 +255,44 @@ socket.on("start-turn", gameEventQueue.enqueue(async payload => {
     // DEBUG::
     console.log(`Received 'start-turn' event for player with id=${payload.playerId}`);
 
-    // It's important to update `CLIENT_PLAYER_ID` each time we get a `start-turn` event
-    // for the case where we are in a local multiplayer game.
-    CLIENT_PLAYER_ID = payload.playerId;
+    const activePlayer = PLAYERS_BY_ID[payload.playerId];
 
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
 
-    // TODO (in the backend): Supporting player name
-    turnIndicator.activePlayerName = CLIENT_PLAYER_ID.slice(0, 7);
-    turnIndicator.color = PLAYERS_ID.indexOf(CLIENT_PLAYER_ID) === 1 ? "red" : "blue";
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+    } else {
+        turnIndicator.activePlayerName = activePlayer.profile.username;
+    }
+    turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
+    turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
-    PLAYERS_INVENTORY[CLIENT_PLAYER_ID].active = true;
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        // It's important to update `CLIENT_PLAYER` each time we get a `start-turn` event
+        // for the case where we are in a local multiplayer game.
+        CLIENT_PLAYER = activePlayer;
+    }
+
+    PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = true;
 }));
 
 socket.on("end-turn", gameEventQueue.enqueue(async _ => {
     // DEBUG::
-    console.log(`Received 'end-turn' event for player with id=${CLIENT_PLAYER_ID}`);
+    console.log(`Received 'end-turn' event for player with id=${CLIENT_PLAYER.playerId}`);
 
-    // `activePlayerId` correspond to the id of the player who received a `start-turn`
-    const activePlayerId = PLAYERS_ID[(PLAYERS_ID.indexOf(CLIENT_PLAYER_ID)+1) % 2];
+    const activePlayer = PLAYERS[(PLAYERS_ID.indexOf(CLIENT_PLAYER.playerId)+1) % 2];
 
     stateMachine.on({ type: GamePageActionType.END_TURN })
 
-    // TODO (in the backend): Supporting player name
-    turnIndicator.activePlayerName = activePlayerId.slice(0, 7);
-    turnIndicator.color = PLAYERS_ID.indexOf(activePlayerId) === 1 ? "red" : "blue";
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+    } else {
+        turnIndicator.activePlayerName = activePlayer.profile.username;
+    }
+    turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
+    turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
-    PLAYERS_INVENTORY[CLIENT_PLAYER_ID].active = false;
+    PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = false;
 }));
 
 socket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {
@@ -222,7 +321,7 @@ socket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result
             // DEBUG::
             console.log("Opponent placed piece:", piece, "at:", pos);
 
-            await PLAYERS_INVENTORY[PLAYERS_ID.filter(id => id !== CLIENT_PLAYER_ID)[0]].popPyramid();
+            await PLAYERS_INVENTORY_BY_ID[(PLAYERS_ID.indexOf(CLIENT_PLAYER.playerId)+1) % 2].popPyramid();
             await board.placePiece(piece, pos);
         } break;
         case "rotate": {
@@ -294,7 +393,7 @@ stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos
         player1RotationIndicator.active = false;
         player2RotationIndicator.active = false;
 
-        const activeRotation = PLAYERS_ROTATION_INDICATOR[CLIENT_PLAYER_ID];
+        const activeRotation = PLAYERS_ROTATION_INDICATOR_BY_ID[CLIENT_PLAYER.playerId];
         const isFromInventory = (pos === null || pos === undefined);
 
         if (isFromInventory) {
@@ -343,7 +442,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             body: JSON.stringify({
                 method: "move",
                 args: {
-                    playerId: CLIENT_PLAYER_ID,
+                    playerId: CLIENT_PLAYER.playerId,
                     piece: piece.toDTO(),
                     from: from,
                     to: to,
@@ -377,7 +476,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
 
     let pieceToPlace = piece;
 
-    const activeRotation = PLAYERS_ROTATION_INDICATOR[CLIENT_PLAYER_ID];
+    const activeRotation = PLAYERS_ROTATION_INDICATOR_BY_ID[CLIENT_PLAYER.playerId];
 
     if (activeRotation && activeRotation.mode === 'inventory' && activeRotation.currentPiece) {
         pieceToPlace = activeRotation.currentPiece;
@@ -391,7 +490,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             body: JSON.stringify({
                 method: "place",
                 args: {
-                    playerId: CLIENT_PLAYER_ID,
+                    playerId: CLIENT_PLAYER.playerId,
                     piece: pieceToPlace.toDTO(),
                     pos: pos,
                 },
@@ -410,7 +509,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     // DEBUG::
     console.log("Placement accepted");
 
-    await PLAYERS_INVENTORY[piece.owner].popPyramid();
+    await PLAYERS_INVENTORY_BY_ID[piece.owner].popPyramid();
     player1RotationIndicator.active = false;
     player2RotationIndicator.active = false;
 
@@ -434,7 +533,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
             body: JSON.stringify({
                 method: "rotate",
                 args: {
-                    playerId: CLIENT_PLAYER_ID,
+                    playerId: CLIENT_PLAYER.playerId,
                     piece: piece.toDTO(),
                     pos: pos,
                     rotation: rotation,
@@ -474,7 +573,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
             body: JSON.stringify({
                 method: "switch",
                 args: {
-                    playerId: CLIENT_PLAYER_ID,
+                    playerId: CLIENT_PLAYER.playerId,
                     piece1: piece1.toDTO(),
                     pos1: pos1,
                     piece2: piece2.toDTO(),
@@ -512,9 +611,14 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
     }
 });
 
+
 //
 // Game Over Logic & Components
 //
+
+
+// TODO : Make it a component
+
 
 const gameOverOverlay = document.querySelector("#game-over-overlay");
 const gameOverMessage = document.querySelector("#game-over-message");
@@ -524,7 +628,7 @@ let isGameOver = false;
 gameOverChallengeButton.addEventListener('click', challengeOpponent);
 
 function getOpponentId() {
-    return PLAYERS_ID.find(playerId => playerId !== CLIENT_PLAYER_ID);
+    return PLAYERS_ID.find(playerId => playerId !== CLIENT_PLAYER.playerId);
 }
 
 function setGameOverStatus(message, isError = false) {
@@ -568,7 +672,7 @@ function formatRatingUpdate(ratingUpdate) {
 function showGameOver({ state, winnerId, ratingUpdate }) {
     isGameOver = true;
     const isDraw = state === "DRAW";
-    const didIWin = winnerId === CLIENT_PLAYER_ID;
+    const didIWin = winnerId === CLIENT_PLAYER.playerId;
 
     // REVIEW : What happens if the game was a local multiplayer game
 

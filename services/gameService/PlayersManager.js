@@ -13,6 +13,7 @@ class PlayersManager {
     /**
      * @param {UserID} userId The id of the associated user
      * @param {UserToken} userToken The authentication token of the client to the user account
+     * @param {unknown} userProfile The (minimal) profile of the user
      *
      * @returns {Player}
      */

@@ -42,13 +42,19 @@ services:
       - auth-service
       - file-service
       - user-service
+      - challenge-service
     environment:
+      IS_PROD: ${IS_PROD}
       FILE_SERVICE_URL: *files-url
       GAME_SERVICE_URL: *games-url
       AUTH_SERVICE_URL: *auth-url
       USER_SERVICE_URL: *users-url
+      SSL_CERTIFICATE: ${SSL_CERTIFICATE}
+      SSL_PRIVATE_KEY: ${SSL_PRIVATE_KEY}
+      CHALLENGE_SERVICE_URL: *challenge-url
     ports:
       - "8000:8000"
+      - "8443:8443"
     networks:
       - internal
       - public
