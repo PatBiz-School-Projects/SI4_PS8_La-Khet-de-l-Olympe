@@ -10,6 +10,25 @@ import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachin
 import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
+import { getCookie } from "/utils/cookie.js";
+import { EventQueue } from "/utils/event.js";
+// REVIEW : It's a feature instead of an utils
+import {sendChallenge} from "/utils/challenge.js"
+
+
+// TODO : Remove `gameId` & use local storage instead to enable simultaneous games
+const GAME_ID = getCookie("gameId");
+
+
+const socket = io({
+    path: "/api/game-service/socket.io",
+    query: {
+        gameId: GAME_ID,
+    },
+});
+const clickHandler = new GamePageClickHandler(document);
+const stateMachine = new GamePageStateMachine();
+
 import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 
 import { getCookie } from "/utils/cookie.js";

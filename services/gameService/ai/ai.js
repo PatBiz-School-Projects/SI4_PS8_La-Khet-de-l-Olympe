@@ -178,18 +178,26 @@ class MiniMaxAI extends AI {
         let bestScore = -Infinity;
         let bestAction = null;
 
+        const board = this._board;
+        const myInventory = this._inventory;
+        const opponentInventory = this._opponentInventory;
+
         console.log("MINIMAX COMMENCE À RÉFLÉCHIR...");
         const legalActions = this._getLegalActions(this._playerId,this._board,this._inventory);
+
+        const simulatedLaserService = new LaserService(this._board);
         for(const action of legalActions) {
 
-            let simulatedBoard = this._cloneBoard(this._board);
-            let simulatedInventory = this._cloneInventory(this._inventory);
-            let simulatedOppInv = this._cloneInventory(this._opponentInventory);
-            const simulatedLaserService = new LaserService(simulatedBoard);
+            this._applyAction(board,myInventory,action);
+            const  result = this._simulateFireLaser(simulatedLaserService, board, myInventory, opponentInventory,this._playerId);
+            let pharaohDead = result.pharaohDead;
+            const pieceDestroyed = result.destroyedLog;
+            let score = this._minimax(board, myInventory,opponentInventory,simulatedLaserService, this._maxDepth - 1, -Infinity, Infinity, false,pharaohDead);
 
-            this._applyAction(simulatedBoard,simulatedInventory,action);
-            let pharaohDead = this._simulateFireLaser(simulatedLaserService, simulatedBoard, simulatedOppInv,this._playerId);
-            let score = this._minimax(simulatedBoard, simulatedInventory,simulatedOppInv, this._maxDepth - 1, -Infinity, Infinity, false,pharaohDead);
+
+            this._undoLaser(board, myInventory, opponentInventory,pieceDestroyed, this._playerId);
+            this._undoAction(board,myInventory,action);
+
 
             if (score > bestScore) {
                 bestScore = score;
@@ -201,66 +209,79 @@ class MiniMaxAI extends AI {
         return bestAction || legalActions[0];
     }
 
-    _cloneBoard(originalBoard) {
 
-        const newBoard = new Board(originalBoard._players);
+    _undoAction(board, inventory, action) {
+        const { method, args } = action;
 
-        for (let x = 0; x < Board.GRID_LEN; x++) {
-            for (let y = 0; y < Board.GRID_LEN; y++) {
-                if (originalBoard.hasPieceAt({x, y})) {
 
-                    const originalPiece = originalBoard.getPieceAt({x, y});
-                    const pieceDTO = (typeof originalPiece.toDTO === 'function')
-                        ? originalPiece.toDTO()
-                        : originalPiece;
+        switch (method) {
+            case "move":
+                const piece = board.getPieceAt(args.to);
+                board.movePiece(piece, args.to, args.from);
+                break;
 
-                    const clonedPiece = Piece.fromDTO(pieceDTO);
+            case "rotate":
+                const pieceToRotate = board.getPieceAt(args.pos);
+                const inverseRotation = args.rotation === "left" ? "right" : "left";
+                board.rotatePiece(pieceToRotate, args.pos, inverseRotation);
+                break;
 
-                    newBoard.putPiece(clonedPiece, {x, y});
-                    const orientation = clonedPiece.orientation;
-                    if (clonedPiece.type === "Sphinx") {
-                        newBoard.setSphinxByOwner(clonedPiece.owner, {x, y,orientation});
-                    } else if (clonedPiece.type === "Pharaoh") {
-                        newBoard.setPharaohByOwner(clonedPiece.owner, {x, y,orientation});
-                    }
+            case "switch":
+                const piece1 = board.getPieceAt(args.pos1);
+                const piece2 = board.getPieceAt(args.pos2);
+                board.switchPieces(piece1, args.pos1, piece2, args.pos2);
+                break;
+
+            case "place":
+                board.removePiece(args.pos);
+                inventory.pushPyramid();
+                break;
+        }
+    }
+
+    _undoLaser(board, myInv,oppInv, destroyedPiecesLog,currentPlayerId) {
+        for (const record of destroyedPiecesLog) {
+
+            board.putPiece(record.piece, record.pos);
+
+            if (record.piece.type === "Pharaoh") {
+
+                board.setPharaohByOwner(record.piece.owner, {x: record.pos.x, y: record.pos.y, orientation: record.piece.orientation});
+            }
+            if (record.piece.type === "Pyramid") {
+                if (record.piece.owner === this._playerId) {
+                    myInv.popPyramid();
+                } else {
+                    oppInv.popPyramid();
                 }
             }
         }
-
-        return newBoard;
-    }
-
-    _cloneInventory(originalInventory){
-        const newInventory = new Inventory(originalInventory.owner, originalInventory.color);
-        newInventory.clear();
-        for(let i =0;i<originalInventory.pyramidsCount;i++){
-            newInventory.pushPyramid();
-        }
-        return newInventory;
     }
 
     _applyAction(simulatedBoard,simulatedInventory,action){
         const { method, args } = action;
 
-        const realPiece = args.piece ? Piece.fromDTO(args.piece) : null;
-
-        const realPiece1 = args.piece1 ? Piece.fromDTO(args.piece1) : null;
-        const realPiece2 = args.piece2 ? Piece.fromDTO(args.piece2) : null;
         switch (method) {
             case "move":
-                simulatedBoard.movePiece(realPiece, args.from, args.to);
+                const piece = simulatedBoard.getPieceAt(args.from);
+                simulatedBoard.movePiece(piece, args.from, args.to);
                 break;
 
             case "rotate":
-                simulatedBoard.rotatePiece(realPiece, args.pos, args.rotation);
+                const pieceToRotate = simulatedBoard.getPieceAt(args.pos);
+                simulatedBoard.rotatePiece(pieceToRotate, args.pos, args.rotation);
                 break;
 
             case "switch":
-                simulatedBoard.switchPieces(realPiece1, args.pos1, realPiece2, args.pos2);
+
+                const p1 = simulatedBoard.getPieceAt(args.pos1);
+                const p2 = simulatedBoard.getPieceAt(args.pos2);
+                simulatedBoard.switchPieces(p1, args.pos1, p2, args.pos2);
                 break;
 
             case "place":
-                simulatedBoard.placePiece(realPiece, args.pos);
+                const newPiece = Piece.fromDTO(args.piece)
+                simulatedBoard.placePiece(newPiece, args.pos);
                 simulatedInventory.popPyramid();
                 break;
 
@@ -269,50 +290,63 @@ class MiniMaxAI extends AI {
         }
     }
 
-    _simulateFireLaser(simulatedLaserService,newBoard,nonActiveInventory,activePlayerId){
+    _simulateFireLaser(simulatedLaserService,newBoard,myInv, oppInv,activePlayerId){
 
         let pharaohDead = false;
         const fakePlayer = { playerId: activePlayerId };
 
         const {destroyedPieces} = simulatedLaserService.fireLaser(fakePlayer);
+
+        const destroyedLog = [];
+
         for (const piece of destroyedPieces) {
+
+            const realPieceObj = newBoard.getPieceAt({x: piece.x, y: piece.y});
+
+            destroyedLog.push({ pos: {x: piece.x, y: piece.y}, piece: realPieceObj });
+
             if(piece.type === "Pharaoh"){
                 pharaohDead=true;
                 newBoard.setPharaohByOwner(piece.owner,null);
             }
             if (piece.type === "Pyramid") {
 
-                nonActiveInventory.pushPyramid();
+                if (realPieceObj.owner === this._playerId) {
+                    myInv.pushPyramid();
+                } else {
+                    oppInv.pushPyramid();
+                }
 
             }
             newBoard.removePiece({x: piece.x, y: piece.y});
         }
-        return pharaohDead;
+        return {pharaohDead,destroyedLog};
     }
 
-    _minimax(board,myInv,oppInv,depth,alpha,beta,isMaximizingPlayer,pharaohDead) {
+    _minimax(board,myInv,oppInv,laserService,depth,alpha,beta,isMaximizingPlayer,pharaohDead) {
         if (depth === 0 || pharaohDead) {
             return this._evaluateBoard(board);
         }
 
         if (isMaximizingPlayer) {
             let maxEval = -Infinity;
-            const actions = this._getLegalActions(this._playerId, board, inventory);
+            const actions = this._getLegalActions(this._playerId, board, myInv);
 
             for (const action of actions) {
-                const newBoard = this._cloneBoard(board);
-                const newInv = this._cloneInventory(myInv);
-                const simulatedOppInv = this._cloneInventory(oppInv);
-                const newLaserService  = new LaserService(newBoard);
 
-                this._applyAction(newBoard, newInv, action);
+                this._applyAction(board, myInv, action);
 
-                let isDead =this._simulateFireLaser(newLaserService,newBoard,simulatedOppInv,this._playerId);
+                const result=this._simulateFireLaser(laserService,board,myInv, oppInv,this._playerId);
+                const isDead = result.pharaohDead;
+                const pieceDestroyed = result.destroyedLog;
 
-                let evalScore = this._minimax(newBoard, newInv,simulatedOppInv,depth - 1, alpha, beta, false,isDead);
+                let evalScore = this._minimax(board, myInv,oppInv,laserService,depth - 1, alpha, beta, false,isDead);
                 maxEval = Math.max(maxEval, evalScore);
 
                 alpha = Math.max(alpha, evalScore);
+
+                this._undoLaser(board, myInv, oppInv,pieceDestroyed, this._playerId);
+                this._undoAction(board,myInv,action);
                 if (beta <= alpha) break;
             }
             return maxEval;
@@ -323,56 +357,60 @@ class MiniMaxAI extends AI {
             const actions = this._getLegalActions(this._opponentId, board, oppInv);
 
             for (const action of actions) {
-                const newBoard = this._cloneBoard(board);
-                const newInv = this._cloneInventory(myInv);
-                const newOppInv = this._cloneInventory(oppInv);
-                const newLaserService  = new LaserService(newBoard);
-                this._applyAction(newBoard, newOppInv, action);
 
-                let isDead = this._simulateFireLaser(newLaserService,newBoard,newInv,this._opponentId);
+                this._applyAction(board, oppInv, action);
 
-                let evalScore = this._minimax(newBoard, newInv,newOppInv, depth - 1, alpha, beta, true,isDead);
+                const result=this._simulateFireLaser(laserService,board,myInv, oppInv,this._opponentId);
+                const isDead = result.pharaohDead;
+                const pieceDestroyed = result.destroyedLog;
+
+                let evalScore = this._minimax(board, myInv,oppInv, laserService,depth - 1, alpha, beta, true,isDead);
                 minEval = Math.min(minEval, evalScore);
 
 
                 beta = Math.min(beta, evalScore);
+
+                this._undoLaser(board, myInv, oppInv,pieceDestroyed, this._playerId);
+                this._undoAction(board,oppInv,action);
                 if (beta <= alpha) break;
             }
             return minEval;
         }
     }
 
-    _evaluateBoard(board) {
+    _evaluateBoard(board) { //normaliser le score
         let score = 0;
-        if(!board.getPharaohByOwner(this._playerId)) score -=100000;
-        if (!board.getPharaohByOwner(this._opponentId)) score +=100000;
-        score += this.evaluateMaterial(board,this._playerId) - this.evaluateMaterial(board, this._opponentId);
+        if(!board.getPharaohByOwner(this._playerId)) return -100000;
+        if (!board.getPharaohByOwner(this._opponentId)) return  +100000;
+        for (let y = 0; y < Board.GRID_LEN; y++) {
+            for (let x = 0; x < Board.GRID_LEN; x++) {
+                const cell = board.grid[y][x];
+
+                if (cell.content !== null) {
+
+                    const piece = cell.content;
+                    const multiplier = piece.owner === this._playerId ? 1 : -1;
+                    score += this.getPieceValue(piece.type) * multiplier;
+
+                    // score += this.getPiecePositionalValue(x, y, piece.type) * multiplier;
+                }
+            }
+        }
         score += this.evaluatePosition(board,this._playerId) - this.evaluatePosition(board, this._opponentId);
         score += board.countPiecesByOwner(this._playerId) * 10;
         score -= board.countPiecesByOwner(this._opponentId) * 10;
         return score;
     }
 
-    evaluateMaterial(board,playerId){
-        let score = 0
-        const materials =board.grid.flat().filter(cell=>cell.content !== null && cell.content.owner===playerId);
-        for(const material of materials){
-            switch (material.content.type){
-                case "Anubis" : score += 100;
-                                break;
-                case "Pyramid" : score += 200;
-                                break;
-                case "Scarab" : score += 250;
-                                break;
-
-                case "Sphinx" : break;
-
-                case "Pharaoh" : break;
-
-                default : throw new Error("Unknown type of pieces");
-            }
+    getPieceValue(type){
+        switch (type) {
+            case "Anubis": return 110;
+            case "Pyramid": return 210;
+            case "Scarab": return 260;
+            case "Sphinx": return 10;
+            case "Pharaoh": return 10;
+            default: return 0;
         }
-        return score;
     }
 
     evaluatePosition(board,playerId){
@@ -380,27 +418,39 @@ class MiniMaxAI extends AI {
         const king = board.getPharaohByOwner(playerId);
 
         if(king!=null){
-            score += this.evaluateKingPosition(board,playerId,king);
+            score += this.evaluateKingSafety(board,playerId,king);
         }
 
         return score;
 
     }
 
-    evaluateKingPosition(board,playerId,king){ //facteur decroissant avec distance avec le roi et quel piece est autour
+    evaluateKingSafety(board, playerId, king){ //facteur decroissant avec distance avec le roi et quel piece est autour
         let score = 0;
-        const computeOrthogonalNeighbourPositions = (pos) => [
-            {x:pos.x+1, y:pos.y},
-            {x:pos.x, y:pos.y+1},
-            {x:pos.x-1, y:pos.y},
-            {x:pos.x, y:pos.y-1},
+        const directions = [
+            { dx: 1, dy: 0 }, { dx: 0, dy: 1 },
+            { dx: -1, dy: 0 }, { dx: 0, dy: -1 }
         ];
 
-        const isWithinBounds = (p) => p.x >= 0 && p.x < Board.GRID_LEN && p.y >= 0 && p.y < Board.GRID_LEN;
-        const orthogonalPosition = computeOrthogonalNeighbourPositions({x:king.x, y:king.y});
+        for (const dir of directions) {
+            const nx = king.x + dir.dx;
+            const ny = king.y + dir.dy;
 
-        orthogonalPosition.filter(pos=>isWithinBounds(pos)&&board.hasPieceAt(pos)&&board.getPieceAt(pos).owner===playerId)
-            .forEach(()=> score += 40);
+            if (nx >= 0 && nx < Board.GRID_LEN && ny >= 0 && ny < Board.GRID_LEN) {
+                const cell = board.grid[ny][nx];
+                if (cell.content !== null) {
+                    if (cell.content.owner === playerId) {
+                        score += 40;
+
+                        if (cell.content.type === "Anubis") {
+                            score += 30;
+                        }
+                    } else {
+                        score -= 50;
+                    }
+                }
+            }
+        }
         return score;
     }
 }
