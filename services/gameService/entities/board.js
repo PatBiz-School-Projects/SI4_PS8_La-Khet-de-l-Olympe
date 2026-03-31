@@ -189,6 +189,14 @@ class Board {
         if(piece2.type==="Pharaoh"){
             this.setPharaohByOwner(piece2.owner, {x: pos1.x, y: pos1.y,orientation:piece2.orientation});
         }
+
+        //NEEDED FOR AI
+        if(piece1.type === "Sphinx"){
+            this.setSphinxByOwner(piece1.owner, {x: pos2.x, y: pos2.y, orientation: piece1.orientation});
+        }
+        if(piece1.type === "Pharaoh"){
+            this.setPharaohByOwner(piece1.owner, {x: pos2.x, y: pos2.y, orientation: piece1.orientation});
+        }
         this.emptyCell(pos1);
         this.putPiece(piece2, pos1);
 

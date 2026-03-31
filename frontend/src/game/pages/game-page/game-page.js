@@ -10,8 +10,8 @@ import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachin
 import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 
-import { getCookie } from "/utils/cookie";
-import { EventQueue } from "/utils/event";
+import { getCookie } from "/utils/cookie.js";
+import { EventQueue } from "/utils/event.js";
 // REVIEW : It's a feature instead of an utils
 import {sendChallenge} from "/utils/challenge.js"
 
