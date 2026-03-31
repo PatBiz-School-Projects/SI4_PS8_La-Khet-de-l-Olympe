@@ -42,6 +42,7 @@ services:
       - auth-service
       - file-service
       - user-service
+      - challenge-service
     environment:
       FILE_SERVICE_URL: *files-url
       GAME_SERVICE_URL: *games-url
