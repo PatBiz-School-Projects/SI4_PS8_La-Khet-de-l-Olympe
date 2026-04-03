@@ -27,9 +27,9 @@ const ROUTER = (new Router()
     .add("/api/game-service/join-multiplayer-game", {
         POST: HTTPMiddelware_OutsideGame(HTTPHandler.joinMultiplayerGame),
     })
-        .add("/api/game-service/open-multiplayer-room", {
-            POST: HTTPMiddelware_OutsideGame(HTTPHandler.openMultiplayerRoom),
-        })
+    .add("/api/game-service/open-multiplayer-room", {
+        POST: HTTPMiddelware_OutsideGame(HTTPHandler.openMultiplayerRoom),
+    })
 
     //
     // Inside a waiting room
