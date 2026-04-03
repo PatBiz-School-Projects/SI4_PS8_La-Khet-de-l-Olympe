@@ -1,11 +1,11 @@
 const { Router } = require("./helpers/router");
 
 const {
-    HTTPMiddelware_OutsideGame,
-    HTTPMiddelware_InsideWaitingRoom,
-    HTTPMiddelware_InsideGame,
+    HTTPMiddleware_OutsideGame,
+    HTTPMiddleware_InsideWaitingRoom,
+    HTTPMiddleware_InsideGame,
     HTTPHandler,
-    SocketIOMiddelware,
+    SocketIOMiddleware,
     SocketIOHandler,
 } = require("./handler.js");
 
@@ -16,19 +16,19 @@ const ROUTER = (new Router()
     //
 
     .add("/api/game-service/new-player", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.newPlayer),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.newPlayer),
     })
     .add("/api/game-service/start-solo-game", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.startSoloGame),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.startSoloGame),
     })
     .add("/api/game-service/start-local-multiplayer-game", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.startLocalMultiplayerGame),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.startLocalMultiplayerGame),
     })
     .add("/api/game-service/join-multiplayer-game", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.joinMultiplayerGame),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.joinMultiplayerGame),
     })
     .add("/api/game-service/open-multiplayer-room", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.openMultiplayerRoom),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.openMultiplayerRoom),
     })
 
     //
@@ -36,7 +36,7 @@ const ROUTER = (new Router()
     //
 
     .add("/api/game-service/game-has-started", {
-        GET: HTTPMiddelware_InsideWaitingRoom(HTTPHandler.hasGameStarted),
+        GET: HTTPMiddleware_InsideWaitingRoom(HTTPHandler.hasGameStarted),
     })
 
     //
@@ -44,28 +44,28 @@ const ROUTER = (new Router()
     //
 
     .add("/api/game-service/action", {
-        POST: HTTPMiddelware_InsideGame(HTTPHandler.action),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.action),
     })
     .add("/api/game-service/board/piece?x={}&y={}", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPieceAt),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPieceAt),
     })
     .add("/api/game-service/possible-actions?x={}&y={}", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPossibleMoves),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPossibleMoves),
     })
     .add("/api/game-service/board", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getBoard),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getBoard),
     })
     .add("/api/game-service/inventory", {
-        POST: HTTPMiddelware_InsideGame(HTTPHandler.getInventoryOfPlayer),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.getInventoryOfPlayer),
     })
     .add("/api/game-service/players", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPlayers),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPlayers),
     })
     .add("/api/game-service/active-player", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getActivePlayer),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getActivePlayer),
     })
     .add("/api/game-service/client-player", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getClientPlayer),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getClientPlayer),
     })
 
     ////////////////////////////////////////////////////////////////////////////
@@ -78,16 +78,16 @@ const ROUTER = (new Router()
     //
 
     .add("/api/games/new-player", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.newPlayer),
+        PUT: HTTPMiddleware_OutsideGame(HTTPHandler.newPlayer),
     })
     .add("/api/games/start-solo-game", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.startSoloGame),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.startSoloGame),
     })
     .add("/api/games/start-local-multiplayer-game", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.startLocalMultiplayerGame),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.startLocalMultiplayerGame),
     })
     .add("/api/games/join-multiplayer-game", {
-        POST: HTTPMiddelware_OutsideGame(HTTPHandler.joinMultiplayerGame),
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.joinMultiplayerGame),
     })
 
     //
@@ -95,7 +95,7 @@ const ROUTER = (new Router()
     //
 
     .add("/api/games/:gameId/has-started", {
-        GET: HTTPMiddelware_InsideWaitingRoom(HTTPHandler.hasGameStarted),
+        GET: HTTPMiddleware_InsideWaitingRoom(HTTPHandler.hasGameStarted),
     })
 
     //
@@ -103,37 +103,37 @@ const ROUTER = (new Router()
     //
 
     .add("/api/games/:gameId/action", {
-        POST: HTTPMiddelware_InsideGame(HTTPHandler.action),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.action),
     })
     .add("/api/games/:gameId/board", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getBoard),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getBoard),
     })
     .add("/api/games/:gameId/board/piece?x={}&y={}", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPieceAt),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPieceAt),
     })
     .add("/api/games/:gameId/inventories", {
-        POST: HTTPMiddelware_InsideGame(HTTPHandler.getInventories),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.getInventories),
     })
     .add("/api/games/:gameId/inventories/:ownerId", {
-        POST: HTTPMiddelware_InsideGame(HTTPHandler.getInventoryOfPlayer),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.getInventoryOfPlayer),
     })
     .add("/api/games/:gameId/mode", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getGameMode),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getGameMode),
     })
     .add("/api/games/:gameId/players", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPlayers),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPlayers),
     })
     .add("/api/games/:gameId/players/active", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getActivePlayer),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getActivePlayer),
     })
     .add("/api/games/:gameId/players/client", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getClientPlayer),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getClientPlayer),
     })
     .add("/api/games/:gameId/players/:playerId", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPlayerById),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPlayerById),
     })
     .add("/api/games/:gameId/possible-actions?x={}&y={}", {
-        GET: HTTPMiddelware_InsideGame(HTTPHandler.getPossibleMoves),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPossibleMoves),
     })
 );
 
@@ -144,7 +144,7 @@ exports.manage = async (req,res) => {
 
 
 exports.manageSocket = async (io) => {
-    io = io.use(SocketIOMiddelware);
+    io = io.use(SocketIOMiddleware);
 
     io.on("connection", async (socket) => {
         console.log("New socket connection");
