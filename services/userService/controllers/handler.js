@@ -206,6 +206,22 @@ exports.findUsers =  async (req, res) => {
     }
 }
 
+exports.getLeaderboard = async (req, res) => {
+    try {
+        const {limit} = req.queryParams;
+
+        if (!limit) {
+            return sendJson(res, 400, "MISSING_LIMIT");
+        }
+        const users = await usersRepository.findTopUsersByElo(limit);
+        sendJson(res, 200, users);
+    }
+    catch(err){
+        console.log(err);
+        sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+    }
+}
+
 exports.getUserStats = async (req, res) => {
     const { userId } = req.routeParams;
 
