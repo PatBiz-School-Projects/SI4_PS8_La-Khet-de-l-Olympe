@@ -120,14 +120,15 @@ async function runUserSearch(rawQuery) {
     }
 
     const payload = await response.json();
+    const users = payload.filter((user) => user.userId!==currentUserId);
     /*if (!users.length) {
         searchResults.innerHTML = "";
         setSearchStatus("Aucun joueur trouvé.");
         return;
     }*/
 
-    setSearchStatus(`${payload.length} joueur(s) trouvé(s).`);
-    renderSearchResults(payload);
+    setSearchStatus(`${users.length} joueur(s) trouvé(s).`);
+    renderSearchResults(users);
 }
 
 function setActiveMenu(section) {
