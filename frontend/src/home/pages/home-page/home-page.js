@@ -84,15 +84,8 @@ async function loadLeaderboard(limit = 10) {
             setLeaderboardStatus(payload.error || "Impossible de charger le leaderboard.", true);
             return;
         }
-
-        const users = payload.users || [];
-        if (!users.length) {
-            setLeaderboardStatus("Aucun joueur classé pour le moment.");
-            return;
-        }
-
-        renderLeaderboard(users);
-        setLeaderboardStatus(`${users.length} joueur(s) affiché(s).`);
+        renderLeaderboard(payload);
+        setLeaderboardStatus(`${payload.length} joueur(s) affiché(s).`);
     } catch (error) {
         console.error("Unable to load leaderboard", error);
         setLeaderboardStatus("Erreur réseau pendant le chargement du leaderboard.", true);
