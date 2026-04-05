@@ -8,6 +8,16 @@ async function findUserByAuthId(authId) {
     return User.builder(plainUser);
 }
 
+async function findUserByQuery(query,limit) {
+    const usersCollection = await getUsersCollection();
+     return usersCollection.find({
+        username: {
+            $regex: query,
+            $options: 'i'
+        }
+    }).limit(limit).toArray();
+}
+
 async function getUsersCollection() {
     const db = await getDb();
     return db.collection('users');
@@ -70,5 +80,6 @@ module.exports = {
     createUser,
     findUserByAuthId,
     updateUserStats,
-    updateProfilePicture
+    updateProfilePicture,
+    findUserByQuery
 };
