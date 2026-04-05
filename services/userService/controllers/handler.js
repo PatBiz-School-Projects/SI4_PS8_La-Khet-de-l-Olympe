@@ -184,6 +184,21 @@ exports.getUserMinimalProfile = async (req, res) => {
     });
 }
 
+exports.findUsers =  (req, res) => {
+    const token = extractToken(req, null);
+    if (!token) {
+        sendJson(res, 401, { ok: false, error: "MISSING_TOKEN" });
+        return;
+    }
+    const query = req.routeParams.query;
+    const users = usersRepository.findUserByQuery(query,10);
+    const response = users.map((user) => ({
+        username:user.username,
+        profilePicture:user.profilePicture
+    }));
+    sendJson(res, 200, response);
+}
+
 exports.getUserStats = async (req, res) => {
     const { userId } = req.routeParams;
 
