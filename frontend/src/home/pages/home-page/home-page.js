@@ -1,7 +1,8 @@
-import { setCookie, removeAllCookies } from "/utils/cookie.js";
+import { getCookie,setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
 import {ensureValidAccessToken,clearAuthTokens,authenticatedFetch} from "/utils/auth.js";
 import {getPictureUrl} from "/utils/picture.js";
+import {sendChallenge} from "/utils/challenge.js";
 
 
 /**
@@ -14,6 +15,122 @@ const sidebarStatus = document.getElementById("sidebar-status");
 const statusDot = document.querySelector(".status-dot");
 const profileChipBtn = document.getElementById("profile-chip-btn");
 const sidebarAvatar = document.getElementById("sidebar-avatar");
+const searchMenuItem = document.querySelector('.menu-item[data-section="search"]');
+const searchPanel = document.getElementById("search-panel");
+const searchInput = document.getElementById("search-users-input");
+const searchStatus = document.getElementById("search-status");
+const searchResults = document.getElementById("search-results");
+let currentUserId;
+let searchDebounceId;
+function setSearchStatus(message, isError = false) {
+    searchStatus.textContent = message;
+    searchStatus.style.color = isError ? "#ffb3b3" : "";
+}
+
+async function sendFriendRequest(targetUserId, button) {
+    button.disabled = true;
+
+    const response = await authenticatedFetch("/api/users/friends/request", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ targetUserId }),
+    });
+
+    if (!response) {
+        setSearchStatus("Session expirée. Veuillez vous reconnecter.", true);
+        button.disabled = false;
+        return;
+    }
+
+    const payload = await response.json();
+    if (!response.ok) {
+        setSearchStatus(payload.error || "Impossible d'envoyer la demande d'ami.", true);
+        button.disabled = false;
+        return;
+    }
+
+    button.textContent = "Demande envoyée";
+    setSearchStatus("Demande d'ami envoyée.", false);
+}
+
+async function challengeUser(targetUserId) {
+    const result = await sendChallenge(targetUserId);
+    if (!result.ok) {
+        setSearchStatus(result.payload?.error || "Impossible d'envoyer le défi.", true);
+        return;
+    }
+
+    setSearchStatus("Défi envoyé avec succès.", false);
+}
+
+function renderSearchResults(users) {
+    searchResults.innerHTML = "";
+
+    users.forEach((user) => {
+        const item = document.createElement("article");
+        item.className = "search-result-item";
+
+        const avatar = document.createElement("img");
+        avatar.className = "search-result-item__avatar";
+        avatar.src = getPictureUrl(user.profilePicture);
+        avatar.alt = `Avatar de ${user.username}`;
+
+        const name = document.createElement("p");
+        name.className = "search-result-item__name";
+        name.textContent = user.username;
+
+        const actions = document.createElement("div");
+        actions.className = "search-result-item__actions";
+
+        const addFriendButton = document.createElement("button");
+        addFriendButton.type = "button";
+        addFriendButton.className = "search-action-btn";
+        addFriendButton.textContent = "Ajouter en ami";
+        addFriendButton.onclick = async () => sendFriendRequest(user.userId, addFriendButton);
+
+        const challengeButton = document.createElement("button");
+        challengeButton.type = "button";
+        challengeButton.className = "search-action-btn";
+        challengeButton.textContent = "Défier";
+        challengeButton.onclick = async () => challengeUser(user.userId);
+
+        actions.append(addFriendButton, challengeButton);
+        item.append(avatar, name, actions);
+        searchResults.appendChild(item);
+    });
+}
+
+async function runUserSearch(rawQuery) {
+    const query = rawQuery.trim();
+
+    if (query.length < 2) {
+        searchResults.innerHTML = "";
+        setSearchStatus("Tapez au moins 2 caractères.");
+        return;
+    }
+
+    setSearchStatus("Recherche en cours...");
+
+    const response = await authenticatedFetch(`/api/users?query=${encodeURIComponent(query)}`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response) {
+        setSearchStatus("Session expirée. Veuillez vous reconnecter.", true);
+        return;
+    }
+
+    const payload = await response.json();
+    /*if (!users.length) {
+        searchResults.innerHTML = "";
+        setSearchStatus("Aucun joueur trouvé.");
+        return;
+    }*/
+
+    setSearchStatus(`${payload.length} joueur(s) trouvé(s).`);
+    renderSearchResults(payload);
+}
 
 function setActiveMenu(section) {
     menuItems.forEach((item) => item.classList.toggle("is-active", item.dataset.section === section));
@@ -22,6 +139,10 @@ function setActiveMenu(section) {
 menuItems.forEach((item) => {
     item.addEventListener("click", () => {
         setActiveMenu(item.dataset.section);
+        if (item.dataset.section === "search") {
+            searchPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+            searchInput.focus();
+        }
     });
 });
 
@@ -39,6 +160,15 @@ clickableCards.forEach((card) => {
             modal.style.display = "flex";
         }
     });
+});
+
+searchInput.addEventListener("input", async (event) => {
+    clearTimeout(searchDebounceId);
+    await runUserSearch(event.target.value);
+});
+
+searchMenuItem.addEventListener("click", () => {
+    setSearchStatus("Tapez au moins 2 caractères.");
 });
 
 /**
@@ -201,6 +331,12 @@ function toggleAuthenticatedView(isLoggedIn) {
     sidebarStatus.textContent = isLoggedIn ? "En ligne" : "Hors ligne";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
+    if (!isLoggedIn) {
+        searchInput.disabled = true;
+        setSearchStatus("Connectez-vous pour rechercher des joueurs.");
+    } else {
+        searchInput.disabled = false;
+    }
 }
 
 function applySidebarIdentity(username,profilePicture){
@@ -227,6 +363,7 @@ window.onload = async () => {
     toggleAuthenticatedView(true);
     const payload = decodeJwtPayload(token);
     const userId = payload?.sub;
+    currentUserId = userId;
 
     if (!userId) {
         clearAuthTokens();
@@ -234,6 +371,7 @@ window.onload = async () => {
     }
 
     await loadSidebarProfile();
+    setSearchStatus("Tapez au moins 2 caractères.");
 
     // TODO: remove `userId` dependency in the game and use user token directly.
     setCookie("userId", userId);
