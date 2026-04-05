@@ -76,10 +76,28 @@ async function updateUserStats(userId, {newElo, won, lost, drew}) {
     }
 }
 
+async function findTopUsersByElo(limit) {
+    const usersCollection = await getUsersCollection();
+    return usersCollection.find(
+        {},
+        {
+            projection: {
+                _id: 0,
+                username: 1,
+                elo: 1,
+                profilePicture: 1,
+            },
+        }
+    ).sort({ elo: -1, username: 1 }).limit(limit).toArray();
+}
+
+
+
 module.exports = {
     createUser,
     findUserByAuthId,
     updateUserStats,
     updateProfilePicture,
-    findUserByQuery
+    findUserByQuery,
+    findTopUsersByElo
 };

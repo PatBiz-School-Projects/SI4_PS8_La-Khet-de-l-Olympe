@@ -14,7 +14,9 @@ const ROUTER = (new Router()
     .add("/api/users/:userId/", {
         GET: HTTPUsersHandler.getPublicProfile,
     })
-
+        .add("/api/users/leaderboard?limit={]",{
+            GET: HTTPUsersHandler.getLeaderboard,
+        })
     .add("/api/users/connect", {
         POST: HTTPUsersHandler.connectUser,
     })
