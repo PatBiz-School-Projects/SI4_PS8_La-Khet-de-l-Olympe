@@ -1,6 +1,7 @@
 import { setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
-import {ensureValidAccessToken,clearAuthTokens} from "/utils/auth.js";
+import {ensureValidAccessToken,clearAuthTokens,authenticatedFetch} from "/utils/auth.js";
+import {getPictureUrl} from "/utils/picture.js";
 
 
 /**
@@ -12,6 +13,7 @@ const sidebarUsername = document.getElementById("sidebar-username");
 const sidebarStatus = document.getElementById("sidebar-status");
 const statusDot = document.querySelector(".status-dot");
 const profileChipBtn = document.getElementById("profile-chip-btn");
+const sidebarAvatar = document.getElementById("sidebar-avatar");
 
 function setActiveMenu(section) {
     menuItems.forEach((item) => item.classList.toggle("is-active", item.dataset.section === section));
@@ -201,6 +203,19 @@ function toggleAuthenticatedView(isLoggedIn) {
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
 }
 
+function applySidebarIdentity(username,profilePicture){
+    sidebarUsername.textContent = username;
+    sidebarAvatar.src = profilePicture;
+}
+async function loadSidebarProfile(){
+    const response = await authenticatedFetch("/api/users/profile",{
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+    const profile = await response.json();
+    applySidebarIdentity(profile.username, profile.profilePicture);
+}
+
 window.onload = async () => {
     const token = await ensureValidAccessToken();
 
@@ -218,7 +233,7 @@ window.onload = async () => {
         return;
     }
 
-    sidebarUsername.textContent = payload?.username;
+    await loadSidebarProfile();
 
     // TODO: remove `userId` dependency in the game and use user token directly.
     setCookie("userId", userId);
