@@ -329,8 +329,20 @@ body::before {
 }
 
 .leaderboard-item__rank {
-    color: var(--gold);
+    color: #a7b0c4;
     font-weight: 700;
+}
+
+.leaderboard-item:nth-child(1) .leaderboard-item__rank {
+    color: #ffd700;
+}
+
+.leaderboard-item:nth-child(2) .leaderboard-item__rank {
+    color: #c0c0c0;
+}
+
+.leaderboard-item:nth-child(3) .leaderboard-item__rank {
+    color: #cd7f32;
 }
 
 .leaderboard-item__avatar {
