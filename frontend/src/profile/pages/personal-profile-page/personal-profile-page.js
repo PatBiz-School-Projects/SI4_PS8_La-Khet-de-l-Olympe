@@ -440,14 +440,6 @@ async function loadProfile() {
         setStatValue(totalLossesEl, stats.totalLosses);
         setStatValue(winStreakEl, stats.winStreak);
         pictureEl.src = getPictureUrl(payload.profilePicture);
-        pictureEl.onerror = () => {
-            pictureEl.src = '/assets/pharaoh-blue.png';
-        };
-
-        if (ppSelector) {
-            ppSelector.value = getPictureUrl(payload.profilePicture);
-        }
-
         await loadFriendData(token);
         await loadChallengeData();
         bindChallengeSocket();
