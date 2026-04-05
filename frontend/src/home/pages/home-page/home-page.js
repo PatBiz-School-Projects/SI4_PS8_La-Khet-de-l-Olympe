@@ -89,9 +89,7 @@ function renderSearchResults(users) {
         addFriendButton.onclick = async () => sendFriendRequest(user.userId, addFriendButton);
 
         const challengeButton = document.createElement("button");
-        challengeButton.type = "button";
-        challengeButton.className = "search-action-btn";
-        challengeButton.textContent = "Défier";
+        challengeButton.textContent = "⚔";
         challengeButton.onclick = async () => challengeUser(user.userId);
 
         actions.append(addFriendButton, challengeButton);
@@ -140,6 +138,7 @@ menuItems.forEach((item) => {
     item.addEventListener("click", () => {
         setActiveMenu(item.dataset.section);
         if (item.dataset.section === "search") {
+            searchPanel.classList.toggle('visible');
             searchPanel.scrollIntoView({ behavior: "smooth", block: "start" });
             searchInput.focus();
         }
