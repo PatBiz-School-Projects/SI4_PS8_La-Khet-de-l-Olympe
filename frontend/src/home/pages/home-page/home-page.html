@@ -59,9 +59,11 @@
             </button>
 
             <button id="profile-chip-btn" class="user-chip" type="button" aria-label="Accéder au profil utilisateur">
-                <div class="user-chip__avatar" aria-hidden="true">Ω</div>
+                <div class="user-chip__avatar" aria-hidden="true">
+                    <img id="sidebar-avatar" loading="lazy" decoding="async" />
+                </div>
                 <div class="user-chip__meta">
-                    <p id="sidebar-username">Invité d'Olympe</p>
+                    <p id="sidebar-username"></p>
                     <span class="status-dot status-dot--online"></span>
                     <small id="sidebar-status">En ligne</small>
                 </div>
