@@ -168,6 +168,12 @@ body::before {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
+.user-chip:hover {
+    transform: translateY(-2px);
+    border-color: rgba(212, 177, 106, 0.4);
+    background: rgba(255, 255, 255, 0.07);
+}
+
 .user-chip__avatar {
     width: 46px;
     height: 46px;
@@ -276,31 +282,96 @@ body::before {
     gap: 12px;
 }
 
-.cta-button {
-    min-height: 49px;
-    border-radius: 12px;
-    border: 1px solid rgba(212, 177, 106, 0.45);
-    background: linear-gradient(135deg, rgba(131, 96, 58, 0.22), rgba(20, 27, 44, 0.5));
-    color: #f3ecd8;
-    font-weight: 700;
-    font-size: 0.9rem;
-    padding: 12px 18px;
+.btn-play {
+    font-family: "Cinzel", serif;
+    font-size: 0.74rem;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    padding: 14px 26px;
+    position: relative;
+    cursor: pointer;
+    border: none;
+    background: transparent;
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+    gap: 6px;
+    color: var(--text-main);
+    text-transform: uppercase;
+    transition: color 0.3s, transform 0.2s;
+    white-space: nowrap;
 }
 
-.cta-button:hover {
-    transform: translateY(-2px);
-    filter: brightness(1.05);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.34);
+.btn-play::before,
+.btn-play::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border: 1px solid;
+    border-radius: 12px;
+    transition: opacity 0.3s, transform 0.3s;
 }
 
-.cta-button--primary {
-    border-color: rgba(90, 164, 255, 0.6);
-    background: linear-gradient(135deg, rgba(90, 164, 255, 0.4), rgba(90, 164, 255, 0.16));
+.btn-play::before {
+    border-color: var(--gold-soft);
+}
+
+.btn-play::after {
+    border-color: var(--gold);
+    opacity: 0;
+    transform: scale(1.05);
+}
+
+.btn-play .glow-bg {
+    position: absolute;
+    inset: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(212, 177, 106, 0.12), rgba(212, 177, 106, 0.03));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.btn-play span {
+    position: relative;
+    z-index: 1;
+}
+
+.btn-play__icon {
+    margin-right: 6px;
+}
+
+.btn-play:hover {
+    color: #f0d9aa;
+    transform: translateY(-3px);
+}
+
+.btn-play:hover::before {
+    opacity: 0;
+}
+
+.btn-play:hover::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.btn-play:hover .glow-bg {
+    opacity: 1;
+}
+
+.btn-play:active {
+    transform: translateY(0);
+}
+
+.btn-play.primary::before {
+    border-color: var(--gold);
+}
+
+.btn-play.primary .glow-bg {
+    background: linear-gradient(135deg, rgba(212, 177, 106, 0.2), rgba(212, 177, 106, 0.06));
+    opacity: 1;
+}
+
+.btn-play.primary {
+    color: #f0d9aa;
 }
 
 .cards-grid {
@@ -425,7 +496,7 @@ body::before {
         flex-direction: column;
     }
 
-    .cta-button {
+    .btn-play {
         width: 100%;
         justify-content: center;
     }

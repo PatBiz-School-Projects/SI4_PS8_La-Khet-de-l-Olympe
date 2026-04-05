@@ -11,6 +11,7 @@ const clickableCards = document.querySelectorAll(".feature-card.is-clickable");
 const sidebarUsername = document.getElementById("sidebar-username");
 const sidebarStatus = document.getElementById("sidebar-status");
 const statusDot = document.querySelector(".status-dot");
+const profileChipBtn = document.getElementById("profile-chip-btn");
 
 function setActiveMenu(section) {
     menuItems.forEach((item) => item.classList.toggle("is-active", item.dataset.section === section));
@@ -182,6 +183,10 @@ joinMultiplayerBtn.onclick = async () => joinMultiplayerGame();
 
 const profileBtn = document.getElementById("profile-btn");
 profileBtn.onclick = async () => {
+    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+};
+
+profileChipBtn.onclick = async () => {
     window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
 };
 
