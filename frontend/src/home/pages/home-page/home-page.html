@@ -82,7 +82,7 @@
 
     <!-- Zone centrale immersive -->
     <main class="home-main">
-        <section class="hero">
+        <section id="play-panel" class="hero">
             <p class="hero__eyebrow">Mythologie grecque • stratégie • rayons divins</p>
             <h2>Dirige la lumière des dieux<br />et conquiers l'arène.</h2>
             <p class="hero__lead">
@@ -106,6 +106,16 @@
                     <span class="btn-play__icon" aria-hidden="true">🏛</span>
                     <span>Jouer en Local</span>
                 </button>
+            </div>
+        </section>
+        <section id="leaderboard-panel" class="leaderboard-panel" aria-labelledby="leaderboard-title" hidden>
+            <div class="leaderboard-card">
+                <div class="leaderboard-card__header">
+                    <h2 id="leaderboard-title">Leaderboard</h2>
+                    <p>Top joueurs classés par ELO</p>
+                </div>
+                <p id="leaderboard-status" class="leaderboard-status" aria-live="polite"></p>
+                <ol id="leaderboard-list" class="leaderboard-list"></ol>
             </div>
         </section>
 

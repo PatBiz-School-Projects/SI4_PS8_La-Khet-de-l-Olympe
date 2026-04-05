@@ -286,6 +286,70 @@ body::before {
     gap: 12px;
 }
 
+.leaderboard-panel {
+    border-radius: 22px;
+    border: 1px solid rgba(212, 177, 106, 0.2);
+    background: linear-gradient(145deg, rgba(20, 27, 44, 0.88), rgba(14, 18, 28, 0.92));
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
+    padding: clamp(20px, 3vw, 32px);
+}
+
+.leaderboard-card__header h2 {
+    font-family: Cinzel, serif;
+    margin-bottom: 4px;
+}
+
+.leaderboard-card__header p {
+    color: var(--text-muted);
+    margin-bottom: 16px;
+}
+
+.leaderboard-status {
+    margin-bottom: 12px;
+    color: #ccd4ea;
+}
+
+.leaderboard-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 0;
+}
+
+.leaderboard-item {
+    display: grid;
+    grid-template-columns: 64px 42px 1fr auto;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 12px;
+    padding: 9px 12px;
+}
+
+.leaderboard-item__rank {
+    color: var(--gold);
+    font-weight: 700;
+}
+
+.leaderboard-item__avatar {
+    width: 42px;
+    height: 42px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid rgba(212, 177, 106, 0.35);
+}
+
+.leaderboard-item__username {
+    font-weight: 700;
+}
+
+.leaderboard-item__elo {
+    font-weight: 600;
+    color: #fff5dd;
+}
+
 .btn-play {
     font-family: "Cinzel", serif;
     font-size: 0.74rem;
