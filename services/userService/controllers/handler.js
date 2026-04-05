@@ -208,11 +208,12 @@ exports.findUsers =  async (req, res) => {
 
 exports.getLeaderboard = async (req, res) => {
     try {
-        const {limit} = req.queryParams;
+        const rawLimit = req.queryParams.limit;
 
-        if (!limit) {
+        if (!rawLimit) {
             return sendJson(res, 400, "MISSING_LIMIT");
         }
+        const limit = Number.parseInt(rawLimit);
         const users = await usersRepository.findTopUsersByElo(limit);
         sendJson(res, 200, users);
     }
