@@ -1,4 +1,5 @@
 import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
+import {getPictureUrl} from '/utils/picture.js';
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
@@ -9,18 +10,6 @@ const addFriendButton = document.getElementById('add-friend-button');
 function setStatus(message, isError = false) {
     statusEl.textContent = message;
     statusEl.style.color = isError ? '#ffb3b3' : '#b8f7c5';
-}
-
-function getPictureUrl(profilePicture) {
-    if (!profilePicture) {
-        return '/assets/pharaoh-blue.png';
-    }
-
-    if (profilePicture.startsWith('http://') || profilePicture.startsWith('https://') || profilePicture.startsWith('/')) {
-        return profilePicture;
-    }
-
-    return `/assets/${profilePicture}`;
 }
 
 async function sendFriendRequest(userId) {
