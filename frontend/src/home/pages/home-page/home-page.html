@@ -50,6 +50,15 @@
                 <span class="menu-item__icon" aria-hidden="true">⌕</span>
                 <span>Rechercher</span>
             </button>
+            <section id="search-panel" class="search-panel search-panel--sidebar" aria-label="Recherche de joueurs">
+                <label class="search-input-wrap" for="search-users-input">
+                    <span>Recherche</span>
+                    <input id="search-users-input" type="text" placeholder="Ex: Achille, Athena..." autocomplete="off" />
+                </label>
+
+                <p id="search-status" class="search-status" aria-live="polite"></p>
+                <div id="search-results" class="search-results"></div>
+            </section>
         </nav>
 
         <div class="sidebar__footer">
