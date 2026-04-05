@@ -20,11 +20,83 @@ const searchPanel = document.getElementById("search-panel");
 const searchInput = document.getElementById("search-users-input");
 const searchStatus = document.getElementById("search-status");
 const searchResults = document.getElementById("search-results");
+const playPanel = document.getElementById("play-panel");
+const leaderboardPanel = document.getElementById("leaderboard-panel");
+const leaderboardStatus = document.getElementById("leaderboard-status");
+const leaderboardList = document.getElementById("leaderboard-list");
 let currentUserId;
 let searchDebounceId;
+
+function showMainPanel(section) {
+    const showLeaderboard = section === "leaderboard";
+    playPanel.hidden = showLeaderboard;
+    leaderboardPanel.hidden = !showLeaderboard;
+}
 function setSearchStatus(message, isError = false) {
     searchStatus.textContent = message;
     searchStatus.style.color = isError ? "#ffb3b3" : "";
+}
+function setLeaderboardStatus(message, isError = false) {
+    leaderboardStatus.textContent = message;
+    leaderboardStatus.style.color = isError ? "#ffb3b3" : "";
+}
+
+function renderLeaderboard(users) {
+    leaderboardList.innerHTML = "";
+    users.forEach((user, index) => {
+        const item = document.createElement("li");
+        item.className = "leaderboard-item";
+
+        const rank = document.createElement("span");
+        rank.className = "leaderboard-item__rank";
+        rank.textContent = `#${index + 1}`;
+
+        const avatar = document.createElement("img");
+        avatar.className = "leaderboard-item__avatar";
+        avatar.src = getPictureUrl(user.profilePicture);
+        avatar.alt = `Avatar de ${user.username}`;
+
+        const username = document.createElement("span");
+        username.className = "leaderboard-item__username";
+        username.textContent = user.username;
+
+        const elo = document.createElement("span");
+        elo.className = "leaderboard-item__elo";
+        elo.textContent = `${user.elo} ELO`;
+
+        item.append(rank, avatar, username, elo);
+        leaderboardList.appendChild(item);
+    });
+}
+
+async function loadLeaderboard(limit = 10) {
+    setLeaderboardStatus("Chargement du leaderboard...");
+    leaderboardList.innerHTML = "";
+
+    try {
+        const response = await fetch(`/api/users/leaderboard?limit=${encodeURIComponent(limit)}`, {
+            method: "GET",
+            headers: { "Content-Type": "application/json" },
+        });
+        const payload = await response.json();
+
+        if (!response.ok) {
+            setLeaderboardStatus(payload.error || "Impossible de charger le leaderboard.", true);
+            return;
+        }
+
+        const users = payload.users || [];
+        if (!users.length) {
+            setLeaderboardStatus("Aucun joueur classé pour le moment.");
+            return;
+        }
+
+        renderLeaderboard(users);
+        setLeaderboardStatus(`${users.length} joueur(s) affiché(s).`);
+    } catch (error) {
+        console.error("Unable to load leaderboard", error);
+        setLeaderboardStatus("Erreur réseau pendant le chargement du leaderboard.", true);
+    }
 }
 
 async function sendFriendRequest(targetUserId, button) {
@@ -121,11 +193,11 @@ async function runUserSearch(rawQuery) {
 
     const payload = await response.json();
     const users = payload.filter((user) => user.userId!==currentUserId);
-    /*if (!users.length) {
+    if (!users.length) {
         searchResults.innerHTML = "";
         setSearchStatus("Aucun joueur trouvé.");
         return;
-    }*/
+    }
 
     setSearchStatus(`${users.length} joueur(s) trouvé(s).`);
     renderSearchResults(users);
@@ -136,11 +208,17 @@ function setActiveMenu(section) {
 }
 
 menuItems.forEach((item) => {
-    item.addEventListener("click", () => {
+    item.addEventListener("click", async () => {
         setActiveMenu(item.dataset.section);
+        showMainPanel(item.dataset.section);
+
+        if (item.dataset.section === "leaderboard") {
+            await loadLeaderboard(10);
+            return;
+        }
         if (item.dataset.section === "search") {
             searchPanel.classList.toggle('visible');
-            searchPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+            searchPanel.scrollIntoView({behavior: "smooth", block: "start"});
             searchInput.focus();
         }
     });
@@ -353,6 +431,7 @@ async function loadSidebarProfile(){
 }
 
 window.onload = async () => {
+    showMainPanel("play");
     const token = await ensureValidAccessToken();
 
     if (!token) {
