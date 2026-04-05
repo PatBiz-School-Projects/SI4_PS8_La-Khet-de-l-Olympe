@@ -6,9 +6,11 @@ const HTTPFriendsHandler = require('./friendshipHandler');
 
 const ROUTER = (new Router()
     .add("/api/users", {
-        POST: HTTPUsersHandler.createUser,
-        GET: HTTPUsersHandler.findUsers
+        POST: HTTPUsersHandler.createUser
     })
+        .add("/api/users?query={}", {
+            GET: HTTPUsersHandler.findUsers,
+        })
     .add("/api/users/:userId/", {
         GET: HTTPUsersHandler.getPublicProfile,
     })
