@@ -58,14 +58,14 @@
                 <span>Déconnexion</span>
             </button>
 
-            <div class="user-chip" aria-label="Profil utilisateur">
+            <button id="profile-chip-btn" class="user-chip" type="button" aria-label="Accéder au profil utilisateur">
                 <div class="user-chip__avatar" aria-hidden="true">Ω</div>
                 <div class="user-chip__meta">
                     <p id="sidebar-username">Invité d'Olympe</p>
                     <span class="status-dot status-dot--online"></span>
                     <small id="sidebar-status">En ligne</small>
                 </div>
-            </div>
+            </button>
         </div>
     </aside>
 
@@ -80,17 +80,20 @@
             </p>
 
             <div class="hero__actions">
-                <button id="start-solo-btn" class="cta-button" type="button">
-                    <span class="cta-button__icon" aria-hidden="true">☀</span>
+                <button id="start-solo-btn" class="btn-play" type="button">
+                    <div class="glow-bg"></div>
+                    <span class="btn-play__icon" aria-hidden="true">☀</span>
                     <span>Jouer en Solo</span>
                 </button>
-                <button id="join-multiplayer-btn" class="cta-button cta-button--primary" type="button">
-                    <span class="cta-button__icon" aria-hidden="true">⚡</span>
+                <button id="join-multiplayer-btn" class="btn-play primary" type="button">
+                    <div class="glow-bg"></div>
+                    <span class="btn-play__icon" aria-hidden="true">⚡</span>
                     <span>Jouer en Multijoueur</span>
                 </button>
-                <button id="start-local-multiplayer-btn" class="cta-button" type="button">
-                    <span class="cta-button__icon" aria-hidden="true">🏛</span>
-                    <span>Multijoueur Local</span>
+                <button id="start-local-multiplayer-btn" class="btn-play" type="button">
+                    <div class="glow-bg"></div>
+                    <span class="btn-play__icon" aria-hidden="true">🏛</span>
+                    <span>Jouer en Local</span>
                 </button>
             </div>
         </section>
@@ -102,13 +105,15 @@
     <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="difficulty-title">
         <h2 id="difficulty-title">Choisissez votre destin</h2>
         <div class="modal-buttons">
-            <button id="btn-easy" class="cta-button" type="button">
-                <span class="cta-button__icon" aria-hidden="true">🜂</span>
+            <button id="btn-easy" class="btn-play" type="button">
+                <div class="glow-bg"></div>
+                <span class="btn-play__icon" aria-hidden="true">🜂</span>
                 <span>Mortel (Facile)</span>
             </button>
-            <button id="btn-hard" class="cta-button cta-button--primary" type="button">
-                <span class="cta-button__icon" aria-hidden="true">🜁</span>
-                <span>Demi-dieu (Difficile)</span>
+            <button id="btn-hard" class="btn-play primary" type="button">
+                <div class="glow-bg"></div>
+                <span class="btn-play__icon" aria-hidden="true">🜁</span>
+                <span>Demi-dieu (difficile)</span>
             </button>
         </div>
         <button id="close-modal-btn" class="text-button" type="button">Fermer</button>
