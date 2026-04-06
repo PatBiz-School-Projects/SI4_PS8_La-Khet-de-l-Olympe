@@ -8,6 +8,8 @@ const { RandomAI, MiniMaxAI } = require("./ai/ai");
 
 const { USER_SERVICE_URL, CHAT_SERVICE_URL } = process.env;
 
+const { GameSummariesRepository } = require("./repositories/GameSummaryRepository");
+
 
 //
 // HTTP
@@ -423,6 +425,56 @@ exports.HTTPHandler = {
         const game = GamesManager.getGameById(gameId);
 
         sendJson(res, 200, { ok: true, players: game.players.map(player => player.toDTO()) });
+    },
+
+    getUserHistory: async (req, res) => {
+        try {
+            let { userId } = req.routeParams;
+            if (!userId) {
+                const cookies = parseCookies(req.headers.cookie);
+                userId = cookies.userId;
+            }
+
+            if (!userId) {
+                return sendJson(res, 400, { ok: false, error: "Missing userId" });
+            }
+
+            const rawGames = await GameSummariesRepository.findLastGamesByUserId(userId, 10);
+
+            console.log("GameSummary :",rawGames);
+
+            const formattedGames = rawGames.map(game => {
+                const myPlayerId = Object.keys(game.users).find(key => game.users[key] === userId);
+                const opponentPlayerId = Object.keys(game.users).find(key => key !== myPlayerId);
+
+                const myName = game.usernames ? game.usernames[myPlayerId] : "Moi";
+                const opponentName = (game.usernames && opponentPlayerId) ? game.usernames[opponentPlayerId] : "Adversaire";
+
+                let result = "DRAW";
+                const myStats = game.statsUpdates ? game.statsUpdates[myPlayerId] : null;
+
+                if (myStats) {
+                    if (myStats.won) result = "WIN";
+                    else if (myStats.lost) result = "LOSS";
+                    else if (myStats.drew) result = "DRAW";
+                }
+
+                return {
+                    id: game._id,
+                    playerName: myName,
+                    opponentName: opponentName,
+                    result: result,
+                    movesCount: game.totalMoves || "?",
+                    date: game.createdAt
+                };
+            });
+
+            sendJson(res, 200, { ok: true, games: formattedGames });
+
+        } catch (error) {
+            console.error("Erreur getUserHistory:", error);
+            sendJson(res, 500, { ok: false, error: "INTERNAL_SERVER_ERROR" });
+        }
     },
 
     getActivePlayer: async (req, res) => {

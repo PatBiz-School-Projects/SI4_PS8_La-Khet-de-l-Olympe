@@ -23,6 +23,9 @@ const requestsListEl = document.getElementById('requests-list');
 const requestsEmptyEl = document.getElementById('requests-empty');
 const incomingChallengesListEl = document.getElementById('incoming-challenges-list');
 const incomingChallengesEmptyEl = document.getElementById('incoming-challenges-empty');
+const achievementsGrid = document.getElementById('achievements-grid');
+const historyListEl = document.getElementById('history-list');
+const historyEmptyEl = document.getElementById('history-empty');
 
 let challengeSocket = null;
 
@@ -48,14 +51,13 @@ async function handleAvatarSelection(event) {
 }
 
 function bindAvatarModalEvents() {
-    const editPpBtn = document.getElementById('edit-pp-btn');
     const avatarModal = document.getElementById('avatar-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const avatarOptions = document.querySelectorAll('.avatar-option');
 
-    if (!editPpBtn || !avatarModal) return;
+    if (!pictureEl || !avatarModal) return;
 
-    editPpBtn.addEventListener('click', openAvatarModal);
+    pictureEl.addEventListener('click', openAvatarModal);
 
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeAvatarModal);
 
@@ -66,6 +68,41 @@ function bindAvatarModalEvents() {
     avatarOptions.forEach(option => {
         option.addEventListener('click', handleAvatarSelection);
     });
+}
+
+function bindTabEvents() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    if (!tabButtons.length || !tabContents.length) return;
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            button.classList.add('active');
+
+            const targetId = button.getAttribute('data-target');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
+    });
+}
+
+function getPictureUrl(profilePicture) {
+    if (!profilePicture) {
+        return '/assets/pharaoh-blue.png';
+    }
+
+    if (profilePicture.startsWith('http://') || profilePicture.startsWith('https://') || profilePicture.startsWith('/')) {
+        return profilePicture;
+    }
+
+    return `/assets/${profilePicture}`;
 }
 
 async function syncProfilePicture(userId,pictureUrl) {
@@ -412,6 +449,104 @@ function setStatValue(element, value, suffix = '') {
     element.textContent = `${value ?? 0}${suffix}`;
 }
 
+async function loadAchievements(achievementsIds) {
+    achievementsGrid.innerHTML = '';
+
+    try {
+
+        const response = await authenticatedFetch('/api/users/achievements/catalogue', { method: 'GET',headers: { 'Content-Type': 'application/json' } });
+        const data = await response.json();
+        const catalogue = data.catalogue || [];
+
+
+        catalogue.forEach(achievement => {
+
+            const isUnlocked = achievementsIds.includes(achievement.id);
+
+            const imageClass = isUnlocked ? 'achievement-icon unlocked' : 'achievement-icon locked';
+
+
+            const tooltipText = isUnlocked ? 'Débloqué !' : 'Verrouillé';
+
+            const card = document.createElement('div');
+
+            card.className = isUnlocked ? 'achievement-card' : 'achievement-card locked';
+            card.innerHTML = `
+                <img src="${achievement.iconUrl}" class="${imageClass}" title="${tooltipText}" alt="${achievement.name}" />
+                <h3 class="achievement-name">${achievement.name}</h3>
+                <p class="achievement-desc">${achievement.description}</p>
+            `;
+
+            achievementsGrid.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Erreur lors du chargement des succès :", error);
+        achievementsGrid.innerHTML = '<p class="empty-friends">Impossible de charger les succès.</p>';
+    }
+}
+
+
+async function loadHistory(token) {
+    historyListEl.innerHTML = '';
+
+    const userId = getUserIdFromToken(token);
+
+    try {
+        const response = await authenticatedFetch(`/api/games/history/${userId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error("Erreur serveur");
+
+        const payload = await response.json();
+        const games = payload.games || [];
+
+
+        if (games.length === 0) {
+
+            historyEmptyEl.style.display = 'block';
+            return;
+        }
+
+        historyEmptyEl.style.display = 'none';
+
+        games.forEach(game => {
+            const li = document.createElement('li');
+
+            let resultClass = 'draw';
+            let resultText = 'Égalité';
+            if (game.result === 'WIN') { resultClass = 'win'; resultText = 'Victoire'; }
+            if (game.result === 'LOSS') { resultClass = 'loss'; resultText = 'Défaite'; }
+
+            li.className = `history-item ${resultClass}`;
+
+            const dateStr = new Date(game.date).toLocaleString('fr-FR', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            li.innerHTML = `
+                <div class="history-players">
+                    <span>${game.playerName}</span>
+                    <span class="history-vs">VS</span>
+                    <span>${game.opponentName}</span>
+                </div>
+                <div class="history-details">
+                    <p class="history-result">${resultText}</p>
+                    <p class="history-meta">${game.movesCount} coups • ${dateStr}</p>
+                </div>
+            `;
+
+            historyListEl.appendChild(li);
+        });
+
+    } catch (error) {
+        console.error("Impossible de charger l'historique", error);
+        historyListEl.innerHTML = '<p class="empty-friends" style="color: #ffb3b3;">Erreur lors du chargement des parties.</p>';
+    }
+}
 
 async function loadProfile() {
     const token = await ensureValidAccessToken();
@@ -440,6 +575,13 @@ async function loadProfile() {
         setStatValue(totalLossesEl, stats.totalLosses);
         setStatValue(winStreakEl, stats.winStreak);
         pictureEl.src = getPictureUrl(payload.profilePicture);
+        pictureEl.onerror = () => {
+            pictureEl.src = '/assets/pharaoh-blue.png';
+        };
+
+        const playerSuccess = payload.achievements || [];
+        await loadHistory(token);
+        await loadAchievements(playerSuccess);
         await loadFriendData(token);
         await loadChallengeData();
         bindChallengeSocket();
@@ -449,4 +591,5 @@ async function loadProfile() {
     }
 }
 bindAvatarModalEvents();
+bindTabEvents();
 loadProfile();

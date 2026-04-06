@@ -13,13 +13,72 @@
     <a class="back-link" href="/home/pages/home-page/home-page.html">← Retour à l'accueil</a>
 
     <section class="profile-card">
-        <img id="profile-picture" class="profile-picture" alt="Photo de profil"/>
-        <button id="edit-pp-btn" class="edit-pp-btn">Modifier l'avatar</button>
+        <img id="profile-picture" class="profile-picture" alt="Photo de profil" src="/assets/pharaoh-blue.png" title="Modifer" />
         <div class="profile-info">
             <h1 id="profile-username">Utilisateur</h1>
             <p id="profile-elo">ELO: --</p>
         </div>
     </section>
+
+    <nav class="profile-tabs">
+        <button class="tab-btn active" data-target="tab-stats">Statistiques</button>
+        <button class="tab-btn" data-target="tab-history">Historique</button>
+        <button class="tab-btn" data-target="tab-social">Social & Amis</button>
+        <button class="tab-btn" data-target="tab-achievements">Succès</button>
+    </nav>
+
+
+    <div id="tab-stats" class="tab-content active">
+        <section class="stats-card" aria-labelledby="profile-stats-title">
+            <h2 id="profile-stats-title">Statistiques</h2>
+            <div class="stats-grid">
+                <article class="stat-item"><p class="stat-label">Winrate</p><p id="profile-winRate" class="stat-value">0%</p></article>
+                <article class="stat-item"><p class="stat-label">Total games</p><p id="profile-total-games" class="stat-value">0</p></article>
+                <article class="stat-item"><p class="stat-label">Total wins</p><p id="profile-total-wins" class="stat-value">0</p></article>
+                <article class="stat-item"><p class="stat-label">Total losses</p><p id="profile-total-losses" class="stat-value">0</p></article>
+                <article class="stat-item"><p class="stat-label">Win streak</p><p id="profile-win-streak" class="stat-value">0</p></article>
+            </div>
+        </section>
+    </div>
+
+    <div id="tab-history" class="tab-content">
+        <section class="stats-card">
+            <h2>Vos 10 dernières parties</h2>
+            <p id="history-empty" class="empty-friends" style="display: none;">Aucune partie jouée pour le moment.</p>
+            <ul id="history-list" class="history-list" aria-live="polite"></ul>
+        </section>
+    </div>
+
+    <div id="tab-social" class="tab-content">
+        <section class="friends-card">
+            <h2>Liste d'amis</h2>
+            <p id="friends-empty" class="empty-friends">Aucun ami à afficher pour le moment.</p>
+            <ul id="friends-list" class="friend-list" aria-live="polite"></ul>
+        </section>
+
+        <section class="friends-card">
+            <h2>Demandes reçues</h2>
+            <p id="requests-empty" class="empty-friends">Aucune demande en attente.</p>
+            <ul id="requests-list" class="friend-list" aria-live="polite"></ul>
+        </section>
+
+        <section class="friends-card">
+            <h2>Défis reçus</h2>
+            <p id="incoming-challenges-empty" class="empty-friends">Aucun défi reçu en attente.</p>
+            <ul id="incoming-challenges-list" class="friend-list" aria-live="polite"></ul>
+        </section>
+    </div>
+
+    <div id="tab-achievements" class="tab-content">
+        <section class="stats-card">
+            <h2>Vos Succès</h2>
+            <div id="achievements-grid" class="achievements-grid">
+            </div>
+        </section>
+    </div>
+
+    <p id="profile-status" class="profile-status" aria-live="polite"></p>
+
     <div id="avatar-modal" class="modal hidden" aria-hidden="true">
         <div class="modal-content">
             <div class="modal-header">
@@ -40,51 +99,6 @@
             </div>
         </div>
     </div>
-    <section class="stats-card" aria-labelledby="profile-stats-title">
-        <h2 id="profile-stats-title">Statistiques</h2>
-        <div class="stats-grid">
-            <article class="stat-item">
-                <p class="stat-label">Winrate</p>
-                <p id="profile-winRate" class="stat-value">0%</p>
-            </article>
-            <article class="stat-item">
-                <p class="stat-label">Total games</p>
-                <p id="profile-total-games" class="stat-value">0</p>
-            </article>
-            <article class="stat-item">
-                <p class="stat-label">Total wins</p>
-                <p id="profile-total-wins" class="stat-value">0</p>
-            </article>
-            <article class="stat-item">
-                <p class="stat-label">Total losses</p>
-                <p id="profile-total-losses" class="stat-value">0</p>
-            </article>
-            <article class="stat-item">
-                <p class="stat-label">Win streak</p>
-                <p id="profile-win-streak" class="stat-value">0</p>
-            </article>
-        </div>
-    </section>
-    <section class="friends-card">
-        <h2>Liste d'amis</h2>
-        <p id="friends-empty" class="empty-friends">Aucun ami à afficher pour le moment.</p>
-        <ul id="friends-list" class="friend-list" aria-live="polite"></ul>
-    </section>
-
-    <section class="friends-card">
-        <h2>Demandes reçues</h2>
-        <p id="requests-empty" class="empty-friends">Aucune demande en attente.</p>
-        <ul id="requests-list" class="friend-list" aria-live="polite"></ul>
-    </section>
-
-    <section class="friends-card">
-        <h2>Défis reçus</h2>
-        <p id="incoming-challenges-empty" class="empty-friends">Aucun défi reçu en attente.</p>
-        <ul id="incoming-challenges-list" class="friend-list" aria-live="polite"></ul>
-    </section>
-
-
-    <p id="profile-status" class="profile-status" aria-live="polite"></p>
 </main>
 </body>
 </html>

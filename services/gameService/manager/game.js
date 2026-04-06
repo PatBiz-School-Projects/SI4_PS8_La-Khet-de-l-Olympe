@@ -81,6 +81,8 @@ class Game {
         /** @private @type {number} */
         this._turnCount = 1;
 
+        this._totalMoves = 0;
+
         /** @private @type {Player} */
         this._currActivePlayer = players[0];
 
@@ -282,11 +284,14 @@ class Game {
                 if (this._winner !== null) {
                     this._state = GameState.DRAW;
                     this._winner = null;
-                } else if (piece.owner !== this._currActivePlayer) {
-                    this._winner = this._currActivePlayer;
-                } else {
-                    this._winner = piece.owner;
+
                 }
+                else{
+                    this._winner= this.players.find(player =>
+                        player.playerId !== piece.owner
+                    );
+                }
+
             } else {
                 if (piece.type === "Pyramid") {
                     const opponent = this.players.filter(player => player !== this._currActivePlayer)[0];
@@ -308,6 +313,8 @@ class Game {
         this.actionValidator.validate(action);
 
         this.ACTIONS[action.method](action.args);
+
+        this._totalMoves++;
         let laserPath;
         if (action.method !== "switch" || action.args.piece2.type !== "Sphinx") {
             laserPath = this._processLaserHit().path;
@@ -352,6 +359,15 @@ class Game {
             return {
                 player1Id: player1.playerId,
                 player2Id: player2.playerId,
+
+                totalMoves: this._totalMoves,
+
+                userIds: [player1.userId, player2.userId],
+                usernames: {
+                    [player1.playerId]: player1.profile?.username || "Joueur 1", //FOR HISTORY
+                    [player2.playerId]: player2.profile?.username || "Joueur 2",
+                },
+
                 users: {
                     [player1.playerId]: player1.userId,
                     [player2.playerId]: player2.userId,
@@ -361,8 +377,8 @@ class Game {
                     [player2.playerId]: eloComputation[player2.playerId],
                 },
                 statsUpdates: {
-                    [winner.playerId]: {drew: true, newELO: eloComputation[player1.playerId].newELO},
-                    [loser.playerId]: {drew: true, newELO: eloComputation[player2.playerId].newELO},
+                    [player1.playerId]: {drew: true, newELO: eloComputation[player1.playerId].newELO},
+                    [player2.playerId]: {drew: true, newELO: eloComputation[player2.playerId].newELO},
                 },
             };
         }
@@ -383,13 +399,21 @@ class Game {
         return {
             winnerId: winner.playerId,
             loserId: loser.playerId,
+
+            totalMoves: this._totalMoves,
+
+            userIds: [winner.userId, loser.userId],
+            usernames: {
+                [winner.playerId]: winner.profile?.username, //FOR HISTORY
+                [loser.playerId]: loser.profile?.username,
+            },
             users: {
                 [winner.playerId]: winner.userId,
                 [loser.playerId]: loser.userId,
             },
             results: {
                 [winner.playerId]: eloComputation[winner.playerId],
-                [loser.playerId]: eloComputation[winner.playerId],
+                [loser.playerId]: eloComputation[loser.playerId],
             },
             statsUpdates: {
                 [winner.playerId]: {won: true, newELO: eloComputation[winner.playerId].newELO},
@@ -414,9 +438,9 @@ class Game {
         }
 
         if (this.isRated()) {
-            GamesManager.endGame(this._gameId, summary);
+            GamesManager.endGame(this._gameId, summary,true);
         } else {
-            GamesManager.endGame(this._gameId);
+            GamesManager.endGame(this._gameId,summary,false);
         }
     }
 }

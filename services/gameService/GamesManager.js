@@ -195,9 +195,10 @@ class GamesManager {
      * Ends a given game.
      *
      * @param {GameID} gameId
-     * @param {unknown} summary
+     * @param {GameSummary} summary
+     * @param {boolean} isRated
      */
-    static endGame(gameId, summary=undefined) {
+    static endGame(gameId, summary=undefined,isRated=true) {
         if (summary) {
             GameSummariesRepository.save(gameId, summary)
                 .then(
@@ -207,24 +208,26 @@ class GamesManager {
                     err => console.error(`Failed to save game w/ id '${gameId}' bcs:`, err)
                 );
 
-            const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
+            if(isRated) {
+                const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 
-            for (const player of this._games[gameId].players) {
-                fetch(`${USER_SERVICE_URL}/api/users/${player.userId}/stats`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(summary.statsUpdates[player.playerId]),
-                })
-                    .then(
-                        ans => (
-                            (ans.ok)
-                            ? console.log(`Successfully updated stats of user w/ id '${player.userId}'`)
-                            : console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, ans.error)
+                for (const player of this._games[gameId].players) {
+                    fetch(`${USER_SERVICE_URL}/api/users/${player.userId}/stats`, {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify(summary.statsUpdates[player.playerId]),
+                    })
+                        .then(
+                            ans => (
+                                (ans.ok)
+                                    ? console.log(`Successfully updated stats of user w/ id '${player.userId}'`)
+                                    : console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, ans.error)
+                            )
                         )
-                    )
-                    .catch(
-                        err => console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, err)
-                    );
+                        .catch(
+                            err => console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, err)
+                        );
+                }
             }
         }
 
