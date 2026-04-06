@@ -13,12 +13,15 @@ const IS_PROD = process.env.IS_PROD === "true";
 // Proxy to send requests to the other services.
 const proxy = httpProxy.createProxyServer();
 
+function getPathSegments(url) {
+    const pathname = new URL(url, "http://localhost").pathname;
+    return pathname.split("/").filter((elem) => elem !== "..");
+}
+
 async function handleHTTPRequest(req, res) {
     // First, let's check the URL to see if it's a REST request or a file request.
     // We will remove all cases of "../" in the url for security purposes.
-    let filePath = req.url.split("/").filter(function(elem) {
-        return elem !== "..";
-    });
+    const filePath = getPathSegments(req.url);
 
     try {
         // If the URL starts by /api, then it's a REST request (you can change that if you want).
