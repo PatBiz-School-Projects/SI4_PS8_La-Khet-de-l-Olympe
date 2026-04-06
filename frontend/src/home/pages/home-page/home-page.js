@@ -70,7 +70,7 @@ function renderLeaderboard(users) {
 }
 
 async function loadLeaderboard(limit = 10) {
-    setLeaderboardStatus("Chargement du leaderboard...");
+    setLeaderboardStatus("Chargement du panthéon...");
     leaderboardList.innerHTML = "";
 
     try {
@@ -85,7 +85,6 @@ async function loadLeaderboard(limit = 10) {
             return;
         }
         renderLeaderboard(payload);
-        setLeaderboardStatus(`${payload.length} joueur(s) affiché(s).`);
     } catch (error) {
         console.error("Unable to load leaderboard", error);
         setLeaderboardStatus("Erreur réseau pendant le chargement du leaderboard.", true);
