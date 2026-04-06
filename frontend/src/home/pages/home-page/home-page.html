@@ -3,73 +3,161 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>La Khet De L'Olympe</title>
+    <title>Khet de l'Olympe | Accueil</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
-
-    <link href="./home-page.css" rel="stylesheet">
+    <link href="./home-page.css" rel="stylesheet" />
     <script type="module" src="./home-page.js" defer></script>
 </head>
 
 <body>
-    <div class="stars"></div>
-    <div class="pillar pillar-left"></div>
-    <div class="pillar pillar-right"></div>
-
-    <!-- Auth buttons -->
-    <nav class="auth-bar">
-        <button id="signup-btn" class="btn-auth">Signup</button>
-        <button id="login-btn" class="btn-auth">Login</button>
-        <button id="profile-btn" class="btn-auth" style="display: none;">Profil</button>
-        <button id="logout-btn" class="btn-auth" style="display: none;">Logout</button>
-    </nav>
-
-    <!-- Main content -->
-    <main class="scene">
-
-        <div class="title-block">
-            <p class="title-eyebrow">Bienvenue dans</p>
-            <h1 class="title-main">La Khet De L'Olympe</h1>
-            <div class="divider"></div>
-            <p class="title-sub">Que les dieux guident vos pièces</p>
+<nav class="auth-bar">
+    <button id="profile-right-btn" class="btn-auth" style="display: none;">Profil</button>
+</nav>
+<div class="app-shell">
+    <!-- Sidebar fixe inspirée d'une navigation de plateforme de jeu -->
+    <aside class="sidebar" aria-label="Navigation principale">
+        <div class="sidebar__brand">
+            <div class="brand-mark" aria-hidden="true">⚡</div>
+            <div class="brand-copy">
+                <p class="brand-eyebrow">Strategic Laser Game</p>
+                <h1>Khet de l'Olympe</h1>
+            </div>
         </div>
 
-        <div class="play-buttons">
+        <nav class="sidebar__nav">
+            <button class="menu-item is-active" type="button" data-section="play">
+                <span class="menu-item__icon" aria-hidden="true">⚔️</span>
+                <span>Jouer</span>
+            </button>
+            <button class="menu-item" type="button" data-section="leaderboard">
+                <span class="menu-item__icon" aria-hidden="true">🏆</span>
+                <span>Panthéon</span>
+            </button>
+            <button class="menu-item" type="button" data-section="friends">
+                <span class="menu-item__icon" aria-hidden="true">🤝</span>
+                <span>Amis</span>
+            </button>
+            <button id="profile-btn" class="menu-item" type="button" data-section="profile" style="display: none;">
+                <span class="menu-item__icon" aria-hidden="true">🛡️</span>
+                <span>Profil</span>
+            </button>
+            <button id="login-btn" class="menu-item" type="button" data-section="login">
+                <span class="menu-item__icon" aria-hidden="true">🔐</span>
+                <span>Connexion</span>
+            </button>
+            <button id="signup-btn" class="menu-item" type="button" data-section="signup">
+                <span class="menu-item__icon" aria-hidden="true">✨</span>
+                <span>Inscription</span>
+            </button>
+            <button class="menu-item" type="button" data-section="search">
+                <span class="menu-item__icon" aria-hidden="true">⌕</span>
+                <span>Rechercher</span>
+            </button>
+            <section id="search-panel" class="search-panel search-panel--sidebar" aria-label="Recherche de joueurs">
+                <label class="search-input-wrap" for="search-users-input">
+                    <span>Recherche</span>
+                    <input id="search-users-input" type="text" placeholder="Ex: Achille, Athena..." autocomplete="off" />
+                </label>
 
-                <button id="start-solo-btn" class="btn-play">
+                <p id="search-status" class="search-status" aria-live="polite"></p>
+                <div id="search-results" class="search-results"></div>
+            </section>
+        </nav>
+
+        <div class="sidebar__footer">
+            <button id="logout-btn" class="menu-item menu-item--danger" type="button" style="display: none;">
+                <span class="menu-item__icon" aria-hidden="true">↩</span>
+                <span>Déconnexion</span>
+            </button>
+
+            <button id="profile-chip-btn" class="user-chip" type="button" aria-label="Accéder au profil utilisateur">
+                <div class="user-chip__avatar" aria-hidden="true">
+                    <img id="sidebar-avatar" loading="lazy" decoding="async" />
+                </div>
+                <div class="user-chip__meta">
+                    <p id="sidebar-username"></p>
+                    <span class="status-dot status-dot--online"></span>
+                    <small id="sidebar-status">En ligne</small>
+                </div>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Zone centrale immersive -->
+    <main class="home-main">
+        <section id="play-panel" class="scene">
+            <div class="title-block">
+                <p class="title-eyebrow">Bienvenue dans</p>
+                <h1 class="title-main">La Khet De L'Olympe</h1>
+                <div class="divider"></div>
+                <p class="title-sub">Que les dieux guident vos pièces</p>
+            </div>
+
+            <div class="play-buttons">
+                <button id="start-solo-btn" class="btn-play" type="button">
                     <div class="glow-bg"></div>
                     <span>Jouer en Solo</span>
                 </button>
 
-            <button id="join-multiplayer-btn" class="btn-play primary">
-                <div class="glow-bg"></div>
-                <span>Jouer en Multijoueur</span>
-            </button>
-
-            <button id="start-local-multiplayer-btn" class="btn-play">
-                <div class="glow-bg"></div>
-                <span>Lancer Une Partie Multijoueur Locale</span>
-            </button>
-        </div>
-
-    </main>
-
-    <p class="ornament">⬥ &nbsp; Khet — Le Jeu des Lasers &nbsp; ⬥</p>
-
-    <div id="difficulty-modal" class="modal-overlay" style="display: none;">
-        <div class="modal-content">
-            <h2>Choisissez votre Destin</h2>
-            <div class="modal-buttons">
-                <button id="btn-easy" class="btn-play">
+                <button id="join-multiplayer-btn" class="btn-play primary" type="button">
                     <div class="glow-bg"></div>
-                    <span>Mortel (Facile)</span>
+                    <span>Jouer en Multijoueur</span>
                 </button>
-                <button id="btn-hard" class="btn-play primary">
+
+                <button id="start-local-multiplayer-btn" class="btn-play" type="button">
                     <div class="glow-bg"></div>
-                    <span>Demi-Dieu (Difficile)</span>
+                    <span>Lancer Une Partie Multijoueur Locale</span>
                 </button>
             </div>
-            <button id="close-modal-btn" class="btn-text">Fermer</button>
+        </section>
+        <section id="leaderboard-panel" class="leaderboard-panel" aria-labelledby="leaderboard-title" hidden>
+            <div class="leaderboard-card">
+                <div class="leaderboard-card__header">
+                    <h2 id="leaderboard-title">Leaderboard</h2>
+                    <p>Archive des meilleurs guerriers</p>
+                </div>
+                <p id="leaderboard-status" class="leaderboard-status" aria-live="polite"></p>
+                <ol id="leaderboard-list" class="leaderboard-list"></ol>
+            </div>
+        </section>
+        <section id="friends-panel" class="leaderboard-panel" aria-labelledby="friends-title" hidden>
+            <div class="leaderboard-card">
+                <div class="leaderboard-card__header">
+                    <h2 id="friends-title">Amis</h2>
+                    <p>Amis en ligne et hors ligne</p>
+                </div>
+                <p id="friends-status" class="leaderboard-status" aria-live="polite"></p>
+
+                <h3 class="friends-subtitle">🟢 En ligne</h3>
+                <p id="friends-online-empty" class="friends-empty-message" hidden>Aucun ami en ligne.</p>
+                <ul id="friends-online-list" class="leaderboard-list"></ul>
+
+                <h3 class="friends-subtitle">⚪ Hors ligne</h3>
+                <p id="friends-offline-empty" class="friends-empty-message" hidden>Aucun ami hors ligne.</p>
+                <ul id="friends-offline-list" class="leaderboard-list"></ul>
+            </div>
+        </section>
+
+    </main>
+</div>
+
+<div id="difficulty-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="difficulty-title">
+        <h2 id="difficulty-title">Choisissez votre destin</h2>
+        <div class="modal-buttons">
+            <button id="btn-easy" class="btn-play" type="button">
+                <div class="glow-bg"></div>
+                <span class="btn-play__icon" aria-hidden="true">🜂</span>
+                <span>Mortel (Facile)</span>
+            </button>
+            <button id="btn-hard" class="btn-play primary" type="button">
+                <div class="glow-bg"></div>
+                <span class="btn-play__icon" aria-hidden="true">🜁</span>
+                <span>Demi-dieu (difficile)</span>
+            </button>
         </div>
+        <button id="close-modal-btn" class="text-button" type="button">Fermer</button>
     </div>
+</div>
 </body>
 </html>

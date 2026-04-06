@@ -8,6 +8,16 @@ async function findUserByAuthId(authId) {
     return User.builder(plainUser);
 }
 
+async function findUserByQuery(query,limit) {
+    const usersCollection = await getUsersCollection();
+     return usersCollection.find({
+        username: {
+            $regex: query,
+            $options: 'i'
+        }
+    }).limit(limit).toArray();
+}
+
 async function getUsersCollection() {
     const db = await getDb();
     return db.collection('users');
@@ -77,10 +87,29 @@ async function addAchievements(userId,newAchievementsIds) {
 }
 
 
+async function findTopUsersByElo(limit) {
+    const usersCollection = await getUsersCollection();
+    return usersCollection.find(
+        {},
+        {
+            projection: {
+                _id: 0,
+                username: 1,
+                elo: 1,
+                profilePicture: 1,
+            },
+        }
+    ).sort({ elo: -1, username: 1 }).limit(limit).toArray();
+}
+
+
+
 module.exports = {
     createUser,
     findUserByAuthId,
     updateUserStats,
     updateProfilePicture,
     addAchievements
+    findUserByQuery,
+    findTopUsersByElo
 };

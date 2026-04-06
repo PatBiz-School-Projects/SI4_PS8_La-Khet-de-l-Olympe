@@ -212,6 +212,43 @@ exports.getAchievementsCatalogue = async (req, res) => {
     }
 
 
+exports.findUsers =  async (req, res) => {
+    try{
+        const token = extractToken(req, null);
+
+        if (!token) {
+            sendJson(res, 401, { ok: false, error: "MISSING_TOKEN" });
+            return;
+        }
+        const {query} = req.queryParams;
+        const users = await usersRepository.findUserByQuery(query,5);
+        const response = users.map((user) => ({
+            username:user.username,
+            profilePicture:user.profilePicture,
+            userId:user._id
+        }));
+        sendJson(res, 200, response);}
+    catch(err){
+        console.log(err);
+        sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+    }
+}
+
+exports.getLeaderboard = async (req, res) => {
+    try {
+        const rawLimit = req.queryParams.limit;
+
+        if (!rawLimit) {
+            return sendJson(res, 400, "MISSING_LIMIT");
+        }
+        const limit = Number.parseInt(rawLimit);
+        const users = await usersRepository.findTopUsersByElo(limit);
+        sendJson(res, 200, users);
+    }
+    catch(err){
+        console.log(err);
+        sendJson(res, 500, "INTERNAL_SERVER_ERROR");
+    }
 }
 
 exports.getUserStats = async (req, res) => {

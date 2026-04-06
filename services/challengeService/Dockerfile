@@ -1,9 +1,9 @@
-FROM node:18-slim
+FROM node:20-slim
 
 WORKDIR /app
 
 COPY challengeService/package*.json ./
-RUN npm install --omit=dev
+RUN npm install
 
 COPY challengeService/ ./
 COPY helpers ./helpers

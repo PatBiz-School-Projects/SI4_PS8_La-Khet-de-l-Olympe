@@ -5,9 +5,9 @@ import {
     listIncomingChallenges,
     acceptChallenge,
     declineChallenge,
-    cancelChallenge,
     createChallengeSocket,
 } from '/utils/challenge.js';
+import {getPictureUrl} from '/utils/picture.js';
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
 const pictureEl = document.getElementById('profile-picture');
