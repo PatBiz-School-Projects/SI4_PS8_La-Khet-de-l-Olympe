@@ -284,11 +284,14 @@ class Game {
                 if (this._winner !== null) {
                     this._state = GameState.DRAW;
                     this._winner = null;
-                } else if (piece.owner !== this._currActivePlayer) {
-                    this._winner = this._currActivePlayer;
-                } else {
-                    this._winner = piece.owner;
+
                 }
+                else{
+                    this._winner= this.players.find(player =>
+                        player.playerId !== piece.owner
+                    );
+                }
+
             } else {
                 if (piece.type === "Pyramid") {
                     const opponent = this.players.filter(player => player !== this._currActivePlayer)[0];
