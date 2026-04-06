@@ -19,6 +19,13 @@ const ACHIEVEMENTS_LIST = {
         description: 'Remportez 5 parties d\'affilés.',
         iconUrl: '/assets/achievements/hot-streak.png',
         condition: (user) => user.winStreak >= 5
+    },
+    FIRST_CONNEXION: {
+        id: 'FIRST_CONNEXION',
+        name: 'Bienvenue!',
+        description: 'Se connecter pour la première fois',
+        iconUrl: '/assets/pharaoh-red.png',
+        condition: (user) => user.id!=null
     }
 };
 

@@ -44,7 +44,9 @@ const ROUTER = (new Router()
     .add("/api/users/:userId/live-stats", {
         GET: HTTPUsersHandler.getUserLiveStats,
     })
-
+    .add("/api/users/achievements/catalogue",{
+        GET:HTTPUsersHandler.getAchievementsCatalogue
+    })
     .add("/api/users/friends", {
         GET: HTTPFriendsHandler.handleListFriends,
         DELETE: HTTPFriendsHandler.handleDeleteFriend,

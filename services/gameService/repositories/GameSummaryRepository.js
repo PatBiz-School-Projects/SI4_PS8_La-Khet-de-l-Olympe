@@ -66,6 +66,19 @@ class GameSummariesRepository {
     static async findById(gameId) {
         return GameSummariesRepository.collection.findOne({ _id: gameId });
     }
+
+    /**
+     * @param {string} userId
+     * @param {number} limit
+     * @returns {Promise<GameSummary[]>}
+     */
+    static async findLastGamesByUserId(userId, limit = 10) {
+        return GameSummariesRepository.collection
+            .find({ userIds: userId })
+            .sort({ createdAt: -1 })
+            .limit(limit)
+            .toArray();
+    }
 }
 
 module.exports = { GameSummariesRepository };

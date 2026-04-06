@@ -111,12 +111,23 @@ exports.getProfile = async (req, res) => {
             sendJson(res, 404, "USER_NOT_FOUND");
             return;
         }
+
+        const newAchievements = achievementsManager.checkNewAchievements(user);
+
+        if (newAchievements.length > 0) {
+
+            const newAchievementIds = newAchievements.map(a => a.id);
+            await usersRepository.addAchievements(user.id, newAchievementIds);
+
+        }
+
         const userFriends = await friendshipManager.getAllFriends(userId);
         return sendJson(res, 200, {
             username: user.username,
             profilePicture: user.profilePicture,
             elo: user.elo,
             friends: userFriends,
+            achievements:user.achievements||[],
             stats:{
                 winStreak: user.winStreak,
                 totalGames: user.totalGames,
@@ -125,7 +136,7 @@ exports.getProfile = async (req, res) => {
                 winRate: user.totalGames > 0
                     ? Math.round(((user.totalWins ?? 0) / user.totalGames) * 100)
                     : 0,
-            }
+            },
         });
     } catch (error) {
         console.error("getProfile error:", error);
@@ -183,6 +194,24 @@ exports.getUserMinimalProfile = async (req, res) => {
         username: user.username,
         profilePicture: user.profilePicture,
     });
+}
+
+exports.getAchievementsCatalogue = async (req, res) => {
+
+    try{
+        const catalogue = achievementsManager.getAchievementsCatalogue();
+
+        if (!catalogue) {
+            return sendJson(res, 404, { ok: false, error: "CATALOGUE_NOT_FOUND" });
+        }
+
+        return sendJson(res,200,{ ok: true, catalogue });
+    }catch (error) {
+        console.error("Erreur getAchievementsCatalogue:", error);
+        return sendJson(res, 500, { ok: false, error: "INTERNAL_SERVER_ERROR" });
+    }
+
+
 }
 
 exports.getUserStats = async (req, res) => {

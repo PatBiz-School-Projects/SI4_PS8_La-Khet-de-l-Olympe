@@ -71,10 +71,11 @@ async function updateUserStats(userId, {newElo, won, lost, drew}) {
 
 async function addAchievements(userId,newAchievementsIds) {
     const usersCollection = await getUsersCollection();
-    usersCollection.updateOne({_id: userId,},
-    { $push: { achievements: { $each: newAchievementsIds } }
+    await usersCollection.updateOne({_id: userId,},
+        { $addToSet: { achievements: { $each: newAchievementsIds }}
     });
 }
+
 
 module.exports = {
     createUser,

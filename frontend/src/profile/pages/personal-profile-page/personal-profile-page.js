@@ -23,6 +23,9 @@ const requestsListEl = document.getElementById('requests-list');
 const requestsEmptyEl = document.getElementById('requests-empty');
 const incomingChallengesListEl = document.getElementById('incoming-challenges-list');
 const incomingChallengesEmptyEl = document.getElementById('incoming-challenges-empty');
+const achievementsGrid = document.getElementById('achievements-grid');
+const historyListEl = document.getElementById('history-list');
+const historyEmptyEl = document.getElementById('history-empty');
 
 let challengeSocket = null;
 
@@ -446,6 +449,107 @@ function setStatValue(element, value, suffix = '') {
     element.textContent = `${value ?? 0}${suffix}`;
 }
 
+async function loadAchievements(achievementsIds) {
+    achievementsGrid.innerHTML = '';
+
+    try {
+
+        const response = await authenticatedFetch('/api/users/achievements/catalogue', { method: 'GET',headers: { 'Content-Type': 'application/json' } });
+        const data = await response.json();
+        const catalogue = data.catalogue || [];
+         console.log(" hey achievements here")
+
+        catalogue.forEach(achievement => {
+
+            console.log("achievement : ",achievement);
+            const isUnlocked = achievementsIds.includes(achievement.id);
+
+            const imageClass = isUnlocked ? 'achievement-icon unlocked' : 'achievement-icon locked';
+
+
+            const tooltipText = isUnlocked ? 'Débloqué !' : 'Verrouillé';
+
+            const card = document.createElement('div');
+
+            card.className = isUnlocked ? 'achievement-card' : 'achievement-card locked';
+            card.innerHTML = `
+                <img src="${achievement.iconUrl}" class="${imageClass}" title="${tooltipText}" alt="${achievement.name}" />
+                <h3 class="achievement-name">${achievement.name}</h3>
+                <p class="achievement-desc">${achievement.description}</p>
+            `;
+
+            achievementsGrid.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error("Erreur lors du chargement des succès :", error);
+        achievementsGrid.innerHTML = '<p class="empty-friends">Impossible de charger les succès.</p>';
+    }
+}
+
+
+async function loadHistory(token) {
+    historyListEl.innerHTML = '';
+
+    console.log("hi history")
+    const userId = getUserIdFromToken(token);
+
+    try {
+        const response = await authenticatedFetch(`/api/games/history/${userId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (!response.ok) throw new Error("Erreur serveur");
+
+        const payload = await response.json();
+        const games = payload.games || [];
+
+
+        if (games.length === 0) {
+
+            console.log("no history");
+            historyEmptyEl.style.display = 'block';
+            return;
+        }
+
+        historyEmptyEl.style.display = 'none';
+
+        games.forEach(game => {
+            const li = document.createElement('li');
+
+            let resultClass = 'draw';
+            let resultText = 'Égalité';
+            if (game.result === 'WIN') { resultClass = 'win'; resultText = 'Victoire'; }
+            if (game.result === 'LOSS') { resultClass = 'loss'; resultText = 'Défaite'; }
+
+            li.className = `history-item ${resultClass}`;
+
+            const dateStr = new Date(game.date).toLocaleString('fr-FR', {
+                day: '2-digit', month: '2-digit', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            li.innerHTML = `
+                <div class="history-players">
+                    <span>${game.playerName}</span>
+                    <span class="history-vs">VS</span>
+                    <span>${game.opponentName}</span>
+                </div>
+                <div class="history-details">
+                    <p class="history-result">${resultText}</p>
+                    <p class="history-meta">${game.movesCount} coups • ${dateStr}</p>
+                </div>
+            `;
+
+            historyListEl.appendChild(li);
+        });
+
+    } catch (error) {
+        console.error("Impossible de charger l'historique", error);
+        historyListEl.innerHTML = '<p class="empty-friends" style="color: #ffb3b3;">Erreur lors du chargement des parties.</p>';
+    }
+}
 
 async function loadProfile() {
     const token = await ensureValidAccessToken();
@@ -478,6 +582,9 @@ async function loadProfile() {
             pictureEl.src = '/assets/pharaoh-blue.png';
         };
 
+        const playerSuccess = payload.achievements || [];
+        await loadHistory(token);
+        await loadAchievements(playerSuccess);
         await loadFriendData(token);
         await loadChallengeData();
         bindChallengeSocket();

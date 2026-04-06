@@ -22,6 +22,7 @@
 
     <nav class="profile-tabs">
         <button class="tab-btn active" data-target="tab-stats">Statistiques</button>
+        <button class="tab-btn" data-target="tab-history">Historique</button>
         <button class="tab-btn" data-target="tab-social">Social & Amis</button>
         <button class="tab-btn" data-target="tab-achievements">Succès</button>
     </nav>
@@ -37,6 +38,14 @@
                 <article class="stat-item"><p class="stat-label">Total losses</p><p id="profile-total-losses" class="stat-value">0</p></article>
                 <article class="stat-item"><p class="stat-label">Win streak</p><p id="profile-win-streak" class="stat-value">0</p></article>
             </div>
+        </section>
+    </div>
+
+    <div id="tab-history" class="tab-content">
+        <section class="stats-card">
+            <h2>Vos 10 dernières parties</h2>
+            <p id="history-empty" class="empty-friends" style="display: none;">Aucune partie jouée pour le moment.</p>
+            <ul id="history-list" class="history-list" aria-live="polite"></ul>
         </section>
     </div>
 
@@ -62,8 +71,9 @@
 
     <div id="tab-achievements" class="tab-content">
         <section class="stats-card">
-            <h2>Succès débloqués</h2>
-            <p style="color: #888;">Les succès arrivent bientôt...</p>
+            <h2>Vos Succès</h2>
+            <div id="achievements-grid" class="achievements-grid">
+            </div>
         </section>
     </div>
 

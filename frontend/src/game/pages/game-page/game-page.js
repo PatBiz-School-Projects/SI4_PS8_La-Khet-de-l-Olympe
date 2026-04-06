@@ -315,7 +315,7 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
             // DEBUG::
             console.log("Opponent placed piece:", piece, "at:", pos);
 
-            await PLAYERS_INVENTORY_BY_ID[(PLAYERS_ID.indexOf(CLIENT_PLAYER.playerId)+1) % 2].popPyramid();
+            await PLAYERS_INVENTORY_BY_ID[piece.owner].popPyramid();
             await board.placePiece(piece, pos);
         } break;
         case "rotate": {
