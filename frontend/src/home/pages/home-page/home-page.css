@@ -7,17 +7,17 @@
 }
 
 :root {
-    --bg-deep: #07090f;
-    --bg-night: #0c1220;
-    --stone: #141b2c;
-    --stone-soft: #1b2438;
-    --text-main: #e8ecf8;
-    --text-muted: #9ca7c6;
-    --gold: #d4b16a;
-    --gold-soft: #9d7c44;
-    --bronze: #83603a;
-    --blue-glow: #5aa4ff;
-    --danger: #d16a6a;
+    --bg-deep: #0a0a0f;
+    --bg-night: #121016;
+    --stone: #17130f;
+    --stone-soft: #211b14;
+    --text-main: #e8dfc0;
+    --text-muted: #8a7d5a;
+    --gold: #c9a84c;
+    --gold-soft: #7a6028;
+    --bronze: #7a6028;
+    --blue-glow: #c9a84c;
+    --danger: #b96a5e;
     --sidebar-width: 284px;
 }
 
@@ -25,8 +25,9 @@ html,
 body {
     width: 100%;
     min-height: 100%;
-    background: radial-gradient(circle at top right, #15243f 0%, transparent 35%),
-    radial-gradient(circle at bottom left, #1f1a10 0%, transparent 25%),
+    background: radial-gradient(ellipse at 20% 30%, rgba(100, 70, 10, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(60, 40, 120, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 100%, rgba(180, 120, 20, 0.12) 0%, transparent 40%),
     linear-gradient(150deg, var(--bg-night), var(--bg-deep));
     color: var(--text-main);
     font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
@@ -47,6 +48,10 @@ body::before {
     opacity: 0.45;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 .app-shell {
     position: relative;
     z-index: 1;
@@ -61,7 +66,7 @@ body::before {
     top: 0;
     height: 100vh;
     padding: 22px 16px 18px;
-    background: linear-gradient(175deg, rgba(12, 16, 26, 0.95), rgba(7, 9, 15, 0.96));
+    background: linear-gradient(175deg, rgba(18, 14, 12, 0.96), rgba(10, 10, 15, 0.98));
     border-right: 1px solid rgba(212, 177, 106, 0.22);
     box-shadow: inset -18px 0 44px rgba(0, 0, 0, 0.38);
     display: flex;
@@ -85,7 +90,7 @@ body::before {
     border-radius: 12px;
     display: grid;
     place-items: center;
-    background: linear-gradient(145deg, rgba(212, 177, 106, 0.2), rgba(90, 164, 255, 0.2));
+    background: linear-gradient(145deg, rgba(201, 168, 76, 0.22), rgba(122, 96, 40, 0.2));
     border: 1px solid rgba(212, 177, 106, 0.35);
     font-size: 1.25rem;
 }
@@ -315,7 +320,7 @@ body::before {
 .hero {
     border-radius: 22px;
     border: 1px solid rgba(212, 177, 106, 0.2);
-    background: linear-gradient(145deg, rgba(20, 27, 44, 0.88), rgba(14, 18, 28, 0.92));
+    background: linear-gradient(145deg, rgba(25, 20, 16, 0.9), rgba(14, 12, 10, 0.94));
     box-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
     padding: clamp(26px, 4vw, 50px);
     position: relative;
@@ -352,7 +357,7 @@ body::before {
 .hero__lead {
     position: relative;
     z-index: 1;
-    color: #ccd4ea;
+    color: var(--text-muted);
     max-width: 68ch;
     line-height: 1.65;
     margin-bottom: 30px;
@@ -369,7 +374,7 @@ body::before {
 .leaderboard-panel {
     border-radius: 22px;
     border: 1px solid rgba(212, 177, 106, 0.2);
-    background: linear-gradient(145deg, rgba(20, 27, 44, 0.88), rgba(14, 18, 28, 0.92));
+    background: linear-gradient(145deg, rgba(25, 20, 16, 0.9), rgba(14, 12, 10, 0.94));
     box-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
     padding: clamp(20px, 3vw, 32px);
 }
@@ -386,7 +391,7 @@ body::before {
 
 .leaderboard-status {
     margin-bottom: 12px;
-    color: #ccd4ea;
+    color: var(--text-muted);
 }
 
 .leaderboard-list {
@@ -409,7 +414,7 @@ body::before {
 }
 
 .leaderboard-item__rank {
-    color: #a7b0c4;
+    color: var(--text-muted);
     font-weight: 700;
 }
 
@@ -667,7 +672,7 @@ body::before {
 .feature-card {
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background: linear-gradient(160deg, rgba(20, 27, 44, 0.85), rgba(13, 17, 28, 0.9));
+    background: linear-gradient(160deg, rgba(28, 23, 18, 0.88), rgba(15, 13, 11, 0.92));
     padding: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26);
     transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
@@ -700,7 +705,7 @@ body::before {
 .feature-card.is-clickable:hover {
     transform: translateY(-4px);
     border-color: rgba(212, 177, 106, 0.42);
-    background: linear-gradient(160deg, rgba(30, 39, 61, 0.88), rgba(14, 19, 31, 0.94));
+    background: linear-gradient(160deg, rgba(38, 30, 20, 0.9), rgba(17, 14, 11, 0.95));
 }
 
 /* Modal */
