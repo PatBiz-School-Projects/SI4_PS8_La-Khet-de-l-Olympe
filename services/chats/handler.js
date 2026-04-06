@@ -115,7 +115,7 @@ exports.HTTPHandler = {
 
         const { chatId } = req.routeParams;
 
-        let { start } = parseInt(req.routeParams.start);
+        let { start } = {start: parseInt(req.queryParams.start)};
         if (isNaN(start)) {
             start = 0;
         }
@@ -130,7 +130,10 @@ exports.HTTPHandler = {
             return;
         }
 
-        sendJson(res, 200, {ok: true, messages: chat.getMessages(start, end)});
+        const messages = chat.getMessages(start, end);
+        // DEBUG::
+        console.log(`Sending ${messages.length} older messages`);
+        sendJson(res, 200, {ok: true, messages});
     },
 
     getUsersInChat: async (req, res) => {

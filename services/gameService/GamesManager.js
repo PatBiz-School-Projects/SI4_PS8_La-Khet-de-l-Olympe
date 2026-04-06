@@ -189,6 +189,8 @@ class GamesManager {
 
     ////////////////////////////////////////////////////////////////////////////
 
+    // TODO : Make a better game cleanup :
+
     /**
      * Ends a given game.
      *
@@ -228,6 +230,25 @@ class GamesManager {
 
         // TODO : Delete game only when both player have left the game (be cautious of involuntary disconnection)
         // delete this._games[gameId];
+
+
+        // TODO : Delete game chat only when both player have left the game (be cautious of involuntary disconnection)
+        const CHAT_SERVICE_URL = process.env.CHAT_SERVICE_URL;
+        fetch(`${CHAT_SERVICE_URL}/internal/api/chats/${gameId}`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({/* nothing */}),
+        })
+            .then(
+                ans => (
+                    (ans.ok)
+                    ? console.log(`Successfully closed chat of game '${gameId}'`)
+                    : console.error(`Failed to close chat of game '${gameId}' bcs:`, ans.error)
+                )
+            )
+            .catch(
+                err => console.error(`Unexpected error occured while closing chat of game '${gameId}':`, err)
+            );
     }
 }
 

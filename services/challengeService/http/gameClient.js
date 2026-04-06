@@ -39,7 +39,7 @@ async function openMultiplayerRoom(playerId, cookieHeader) {
 }
 
 async function joinSpecificMultiplayerRoom(playerId, gameId, cookieHeader) {
-    const response = await fetch(`${GAME_SERVICE_URL}/api/game-service/join-multiplayer-game`, {
+    const response = await fetch(`${GAME_SERVICE_URL}/api/games/join-private-multiplayer-game`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',

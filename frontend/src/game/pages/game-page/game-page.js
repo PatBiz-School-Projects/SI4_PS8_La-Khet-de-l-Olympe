@@ -9,31 +9,13 @@ import { GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 import { GamePageStateMachine } from "./GamePageStateMachine/GamePageStateMachine.js";
 import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
+import { GameMode, PlayerID, PlayerDTO } from "./types.js";
+
+import { ChatBox } from "/chat/components/chat-box/chat-box.js";
 
 import { getCookie } from "/utils/cookie.js";
 import { EventQueue } from "/utils/event.js";
 // REVIEW : It's a feature instead of an utils
-import {sendChallenge} from "/utils/challenge.js"
-
-
-// TODO : Remove `gameId` & use local storage instead to enable simultaneous games
-const GAME_ID = getCookie("gameId");
-
-
-const socket = io({
-    path: "/api/game-service/socket.io",
-    query: {
-        gameId: GAME_ID,
-    },
-});
-const clickHandler = new GamePageClickHandler(document);
-const stateMachine = new GamePageStateMachine();
-
-import { GameMode, PlayerID, PlayerDTO } from "./types.js";
-
-import { getCookie } from "/utils/cookie.js";
-import { EventQueue } from "/utils/event.js";
-// REVIEW : It should be a feature not an utils
 import {sendChallenge} from "/utils/challenge.js"
 
 
@@ -54,6 +36,8 @@ const player2Inventory = document.querySelector("game-player-inventory#player2-i
 const player1RotationIndicator = document.querySelector("#player1-rotation-indicator");
 /** @type { GameRotationIndicator } */
 const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
+/** @type { ChatBox } */
+const chatBox = document.querySelector("chat-box");
 
 
 //
@@ -190,7 +174,13 @@ async function setupVariables() {
 //
 
 
-const socket = io({
+const chatSocket = io("/game-chat", {
+    path: "/api/chats/socket.io",
+    query: {
+        chatId: GAME_ID,
+    },
+});
+const gameSocket = io({
     path: "/api/game-service/socket.io",
     query: {
         gameId: GAME_ID,
@@ -241,6 +231,10 @@ onload = async _ => {
         playerRotationIndicator.owner = playerId;
         playerRotationIndicator.active = false;
     }
+
+    // Initialising chat box
+    chatBox.chatId = GAME_ID;
+    await chatBox.actualise();
 }
 
 
@@ -251,7 +245,7 @@ onload = async _ => {
 
 const gameEventQueue = new EventQueue();
 
-socket.on("start-turn", gameEventQueue.enqueue(async payload => {
+gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
     // DEBUG::
     console.log(`Received 'start-turn' event for player with id=${payload.playerId}`);
 
@@ -276,7 +270,7 @@ socket.on("start-turn", gameEventQueue.enqueue(async payload => {
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = true;
 }));
 
-socket.on("end-turn", gameEventQueue.enqueue(async _ => {
+gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
     // DEBUG::
     console.log(`Received 'end-turn' event for player with id=${CLIENT_PLAYER.playerId}`);
 
@@ -295,7 +289,7 @@ socket.on("end-turn", gameEventQueue.enqueue(async _ => {
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = false;
 }));
 
-socket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {
+gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {
     // DEBUG::
     console.log(
         "Opponent's action:",
@@ -352,7 +346,7 @@ socket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result
     }
 }));
 
-socket.on("game-over", gameEventQueue.enqueue(payload => {
+gameSocket.on("game-over", gameEventQueue.enqueue(payload => {
     // DEBUG::
     console.log("Received 'game-over' event:", payload);
 
@@ -368,18 +362,45 @@ onclick = (event) => {
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
-player1Inventory.addEventListener("inventory-click", (event) => {
+player1Inventory.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
-player2Inventory.addEventListener("inventory-click", (event) => {
+player2Inventory.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
 
-player1RotationIndicator.addEventListener("game-rotation", (event) => {
+player1RotationIndicator.addEventListener("game-rotation", event => {
     stateMachine.on(event.detail);
 });
-player2RotationIndicator.addEventListener("game-rotation", (event) => {
+player2RotationIndicator.addEventListener("game-rotation", event => {
     stateMachine.on(event.detail);
+});
+
+
+chatSocket.on("new-message", ({message}) => {
+    // DEBUG::
+    console.log(`Sending message on in-game chat from "${message.author.username}":\n${message.content}`);
+
+    chatBox.onNewMessage(message);
+})
+
+chatBox.addEventListener("send-message", event => {
+    const content = event.detail.content;
+
+    // DEBUG::
+    console.log(`Sending message to in-game chat:\n${content}`);
+
+    const newMessage = {
+        author: {
+            userId: CLIENT_PLAYER.userId,
+            username: CLIENT_PLAYER.profile.username,
+            profilePicture: CLIENT_PLAYER.profile.profilePicture
+        },
+        content,
+        uploadTimestamp: Date.now(),
+    }
+
+    chatSocket.emit("new-message", { message: newMessage });
 });
 
 

@@ -101,6 +101,7 @@ services:
       DB_URL:           *mongo-url
       DB_NAME:          *games-db
       USER_SERVICE_URL: *users-url
+      CHAT_SERVICE_URL: *chats-url
     depends_on:
       mongo:
         condition: service_healthy

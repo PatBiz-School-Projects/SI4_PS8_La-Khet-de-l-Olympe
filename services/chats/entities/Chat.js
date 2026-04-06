@@ -68,7 +68,7 @@ class Chat {
      * @returns {ChatMessage[]}
      */
     getMessages(start, end) {
-        return [ ...this._messages.slice(start, end) ];
+        return [ ...this._messages.slice(start, end) ].reverse();
     }
 
     getUsers() {

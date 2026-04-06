@@ -89,6 +89,9 @@ const ROUTER = (new Router()
     .add("/api/games/join-multiplayer-game", {
         POST: HTTPMiddleware_OutsideGame(HTTPHandler.joinMultiplayerGame),
     })
+    .add("/api/games/join-private-multiplayer-game", {
+        POST: HTTPMiddleware_OutsideGame(HTTPHandler.joinPrivateMultiplayerGame),
+    })
 
     //
     // Inside a waiting room
