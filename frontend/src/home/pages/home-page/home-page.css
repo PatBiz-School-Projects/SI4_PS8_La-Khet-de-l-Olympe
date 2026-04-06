@@ -362,6 +362,25 @@ body::before {
     color: #fff5dd;
 }
 
+.friends-subtitle {
+    margin: 12px 0 8px;
+    color: #dce4fb;
+    font-size: 0.95rem;
+}
+
+.friends-empty-message {
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.friend-item {
+    grid-template-columns: 42px 1fr auto auto;
+}
+
+.friend-challenge-btn {
+    justify-self: end;
+}
+
 .btn-play {
     font-family: "Cinzel", serif;
     font-size: 0.74rem;

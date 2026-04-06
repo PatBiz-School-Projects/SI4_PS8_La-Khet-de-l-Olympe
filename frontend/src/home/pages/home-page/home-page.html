@@ -118,6 +118,23 @@
                 <ol id="leaderboard-list" class="leaderboard-list"></ol>
             </div>
         </section>
+        <section id="friends-panel" class="leaderboard-panel" aria-labelledby="friends-title" hidden>
+            <div class="leaderboard-card">
+                <div class="leaderboard-card__header">
+                    <h2 id="friends-title">Amis</h2>
+                    <p>Amis en ligne et hors ligne</p>
+                </div>
+                <p id="friends-status" class="leaderboard-status" aria-live="polite"></p>
+
+                <h3 class="friends-subtitle">🟢 En ligne</h3>
+                <p id="friends-online-empty" class="friends-empty-message" hidden>Aucun ami en ligne.</p>
+                <ul id="friends-online-list" class="leaderboard-list"></ul>
+
+                <h3 class="friends-subtitle">⚪ Hors ligne</h3>
+                <p id="friends-offline-empty" class="friends-empty-message" hidden>Aucun ami hors ligne.</p>
+                <ul id="friends-offline-list" class="leaderboard-list"></ul>
+            </div>
+        </section>
 
     </main>
 </div>

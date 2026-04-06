@@ -24,13 +24,21 @@ const playPanel = document.getElementById("play-panel");
 const leaderboardPanel = document.getElementById("leaderboard-panel");
 const leaderboardStatus = document.getElementById("leaderboard-status");
 const leaderboardList = document.getElementById("leaderboard-list");
+const friendsPanel = document.getElementById("friends-panel");
+const friendsStatus = document.getElementById("friends-status");
+const friendsOnlineList = document.getElementById("friends-online-list");
+const friendsOfflineList = document.getElementById("friends-offline-list");
+const friendsOnlineEmpty = document.getElementById("friends-online-empty");
+const friendsOfflineEmpty = document.getElementById("friends-offline-empty");
 let currentUserId;
 let searchDebounceId;
 
 function showMainPanel(section) {
     const showLeaderboard = section === "leaderboard";
-    playPanel.hidden = showLeaderboard;
+    const showFriends = section === "friends";
+    playPanel.hidden = showLeaderboard || showFriends;
     leaderboardPanel.hidden = !showLeaderboard;
+    friendsPanel.hidden = !showFriends;
 }
 function setSearchStatus(message, isError = false) {
     searchStatus.textContent = message;
@@ -40,7 +48,10 @@ function setLeaderboardStatus(message, isError = false) {
     leaderboardStatus.textContent = message;
     leaderboardStatus.style.color = isError ? "#ffb3b3" : "";
 }
-
+function setFriendsStatus(message, isError = false) {
+    friendsStatus.textContent = message;
+    friendsStatus.style.color = isError ? "#ffb3b3" : "";
+}
 function renderLeaderboard(users) {
     leaderboardList.innerHTML = "";
     users.forEach((user, index) => {
@@ -127,6 +138,92 @@ async function challengeUser(targetUserId) {
     setSearchStatus("Défi envoyé avec succès.", false);
 }
 
+function renderFriendsList(targetElement, friends, canChallenge) {
+    targetElement.innerHTML = "";
+
+    friends.forEach((friend) => {
+        const item = document.createElement("li");
+        item.className = "leaderboard-item friend-item";
+
+        const avatar = document.createElement("img");
+        avatar.className = "leaderboard-item__avatar";
+        avatar.src = getPictureUrl(friend.profilePicture);
+        avatar.alt = `Avatar de ${friend.username}`;
+
+        const username = document.createElement("span");
+        username.className = "leaderboard-item__username";
+        username.textContent = friend.username;
+
+        const elo = document.createElement("span");
+        elo.className = "leaderboard-item__elo";
+        elo.textContent = `${friend.elo} ELO`;
+
+        item.append(avatar, username, elo);
+
+        if (canChallenge) {
+            const challengeButton = document.createElement("button");
+            challengeButton.type = "button";
+            challengeButton.className = "search-action-btn friend-challenge-btn";
+            challengeButton.textContent = "Défier";
+            challengeButton.onclick = async () => {
+                challengeButton.disabled = true;
+                await challengeUser(friend.id);
+                challengeButton.disabled = false;
+            };
+            item.append(challengeButton);
+        }
+
+        targetElement.appendChild(item);
+    });
+}
+
+async function loadFriendsPanel() {
+    setFriendsStatus("Chargement de vos amis...");
+    friendsOnlineList.innerHTML = "";
+    friendsOfflineList.innerHTML = "";
+    friendsOnlineEmpty.hidden = true;
+    friendsOfflineEmpty.hidden = true;
+
+    const friendsResponse = await authenticatedFetch("/api/users/friends", {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    });
+
+    if (!friendsResponse) {
+        setFriendsStatus("Session expirée. Veuillez vous reconnecter.", true);
+        return;
+    }
+    const connectedResponse = await fetch("/api/users/connected", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+
+    const friendsPayload = await friendsResponse.json();
+    const connectedPayload = connectedResponse.ok
+        ? await connectedResponse.json()
+        : { users: [] };
+
+    if (!friendsResponse.ok) {
+        setFriendsStatus(friendsPayload.error || "Impossible de charger vos amis.", true);
+        return;
+    }
+
+    const friends = friendsPayload.friends || [];
+    const connectedIds = new Set((connectedPayload.users || []).map((user) => user.id));
+
+    const onlineFriends = friends.filter((friend) => connectedIds.has(friend.id));
+    const offlineFriends = friends.filter((friend) => !connectedIds.has(friend.id));
+
+    renderFriendsList(friendsOnlineList, onlineFriends, true);
+    renderFriendsList(friendsOfflineList, offlineFriends, false);
+
+    friendsOnlineEmpty.hidden = onlineFriends.length !== 0;
+    friendsOfflineEmpty.hidden = offlineFriends.length !== 0;
+
+    setFriendsStatus(
+        `${onlineFriends.length} ami(s) en ligne • ${offlineFriends.length} hors ligne.`
+    );
+}
 function renderSearchResults(users) {
     searchResults.innerHTML = "";
 
@@ -206,6 +303,11 @@ menuItems.forEach((item) => {
 
         if (item.dataset.section === "leaderboard") {
             await loadLeaderboard(10);
+            return;
+        }
+        if (item.dataset.section === "friends") {
+            await loadFriendsPanel();
+            console.log("friends")
             return;
         }
         if (item.dataset.section === "search") {
