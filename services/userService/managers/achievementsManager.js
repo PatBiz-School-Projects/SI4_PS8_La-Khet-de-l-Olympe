@@ -5,7 +5,6 @@ class AchievementsManager {
         const newlyUnlocked = [];
 
         if (!user.achievements) {
-            console.log("ACHIEVEMENTS CREATED");
             user.achievements = [];
         }
 

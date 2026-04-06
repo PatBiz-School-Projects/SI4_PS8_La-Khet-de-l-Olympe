@@ -457,11 +457,10 @@ async function loadAchievements(achievementsIds) {
         const response = await authenticatedFetch('/api/users/achievements/catalogue', { method: 'GET',headers: { 'Content-Type': 'application/json' } });
         const data = await response.json();
         const catalogue = data.catalogue || [];
-         console.log(" hey achievements here")
+
 
         catalogue.forEach(achievement => {
 
-            console.log("achievement : ",achievement);
             const isUnlocked = achievementsIds.includes(achievement.id);
 
             const imageClass = isUnlocked ? 'achievement-icon unlocked' : 'achievement-icon locked';
@@ -491,7 +490,6 @@ async function loadAchievements(achievementsIds) {
 async function loadHistory(token) {
     historyListEl.innerHTML = '';
 
-    console.log("hi history")
     const userId = getUserIdFromToken(token);
 
     try {
@@ -508,7 +506,6 @@ async function loadHistory(token) {
 
         if (games.length === 0) {
 
-            console.log("no history");
             historyEmptyEl.style.display = 'block';
             return;
         }
