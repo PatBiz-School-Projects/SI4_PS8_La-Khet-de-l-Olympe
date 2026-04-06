@@ -1,5 +1,5 @@
 class User {
-    constructor({ id, username, elo, profilePicture,totalGames,totalWins,totalLosses,totalDraws,winStreak }) {
+    constructor({ id, username, elo, profilePicture,totalGames,totalWins,totalLosses,totalDraws,winStreak,achievements }) {
         this.id = id;
         this.username = username;
         this.elo = elo;
@@ -9,6 +9,7 @@ class User {
         this.totalLosses = totalLosses;
         this.totalDraws = totalDraws;
         this.winStreak = winStreak;
+        this.achievements = achievements;
     }
 
     static builder(document) {
@@ -25,7 +26,8 @@ class User {
             totalWins: document.totalWins,
             totalLosses: document.totalLosses,
             totalDraws: document.totalDraws,
-            winStreak: document.winStreak
+            winStreak: document.winStreak,
+            achievements: document.achievements || []
         });
     }
 

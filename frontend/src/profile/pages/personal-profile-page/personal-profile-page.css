@@ -48,15 +48,20 @@ body {
     border-radius: 50%;
     object-fit: cover;
     border: 2px solid var(--gold);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+
+.profile-picture:hover {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+    box-shadow: 0 0 15px rgba(201, 168, 76, 0.6);
 }
 
 .profile-info h1 { margin: 0 0 8px 0; }
 .profile-info p { margin: 0; color: var(--muted); }
 
 .stats-card h2,
-.friends-card h2 {
-    margin-top: 0;
-}
 
 .stats-grid {
     display: grid;
@@ -166,18 +171,6 @@ body {
 }
 
 @media (max-width: 640px) {
-    .friend-item,
-    .friend-main {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-
-    .friend-actions {
-        width: 100%;
-        justify-content: flex-start;
-    }
-}
-@media (max-width: 640px) {
     .profile-card {
         flex-direction: column;
         text-align: center;
@@ -285,4 +278,49 @@ body {
 .avatar-option:hover {
     transform: scale(1.1);
     border-color: #d4af37;
+}
+
+.profile-tabs {
+    display: flex;
+    gap: 30px;
+    border-bottom: 2px solid #333;
+    margin: 20px 0;
+    padding: 0 10px;
+}
+
+.tab-btn {
+    background: none;
+    border: none;
+    color: #888;
+    font-family: 'Cinzel', serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 10px 5px;
+    cursor: pointer;
+    transition: color 0.2s ease;
+    border-bottom: 3px solid transparent;
+}
+
+.tab-btn:hover {
+    color: #eee;
+}
+
+.tab-btn.active {
+    color: #d4af37;
+    border-bottom: 3px solid #d4af37;
+}
+
+
+.tab-content {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
 }

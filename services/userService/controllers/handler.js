@@ -4,6 +4,7 @@ const { extractToken, extractUserId } = require("../helpers/token");
 const connectedUsersService = require("../managers/connectedUsersService");
 const usersRepository = require("../repositories/userRepository");
 const friendshipManager = require("../managers/friendshipManager");
+const achievementsManager = require("../managers/achievementsManager");
 
 
 exports.createUser = async (req, res) => {
@@ -280,7 +281,28 @@ exports.updateUserStats = async (req, res) => {
 
     const update = await readJsonBody(req);
 
-    await usersRepository.updateUserStats(userId, update);
+    const updatedUser = await usersRepository.updateUserStats(userId, update);
 
-    sendJson(res, 200, {ok: true, success: true});
+    if (!updatedUser) {
+        return sendJson(res, 500, { ok: false, error: "Failed to update stats" });
+    }
+
+    const newAchievements = await updateUserAchievements(updatedUser);
+
+    sendJson(res, 200, {
+        ok: true,
+        success: true,
+        newAchievements: newAchievements
+    });
+}
+
+async function updateUserAchievements(user) {
+
+    const newAchievements = achievementsManager.checkNewAchievements(user);
+
+    if (newAchievements.length > 0) {
+        const newAchievementIds = newAchievements.map(a => a.id);
+        await usersRepository.addAchievements(user.id, newAchievementIds);
+    }
+    return newAchievements;
 }

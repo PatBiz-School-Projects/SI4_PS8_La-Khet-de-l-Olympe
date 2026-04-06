@@ -48,14 +48,13 @@ async function handleAvatarSelection(event) {
 }
 
 function bindAvatarModalEvents() {
-    const editPpBtn = document.getElementById('edit-pp-btn');
     const avatarModal = document.getElementById('avatar-modal');
     const closeModalBtn = document.getElementById('close-modal-btn');
     const avatarOptions = document.querySelectorAll('.avatar-option');
 
-    if (!editPpBtn || !avatarModal) return;
+    if (!pictureEl || !avatarModal) return;
 
-    editPpBtn.addEventListener('click', openAvatarModal);
+    pictureEl.addEventListener('click', openAvatarModal);
 
     if (closeModalBtn) closeModalBtn.addEventListener('click', closeAvatarModal);
 
@@ -65,6 +64,29 @@ function bindAvatarModalEvents() {
 
     avatarOptions.forEach(option => {
         option.addEventListener('click', handleAvatarSelection);
+    });
+}
+
+function bindTabEvents() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    if (!tabButtons.length || !tabContents.length) return;
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+
+            button.classList.add('active');
+
+            const targetId = button.getAttribute('data-target');
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) {
+                targetContent.classList.add('active');
+            }
+        });
     });
 }
 
@@ -456,10 +478,6 @@ async function loadProfile() {
             pictureEl.src = '/assets/pharaoh-blue.png';
         };
 
-        if (ppSelector) {
-            ppSelector.value = getPictureUrl(payload.profilePicture);
-        }
-
         await loadFriendData(token);
         await loadChallengeData();
         bindChallengeSocket();
@@ -469,4 +487,5 @@ async function loadProfile() {
     }
 }
 bindAvatarModalEvents();
+bindTabEvents();
 loadProfile();

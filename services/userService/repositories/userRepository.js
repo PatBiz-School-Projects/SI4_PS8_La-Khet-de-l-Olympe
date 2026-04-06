@@ -26,6 +26,7 @@ async function createUser(authId,username) {
         totalLosses:0,
         totalDraws:0,
         winStreak: 0,
+        achievements:[]
     });
 }
 
@@ -39,7 +40,7 @@ async function updateProfilePicture(userId,newProfilePicture){
 async function updateUserStats(userId, {newElo, won, lost, drew}) {
     const usersCollection = await getUsersCollection();
     if (won) {
-        usersCollection.updateOne({_id: userId,}, {
+        await usersCollection.updateOne({_id: userId,}, {
             $set: {elo: newElo},
             $inc: {
                 winStreak: 1,
@@ -48,7 +49,7 @@ async function updateUserStats(userId, {newElo, won, lost, drew}) {
             },
         });
     } else if (lost) {
-        usersCollection.updateOne({_id: userId,}, {
+        await usersCollection.updateOne({_id: userId,}, {
             $set: {elo: newElo, winStreak: 0},
             $inc: {
                 totalGames:1,
@@ -56,7 +57,7 @@ async function updateUserStats(userId, {newElo, won, lost, drew}) {
             },
         });
     } else if (drew) {
-        usersCollection.updateOne({_id: userId,}, {
+        await usersCollection.updateOne({_id: userId,}, {
             $set: {elo: newElo, winStreak: 0},
             $inc: {
                 totalGames:1,
@@ -64,11 +65,21 @@ async function updateUserStats(userId, {newElo, won, lost, drew}) {
             },
         });
     }
+    const result = await usersCollection.findOne({_id:userId});
+    return User.builder(result);
+}
+
+async function addAchievements(userId,newAchievementsIds) {
+    const usersCollection = await getUsersCollection();
+    usersCollection.updateOne({_id: userId,},
+    { $push: { achievements: { $each: newAchievementsIds } }
+    });
 }
 
 module.exports = {
     createUser,
     findUserByAuthId,
     updateUserStats,
-    updateProfilePicture
+    updateProfilePicture,
+    addAchievements
 };
