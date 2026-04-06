@@ -495,7 +495,9 @@ profileChipBtn.onclick = async () => {
 };
 
 const profileRightBtn = document.getElementById("profile-right-btn");
-profileRightBtn.onClick = async() => window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+profileRightBtn.onclick = async() => {
+    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+}
 
 function toggleAuthenticatedView(isLoggedIn) {
     signupBtn.style.display = isLoggedIn ? "none" : "flex";
