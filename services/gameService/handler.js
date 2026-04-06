@@ -464,7 +464,7 @@ exports.HTTPHandler = {
                     playerName: myName,
                     opponentName: opponentName,
                     result: result,
-                    movesCount: game._totalMoves || "?",
+                    movesCount: game.totalMoves || "?",
                     date: game.createdAt
                 };
             });

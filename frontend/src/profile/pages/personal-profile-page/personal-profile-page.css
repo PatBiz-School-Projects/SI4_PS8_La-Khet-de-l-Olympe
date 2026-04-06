@@ -395,8 +395,8 @@ body {
     border-right: 1px solid rgba(255,255,255,0.05);
     border-bottom: 1px solid rgba(255,255,255,0.05);
 }
-.history-item.win { border-left-color: #b8f7c5; }
-.history-item.loss { border-left-color: #ffb3b3; }
+.history-item.win { border-left-color: #4caf50; }
+.history-item.loss { border-left-color: #e53935; }
 .history-item.draw { border-left-color: #b4a689; }
 
 .history-players {
@@ -417,8 +417,8 @@ body {
     margin: 0 0 4px 0;
     text-transform: uppercase;
 }
-.win .history-result { color: #b8f7c5; }
-.loss .history-result { color: #ffb3b3; }
+.win .history-result { color: #4caf50; }
+.loss .history-result { color: #e53935; }
 .draw .history-result { color: #b4a689; }
 
 .history-meta {

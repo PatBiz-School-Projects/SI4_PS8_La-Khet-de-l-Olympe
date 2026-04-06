@@ -333,7 +333,6 @@ class Game {
         this.nextTurn();
 
         if (this.isFinished()) {
-            this._totalMoves=0;
             this.onGameOver();
         }
 
@@ -360,6 +359,8 @@ class Game {
             return {
                 player1Id: player1.playerId,
                 player2Id: player2.playerId,
+
+                totalMoves: this._totalMoves,
 
                 userIds: [player1.userId, player2.userId],
                 usernames: {
@@ -399,6 +400,8 @@ class Game {
             winnerId: winner.playerId,
             loserId: loser.playerId,
 
+            totalMoves: this._totalMoves,
+
             userIds: [winner.userId, loser.userId],
             usernames: {
                 [winner.playerId]: winner.profile?.username, //FOR HISTORY
@@ -410,7 +413,7 @@ class Game {
             },
             results: {
                 [winner.playerId]: eloComputation[winner.playerId],
-                [loser.playerId]: eloComputation[winner.playerId],
+                [loser.playerId]: eloComputation[loser.playerId],
             },
             statsUpdates: {
                 [winner.playerId]: {won: true, newELO: eloComputation[winner.playerId].newELO},
