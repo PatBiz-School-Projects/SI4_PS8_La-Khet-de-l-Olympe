@@ -5,9 +5,9 @@ import {
     listIncomingChallenges,
     acceptChallenge,
     declineChallenge,
-    cancelChallenge,
     createChallengeSocket,
 } from '/utils/challenge.js';
+import {getPictureUrl} from '/utils/picture.js';
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
 const pictureEl = document.getElementById('profile-picture');
@@ -66,18 +66,6 @@ function bindAvatarModalEvents() {
     avatarOptions.forEach(option => {
         option.addEventListener('click', handleAvatarSelection);
     });
-}
-
-function getPictureUrl(profilePicture) {
-    if (!profilePicture) {
-        return '/assets/pharaoh-blue.png';
-    }
-
-    if (profilePicture.startsWith('http://') || profilePicture.startsWith('https://') || profilePicture.startsWith('/')) {
-        return profilePicture;
-    }
-
-    return `/assets/${profilePicture}`;
 }
 
 async function syncProfilePicture(userId,pictureUrl) {
@@ -452,14 +440,6 @@ async function loadProfile() {
         setStatValue(totalLossesEl, stats.totalLosses);
         setStatValue(winStreakEl, stats.winStreak);
         pictureEl.src = getPictureUrl(payload.profilePicture);
-        pictureEl.onerror = () => {
-            pictureEl.src = '/assets/pharaoh-blue.png';
-        };
-
-        if (ppSelector) {
-            ppSelector.value = getPictureUrl(payload.profilePicture);
-        }
-
         await loadFriendData(token);
         await loadChallengeData();
         bindChallengeSocket();

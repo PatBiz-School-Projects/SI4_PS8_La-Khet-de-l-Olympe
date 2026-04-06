@@ -6,12 +6,17 @@ const HTTPFriendsHandler = require('./friendshipHandler');
 
 const ROUTER = (new Router()
     .add("/api/users", {
-        POST: HTTPUsersHandler.createUser,
+        POST: HTTPUsersHandler.createUser
     })
+        .add("/api/users?query={}", {
+            GET: HTTPUsersHandler.findUsers,
+        })
     .add("/api/users/:userId/", {
         GET: HTTPUsersHandler.getPublicProfile,
     })
-
+        .add("/api/users/leaderboard?limit={}",{
+            GET: HTTPUsersHandler.getLeaderboard,
+        })
     .add("/api/users/connect", {
         POST: HTTPUsersHandler.connectUser,
     })
@@ -28,6 +33,7 @@ const ROUTER = (new Router()
     .add("/api/users/profile", {
         GET: HTTPUsersHandler.getProfile,
     })
+
     .add("/api/users/:userId/public-profile", {
         GET: HTTPUsersHandler.getPublicProfile,
     })
