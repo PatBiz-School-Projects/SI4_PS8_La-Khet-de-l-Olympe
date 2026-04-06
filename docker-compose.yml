@@ -11,15 +11,17 @@ x-ports:
   - &games-port "8002"
   - &auth-port  "8003"
   - &users-port "8004"
-  - &challenge-port "8005"
+  - &challenges-port "8005"
+  - &chats-port "8006"
 
 x-urls:
   - &files-url http://file-service:8001
   - &games-url http://game-service:8002
   - &auth-url  http://auth-service:8003
   - &users-url http://user-service:8004
+  - &challenges-url http://challenge-service:8005
+  - &chats-url http://chat-service:8006
   - &mongo-url mongodb://mongo:27017
-  - &challenge-url http://challenge-service:8005
 
 x-dbs:
   - &games-db games
@@ -45,13 +47,14 @@ services:
       - challenge-service
     environment:
       IS_PROD: ${IS_PROD}
+      SSL_CERTIFICATE: ${SSL_CERTIFICATE}
+      SSL_PRIVATE_KEY: ${SSL_PRIVATE_KEY}
       FILE_SERVICE_URL: *files-url
       GAME_SERVICE_URL: *games-url
       AUTH_SERVICE_URL: *auth-url
       USER_SERVICE_URL: *users-url
-      SSL_CERTIFICATE: ${SSL_CERTIFICATE}
-      SSL_PRIVATE_KEY: ${SSL_PRIVATE_KEY}
-      CHALLENGE_SERVICE_URL: *challenge-url
+      CHALLENGE_SERVICE_URL: *challenges-url
+      CHAT_SERVICE_URL: *chats-url
     ports:
       - "8000:8000"
       - "8443:8443"
@@ -102,6 +105,17 @@ services:
       mongo:
         condition: service_healthy
 
+  chat-service:
+    <<: *common
+    build:
+      context: ./services
+      dockerfile: ./chats/Dockerfile
+    networks:
+      - internal
+    environment:
+      PORT: *chats-port
+      USER_SERVICE_URL: *users-url
+
   challenge-service:
     <<: *common
     build:
@@ -110,7 +124,7 @@ services:
     networks:
       - internal
     environment:
-      PORT: *challenge-port
+      PORT: *challenges-port
       USER_SERVICE_URL: *users-url
       GAME_SERVICE_URL: *games-url
 

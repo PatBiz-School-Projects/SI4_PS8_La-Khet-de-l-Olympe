@@ -1,5 +1,5 @@
 {
-  "name": "authservice",
+  "name": "chatservice",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -11,8 +11,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "js-sha256": "^0.11.1",
-    "jsonwebtoken": "^9.0.3",
-    "mongodb": "^7.1.0"
+    "mongodb": "^7.1.1",
+    "socket.io": "^4.8.3"
   }
 }

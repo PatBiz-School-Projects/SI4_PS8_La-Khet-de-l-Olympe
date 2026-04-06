@@ -2,11 +2,14 @@ const http = require('http');
 const https = require('https');
 const httpProxy = require('http-proxy');
 
-const GAME_SERVICE_URL = process.env.GAME_SERVICE_URL;
-const FILE_SERVICE_URL = process.env.FILE_SERVICE_URL;
-const AUTH_SERVICE_URL  = process.env.AUTH_SERVICE_URL;
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
-const CHALLENGE_SERVICE_URL = process.env.CHALLENGE_SERVICE_URL;
+const {
+    GAME_SERVICE_URL,
+    FILE_SERVICE_URL,
+    AUTH_SERVICE_URL,
+    USER_SERVICE_URL,
+    CHALLENGE_SERVICE_URL,
+    CHAT_SERVICE_URL,
+} = process.env;
 
 const IS_PROD = process.env.IS_PROD === "true";
 
@@ -43,6 +46,10 @@ async function handleHTTPRequest(req, res) {
                     console.log("-> Redirection challengeService (8005)");
                     proxy.web(req, res, { target: CHALLENGE_SERVICE_URL });
                     break;
+                case "chats":
+                    console.log("-> Redirection chat-service (8006)");
+                    proxy.web(req, res, { target: CHAT_SERVICE_URL });
+                    break;
             }
 
         // If it doesn't start by /api, then it's a request for a file.
@@ -75,6 +82,10 @@ function handleWebSocket(req, socket, head) {
                 console.log("-> WS Upgrade vers ChallengeService (8005)");
                 proxy.ws(req, socket, head, { target: CHALLENGE_SERVICE_URL });
                 break;
+            case "chats":
+                console.log("-> WS Upgrade vers chat-service (8006)");
+                proxy.ws(req, socket, head, { target: CHAT_SERVICE_URL });
+                break;
         }
     }
 }
@@ -106,6 +117,8 @@ if (IS_PROD) {
 } else {
     // HTTP server
     const httpServer = http.createServer(handleHTTPRequest);
+
+    httpServer.on("upgrade", handleWebSocket);
 
     // For the server to be listening to request, it needs a port, which is set thanks to the listen function.
     httpServer.listen(8000);

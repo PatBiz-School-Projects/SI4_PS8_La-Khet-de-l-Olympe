@@ -15,7 +15,7 @@ const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 //
 
 
-exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
+exports.HTTPMiddleware_OutsideGame = (handlerCb) => async (req, res) => {
     try {
         const { userId, userToken } = parseCookies(req.headers.cookie);
         if (!userId) {
@@ -37,7 +37,7 @@ exports.HTTPMiddelware_OutsideGame = (handlerCb) => async (req, res) => {
 };
 
 
-exports.HTTPMiddelware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
+exports.HTTPMiddleware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
     try {
         const { userId, userToken } = parseCookies(req.headers.cookie);
 
@@ -72,7 +72,7 @@ exports.HTTPMiddelware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
 }
 
 
-exports.HTTPMiddelware_InsideGame = (handlerCb) => async (req, res) => {
+exports.HTTPMiddleware_InsideGame = (handlerCb) => async (req, res) => {
     try {
         const { userId, userToken } = parseCookies(req.headers.cookie);
 
@@ -471,7 +471,7 @@ exports.HTTPHandler = {
 //
 
 
-exports.SocketIOMiddelware = (socket, next) => {
+exports.SocketIOMiddleware = (socket, next) => {
     try {
         const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
         const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
