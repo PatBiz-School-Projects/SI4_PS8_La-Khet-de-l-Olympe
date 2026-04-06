@@ -6,8 +6,7 @@ const { PlayersManager } = require("./PlayersManager");
 
 const { RandomAI, MiniMaxAI } = require("./ai/ai");
 
-
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
+const { USER_SERVICE_URL, CHAT_SERVICE_URL } = process.env;
 
 
 //
@@ -190,32 +189,72 @@ exports.HTTPHandler = {
     },
 
     joinMultiplayerGame: async (req, res) => {
+        const { playerId } = await readJsonBody(req);
+
         let player;
-        let requestedGameId;
         try {
-            const { playerId, gameId } = await readJsonBody(req);
             player = PlayersManager.getPlayerById(playerId);
-            requestedGameId = gameId;
         } catch (err) {
-            console.error(err)
-            sendJson(res, 400, { ok: false, error: err.message });
+            console.error(err);
+            sendJson(res, 404, { ok: false, error: err.message });
+            return;
+        }
+
+        const gameId = GamesManager.findRoomFor(player);
+
+        // Open game chat
+        await fetch(`${CHAT_SERVICE_URL}/internal/api/chats/new-chat?chatId=${gameId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({/* nothing */}),
+        })
+
+        // Register user in the chat
+        await fetch(`${CHAT_SERVICE_URL}/internal/api/chats/${gameId}/add-user/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: player.userId }),
+        });
+
+        sendJson(res, 200, { ok: true, gameId });
+    },
+
+    joinPrivateMultiplayerGame: async (req, res) => {
+        const { playerId, gameId } = await readJsonBody(req);
+
+        let player;
+        try {
+            player = PlayersManager.getPlayerById(playerId);
+        } catch (err) {
+            console.error(err);
+            sendJson(res, 404, { ok: false, error: err.message });
             return;
         }
 
         try {
-            if (requestedGameId) {
-                GamesManager.registerPlayerInRoom(player, requestedGameId);
-                sendJson(res, 200, { ok: true, gameId: requestedGameId });
-                return;
-            }
-
-            const resolvedGameId = GamesManager.findRoomFor(player);
-            console.log(GamesManager.waitingRoomsId)
-            sendJson(res, 200, { ok: true, gameId: resolvedGameId });
+            GamesManager.registerPlayerInRoom(player, gameId);
         } catch (err) {
-            console.error(err)
+            console.error(err);
             sendJson(res, 400, { ok: false, error: err.message });
+            return;
         }
+
+        // Open game chat
+        await fetch(`${CHAT_SERVICE_URL}/internal/api/chats/new-chat?chatId=${gameId}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({/* nothing */}),
+        })
+
+        // Register user in the chat
+        await fetch(`${CHAT_SERVICE_URL}/internal/api/chats/${gameId}/add-user/`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: player.userId }),
+        });
+
+        // REVIEW : Useless as the gameId was already provided
+        sendJson(res, 200, { ok: true, gameId });
     },
 
     openMultiplayerRoom: async (req, res) => {
@@ -496,7 +535,7 @@ exports.SocketIOMiddleware = (socket, next) => {
         }
     } catch (err) {
         console.error("Rejected socket bcs:", err);
-        return next(err)
+        return next(err);
     }
 
     return next();

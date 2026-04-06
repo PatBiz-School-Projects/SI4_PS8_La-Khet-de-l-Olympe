@@ -133,9 +133,15 @@ header {
         display: block;
         flex-shrink: 0;
     }
+
+    #player1-rotation-indicator {
+        left: var(--h-padding);
+    }
+
+    #player2-rotation-indicator {
+        right: var(--h-padding);
+    }
 }
-#player1-rotation-indicator { left: var(--h-padding); }
-#player2-rotation-indicator { right: var(--h-padding); }
 
 
 #game-over-overlay {
@@ -206,5 +212,6 @@ header {
     }
 }
 
-#player1-rotation { left: var(--h-padding); }
-#player2-rotation { right: var(--h-padding); }
+chat-box {
+    z-index: 2000;
+}
