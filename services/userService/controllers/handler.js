@@ -99,26 +99,26 @@ exports.disconnectUser = async (req, res) => {
 }
 
 exports.getProfile = async (req, res) => {
-    try{
-        const token = extractToken(req, null);
-        if (!token) {
-            sendJson(res, 401, "MISSING_TOKEN");
-            return;
-        }
-        const userId = extractUserId(token);
-        const user = await usersRepository.findUserByAuthId(userId);
-        if (!user) {
-            sendJson(res, 404, "USER_NOT_FOUND");
-            return;
-        }
+    const token = extractToken(req, null);
+    if (!token) {
+        sendJson(res, 401, "MISSING_TOKEN");
+        return;
+    }
 
+    const { userId } = req.routeParams;
+
+    const user = await usersRepository.findUserByAuthId(userId);
+    if (!user) {
+        sendJson(res, 404, "USER_NOT_FOUND");
+        return;
+    }
+
+    try{
         const newAchievements = achievementsManager.checkNewAchievements(user);
 
         if (newAchievements.length > 0) {
-
             const newAchievementIds = newAchievements.map(a => a.id);
             await usersRepository.addAchievements(user.id, newAchievementIds);
-
         }
 
         const userFriends = await friendshipManager.getAllFriends(userId);
@@ -210,7 +210,7 @@ exports.getAchievementsCatalogue = async (req, res) => {
         console.error("Erreur getAchievementsCatalogue:", error);
         return sendJson(res, 500, { ok: false, error: "INTERNAL_SERVER_ERROR" });
     }
-
+}
 
 exports.findUsers =  async (req, res) => {
     try{
@@ -298,6 +298,7 @@ exports.getUserLiveStats = async (req, res) => {
         // Add more if needed
     });
 }
+
 exports.updateUserProfilePicture = async (req,res) =>{
     try{
 

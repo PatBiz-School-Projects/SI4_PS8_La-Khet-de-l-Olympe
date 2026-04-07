@@ -1,8 +1,8 @@
-import { getCookie,setCookie, removeAllCookies } from "/utils/cookie.js";
+import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
-import {ensureValidAccessToken,clearAuthTokens,authenticatedFetch} from "/utils/auth.js";
-import {getPictureUrl} from "/utils/picture.js";
-import {sendChallenge} from "/utils/challenge.js";
+import { ensureValidAccessToken, clearAuthTokens, authenticatedFetch } from "/utils/auth.js";
+import { getPictureUrl } from "/utils/picture.js";
+import { sendChallenge } from "/utils/challenge.js";
 
 
 /**
@@ -517,12 +517,12 @@ function toggleAuthenticatedView(isLoggedIn) {
     }
 }
 
-function applySidebarIdentity(username,profilePicture){
+function applySidebarIdentity(username, profilePicture) {
     sidebarUsername.textContent = username;
     sidebarAvatar.src = profilePicture;
 }
-async function loadSidebarProfile(){
-    const response = await authenticatedFetch("/api/users/profile",{
+async function loadSidebarProfile() {
+    const response = await authenticatedFetch(`/api/users/${currentUserId}/minimal-profile`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -530,7 +530,7 @@ async function loadSidebarProfile(){
     applySidebarIdentity(profile.username, profile.profilePicture);
 }
 
-window.onload = async () => {
+onload = async () => {
     showMainPanel("play");
     const token = await ensureValidAccessToken();
 

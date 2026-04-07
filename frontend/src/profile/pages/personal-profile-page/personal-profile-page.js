@@ -556,7 +556,7 @@ async function loadProfile() {
     }
 
     try {
-        const response = await authenticatedFetch('/api/users/profile', {
+        const response = await authenticatedFetch(`/api/users/${getUserIdFromToken(token)}/profile`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
