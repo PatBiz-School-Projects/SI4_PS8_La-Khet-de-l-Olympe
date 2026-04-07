@@ -6,17 +6,17 @@ const HTTPFriendsHandler = require('./friendshipHandler');
 
 const ROUTER = (new Router()
     .add("/api/users", {
-        POST: HTTPUsersHandler.createUser
+        POST: HTTPUsersHandler.createUser,
     })
-        .add("/api/users?query={}", {
-            GET: HTTPUsersHandler.findUsers,
-        })
+    .add("/api/users?query={}", {
+        GET: HTTPUsersHandler.findUsers,
+    })
     .add("/api/users/:userId/", {
         GET: HTTPUsersHandler.getPublicProfile,
     })
-        .add("/api/users/leaderboard?limit={}",{
-            GET: HTTPUsersHandler.getLeaderboard,
-        })
+    .add("/api/users/leaderboard?limit={}",{
+        GET: HTTPUsersHandler.getLeaderboard,
+    })
     .add("/api/users/connect", {
         POST: HTTPUsersHandler.connectUser,
     })
@@ -30,10 +30,10 @@ const ROUTER = (new Router()
         GET: HTTPUsersHandler.isUserConnected,
     })
 
-    .add("/api/users/profile", {
+    .add("/api/users/:userId/profile", {
         GET: HTTPUsersHandler.getProfile,
+        POST: HTTPUsersHandler.updateUserProfilePicture,
     })
-
     .add("/api/users/:userId/public-profile", {
         GET: HTTPUsersHandler.getPublicProfile,
     })
@@ -45,13 +45,11 @@ const ROUTER = (new Router()
         GET: HTTPUsersHandler.getUserStats,
         POST: HTTPUsersHandler.updateUserStats,
     })
-    .add("/api/users/:userId/profile", {
-        POST: HTTPUsersHandler.updateUserProfilePicture})
     .add("/api/users/:userId/live-stats", {
         GET: HTTPUsersHandler.getUserLiveStats,
     })
     .add("/api/users/achievements/catalogue",{
-        GET:HTTPUsersHandler.getAchievementsCatalogue
+        GET:HTTPUsersHandler.getAchievementsCatalogue,
     })
     .add("/api/users/friends", {
         GET: HTTPFriendsHandler.handleListFriends,
@@ -65,7 +63,7 @@ const ROUTER = (new Router()
         DELETE: HTTPFriendsHandler.handleDeleteRequest,
     })
     .add("/api/users/friends/requests", {
-        GET: HTTPFriendsHandler.handleListRequests
+        GET: HTTPFriendsHandler.handleListRequests,
     })
 );
 
