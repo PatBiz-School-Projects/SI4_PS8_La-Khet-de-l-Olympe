@@ -109,7 +109,7 @@ module.exports = {
     findUserByAuthId,
     updateUserStats,
     updateProfilePicture,
-    addAchievements
+    addAchievements,
     findUserByQuery,
-    findTopUsersByElo
+    findTopUsersByElo,
 };
