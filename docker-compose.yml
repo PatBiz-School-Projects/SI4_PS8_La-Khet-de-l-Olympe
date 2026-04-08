@@ -81,6 +81,7 @@ services:
     build:
       context: ./services
       dockerfile: ./userService/Dockerfile
+      network: host
     networks:
       - internal
     environment:
