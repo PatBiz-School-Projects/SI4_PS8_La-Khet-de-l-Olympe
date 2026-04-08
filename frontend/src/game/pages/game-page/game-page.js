@@ -1,6 +1,6 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-import { GameBoard, GameTurnIndicator, GamePlayerInventory, GameRotationIndicator } from "/game/components/index.js";
+import { GameActionTimer, GameBoard, GamePlayerInventory, GameRotationIndicator, GameTurnIndicator } from "/game/components/index.js";
 
 import { Piece } from "/game/logic/board/Piece.js";
 import { GameActionType } from "/game/logic/GameAction.js";
@@ -16,7 +16,7 @@ import { ChatBox } from "/chat/components/chat-box/chat-box.js";
 import { getCookie } from "/utils/cookie.js";
 import { EventQueue } from "/utils/event.js";
 // REVIEW : It's a feature instead of an utils
-import {sendChallenge} from "/utils/challenge.js"
+import { sendChallenge } from "/utils/challenge.js"
 
 
 //
@@ -28,6 +28,8 @@ import {sendChallenge} from "/utils/challenge.js"
 const board = document.querySelector("game-board");
 /** @type { GameTurnIndicator } */
 const turnIndicator = document.querySelector("game-turn-indicator");
+/** @type { GameActionTimer } */
+const actionTimer = document.querySelector("game-action-timer");
 /** @type { GamePlayerInventory } */
 const player1Inventory = document.querySelector("game-player-inventory#player1-inventory");
 /** @type { GamePlayerInventory } */
@@ -353,6 +355,10 @@ gameSocket.on("game-over", gameEventQueue.enqueue(payload => {
     showGameOver(payload);
 }));
 
+gameSocket.on("action-timer-sync", async ({remainingTime}) => {
+    actionTimer.onTimerSync(remainingTime);
+});
+
 
 onclick = (event) => {
     if (isGameOver) {
@@ -361,6 +367,7 @@ onclick = (event) => {
 
     stateMachine.on(clickHandler.computePageAction(event));
 };
+
 
 player1Inventory.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
@@ -382,7 +389,7 @@ chatSocket.on("new-message", ({message}) => {
     console.log(`Sending message on in-game chat from "${message.author.username}":\n${message.content}`);
 
     chatBox.onNewMessage(message);
-})
+});
 
 chatBox.addEventListener("send-message", event => {
     const content = event.detail.content;
