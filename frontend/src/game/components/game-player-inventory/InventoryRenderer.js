@@ -110,11 +110,11 @@ export class InventoryRenderer {
         const size = this.slotSize;
 
         // Slot background
-        ctx.fillStyle = "#2c3e50";
+        ctx.fillStyle = "#a9823f";
         ctx.fillRect(x, y, size, size);
 
         // Slot border
-        ctx.strokeStyle = "#e5dec4";
+        ctx.strokeStyle = "#6e522f";
         ctx.lineWidth = 2;
         ctx.strokeRect(x + 1, y + 1, size - 2, size - 2);
     }
