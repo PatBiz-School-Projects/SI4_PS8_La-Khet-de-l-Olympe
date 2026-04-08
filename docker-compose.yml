@@ -39,6 +39,7 @@ services:
     <<: *common
     build:
       context: ./services/gateway
+      network: host
     depends_on:
       - game-service
       - auth-service
@@ -66,6 +67,7 @@ services:
     <<: *common
     build:
       context: ./services/files
+      network: host
     environment:
       PORT: *files-port
     volumes:
@@ -94,6 +96,7 @@ services:
     build:
       context: ./services
       dockerfile: ./gameService/Dockerfile
+      network: host
     networks:
       - internal
     environment:
@@ -111,6 +114,7 @@ services:
     build:
       context: ./services
       dockerfile: ./chats/Dockerfile
+      network: host
     networks:
       - internal
     environment:
@@ -122,6 +126,7 @@ services:
     build:
       context: ./services
       dockerfile: ./challengeService/Dockerfile
+      network: host
     networks:
       - internal
     environment:
@@ -134,6 +139,7 @@ services:
     build:
       context: ./services
       dockerfile: ./auth/Dockerfile
+      network: host
     environment:
       PORT:                 *auth-port
       JWT_SECRET:           ${JWT_SECRET}
