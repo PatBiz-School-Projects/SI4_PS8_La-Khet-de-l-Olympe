@@ -21,7 +21,7 @@ class ActionTimer {
             const remainingTime = Math.max(0, ActionTimer.ACTION_MAX_DURATION - elapsed);
 
             this.game.players.forEach(player => {
-                player.socket.emit("action-timer-sync", {remainingTime});
+                player.socket?.emit("action-timer-sync", {remainingTime});
             });
         }, ActionTimer.TICK_INTERVAL);
 
