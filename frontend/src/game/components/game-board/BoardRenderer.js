@@ -138,7 +138,13 @@ export class BoardRenderer {
 
         // pos = this._convCoordToCanvasCoord(pos);
 
-        ctx.fillStyle = "orange";
+        const isEven = (pos.x + pos.y) % 2 === 0;
+
+
+        const colorDark = "#8a6a4a";
+        const colorLight = "#d8c7a1";
+
+        ctx.fillStyle = isEven ? colorDark : colorLight;
         ctx.fillRect(
             pos.x * this.cellSize,
             pos.y * this.cellSize,
@@ -146,7 +152,7 @@ export class BoardRenderer {
             this.cellSize
         );
 
-        ctx.strokeStyle = "black";
+        ctx.strokeStyle = "rgba(201, 168, 76, 0.25)";
         ctx.strokeRect(
             pos.x * this.cellSize,
             pos.y * this.cellSize,
@@ -188,6 +194,8 @@ export class BoardRenderer {
 
         await this.clearLaserCanvas();
 
+        ctx.save();
+
         const startingX = coverage[0].x;
         const startingY = coverage[0].y;
         const startingPosition = {
@@ -197,7 +205,7 @@ export class BoardRenderer {
 
         ctx.beginPath();
         ctx.moveTo(startingPosition.y, startingPosition.x); //switched
-        ctx.strokeStyle='red';
+        //ctx.strokeStyle='#ffb347';
         ctx.lineWidth = 3;
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
@@ -215,6 +223,22 @@ export class BoardRenderer {
             ctx.lineTo(newPosition.y, newPosition.x); //switched
             i++;
         }
+        ctx.strokeStyle = "rgba(255, 179, 71, 0.4)";
+        ctx.lineWidth = 16;
+        ctx.shadowColor = "#FFB347";
+        ctx.shadowBlur = 20;
+        ctx.stroke();
+
+        ctx.strokeStyle = "#FFD86B";
+        ctx.lineWidth = 6;
+        ctx.shadowColor = "#FFD86B";
+        ctx.shadowBlur = 10;
+        ctx.stroke();
+
+        ctx.strokeStyle = "#FFF4B0";
+        ctx.lineWidth = 2;
+        ctx.shadowColor = "#FFF4B0";
+        ctx.shadowBlur = 5;
         ctx.stroke();
 
         ctx.restore();
