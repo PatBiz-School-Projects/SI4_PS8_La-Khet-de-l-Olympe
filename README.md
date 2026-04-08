@@ -47,10 +47,6 @@ node services/challengeService/index.js
 node services/chats/index.js
 ```
 
-### Testing procedure
-
-There is currently **no automated test suite**.
-
 ## Functional Features Implemented
 
 ## Authentication & Account Management
@@ -100,23 +96,18 @@ There is currently **no automated test suite**.
 - Send challenge to another user.
 - List incoming challenges.
 - Accept/decline/cancel challenge.
-- Real-time challenge notifications.
 
 ## Chat Systems Implemented
 
-Three namespaces are handled by the chat service:
-
-- `/global-chat`
-- `/friend-chat`
-- `/game-chat`
-
-Current production flow is centered on **game chat** integration (chat bound to a game room).
+- **Two chats are implemented:**:
+    1. Global-chat.
+    2. Game-chat.
 
 ### Usage restrictions
 
 - Access requires authentication cookies (`userId`, `userToken`).
 - Each chat is restricted to authorized users only.
-- Message history is paginated on HTTP retrieval.
+- Playing a multiplayer, checking personal profile are also restricted to authorized users
 
 ## Progression, Achievements, Ranking
 
@@ -128,8 +119,6 @@ Current production flow is centered on **game chat** integration (chat bound to 
     - 50 wins
     - 5-win streak
     - First connection
-
-> Note: No explicit “league tier” system (Bronze/Silver/etc.) is currently defined; progression is ELO-driven.
 
 ---
 
@@ -156,9 +145,8 @@ The platform is split into focused services:
 
 #### Difficulties encountered / what could be improved
 
-- Some flows span multiple services (e.g., challenge → game room → chat room), increasing orchestration complexity.
+- Some flows go through multiple services (e.g., challenge → game room → chat room), increasing risks of network errors.
 - Cookie-based context (`gameId`) is practical but limits simultaneous games per user session.
-- In-memory state in some services is simple for development but should be externalized (shared persistent store/message bus) for horizontal scaling.
 
 ### HTTP vs WebSocket strategy
 
@@ -189,14 +177,9 @@ Connection initiation:
 
 Why this choice is relevant:
 
-- Real-time gameplay/chat/challenge UX requires low-latency push events.
+- Real-time gameplay/chat/challenge UX requires low-latency events and need to be run all the time.
 - HTTP remains simpler for CRUD-like and transactional operations.
-- This hybrid model keeps protocol usage aligned with feature semantics.
 
 ---
 
-## Additional Documentation
 
-For front-end architecture details, see the files service README:
-
-- [`services/files/README.md`](services/files/README.md)
