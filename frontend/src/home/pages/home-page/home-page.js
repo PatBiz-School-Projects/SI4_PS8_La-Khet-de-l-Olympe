@@ -494,10 +494,7 @@ profileChipBtn.onclick = async () => {
     window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
 };
 
-const profileRightBtn = document.getElementById("profile-right-btn");
-profileRightBtn.onclick = async() => {
-    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
-}
+
 
 function toggleAuthenticatedView(isLoggedIn) {
     signupBtn.style.display = isLoggedIn ? "none" : "flex";
@@ -505,7 +502,6 @@ function toggleAuthenticatedView(isLoggedIn) {
     profileBtn.style.display = isLoggedIn ? "flex" : "none";
     logoutBtn.style.display = isLoggedIn ? "flex" : "none";
     joinMultiplayerBtn.style.display = isLoggedIn ? "flex" : "none";
-    profileRightBtn.style.display = isLoggedIn ? "inline-block" : "none";
     sidebarStatus.textContent = isLoggedIn ? "En ligne" : "Hors ligne";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
