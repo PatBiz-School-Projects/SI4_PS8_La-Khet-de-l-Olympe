@@ -1,59 +1,202 @@
-# PS8
+# Khet de l'Olympe — Project Report
 
-## Requirements
+## Team
 
-Node.js is the only requirement.
-
-## Install
-
-- Clone the repository
-- In each project inside `services/` run `npm install` to download all the dependencies.
-
-Note: this command should be run again every time you install/delete a package (which should not happen a lot)
-
-## Run
-
-In each project, run `node index.js` so the server will start listening to requests.
+- **Team name:** La Khet de l'Olympe
+- **Members:**
+    - Nicolas Malay
+    - Patrick Bizot
+    - Ismail Guerraoui
 
 ---
 
-## Docker Compose
+## Installation & Launch Procedure
 
-Use Docker Compose to run all services together (gateway + file service + game service + auth service + MongoDB):
+### Prerequisites
+
+- Node.js 20
+- Docker + Docker Compose
+
+### Environment setup
+
+1. Clone the repository.
+2. Copy the sample environment file and fill the required values:
+    - `cp secrets.env.example secrets.env`
+
+### Run with Docker (recommended)
+
+From the project root:
 
 ```bash
 docker compose up --build
 ```
 
-The gateway is exposed on `http://localhost:8000` and forwards requests to the other services inside the Docker network. The other services (including MongoDB) are only reachable by other containers.
+Gateway entrypoint: `http://localhost:8000`.
 
-## Architecture
+### Run manually (without Docker)
 
-In the `services/` folder you will find all the projects that makes your website. Each subfolder is a node.js project
-that contains:
-- A `package.json` (and potentially some `node_modules`)
-- An `index.js` file which is an HTTP server able to received requests
-- Some logic used for the service to work correctly
+Start each service independently (with matching environment variables):
 
+```bash
+node services/gateway/index.js
+node services/files/index.js
+node services/auth/index.js
+node services/gameService/index.js
+node services/userService/index.js
+node services/challengeService/index.js
+node services/chats/index.js
+```
+
+### Testing procedure
+
+There is currently **no automated test suite**.
+
+## Functional Features Implemented
+
+## Authentication & Account Management
+
+- Sign up with:
+    - username
+    - password
+    - secret question + answer
+- Login / token verification / access token renewal.
+- Logout with cookie cleanup.
+- **Forgot password flow implemented**:
+    1. User provides username.
+    2. System returns stored secret question.
+    3. User submits answer + new password.
+    4. Password is reset if answer is valid.
+
+## User Profile & Social Features
+
+- Player profile with:
+    - username
+    - profile picture
+    - ELO
+    - win/loss statistics
+    - winstreak information
+- Public profile page and personal profile page.
+- User search by username.
+- Friends system:
+    - send request
+    - list incoming requests
+    - accept/remove requests
+    - list friends
+- Connected users tracking (online/offline distinction).
+
+## Game Modes & Match Flow
+
+- Solo mode (with AI).
+- Local multiplayer mode.
+- Online multiplayer mode through rooms/challenges.
+- Waiting room before multiplayer game starts.
+- In-game actions (movement/rotation/placement according to rules).
+- Turn handling + active player tracking.
+- Game end handling with stat updates.
+- Match history retrieval.
+
+## Challenges
+
+- Send challenge to another user.
+- List incoming challenges.
+- Accept/decline/cancel challenge.
+- Real-time challenge notifications.
+
+## Chat Systems Implemented
+
+Three namespaces are handled by the chat service:
+
+- `/global-chat`
+- `/friend-chat`
+- `/game-chat`
+
+Current production flow is centered on **game chat** integration (chat bound to a game room).
+
+### Usage restrictions
+
+- Access requires authentication cookies (`userId`, `userToken`).
+- Each chat is restricted to authorized users only.
+- Message history is paginated on HTTP retrieval.
+
+## Progression, Achievements, Ranking
+
+- ELO-based ranking with win/loss updates.
+- Win-streak bonus integrated in ELO progression.
+- Leaderboard endpoint + UI display.
+- Achievements catalogue implemented, including:
+    - First win
+    - 50 wins
+    - 5-win streak
+    - First connection
+
+> Note: No explicit “league tier” system (Bronze/Silver/etc.) is currently defined; progression is ELO-driven.
 
 ---
 
-At the start of your project, there are 2 services:
-- `gateway` which is the clients' entry point. It receives all the requests and then redirect them to the correct service.
-- `files` which is used to serve files. It is where your front files will go
+## Back-end Architecture Strategy
+
+### Service decomposition
+
+The platform is split into focused services:
+
+- **Gateway**: single external entrypoint, routes HTTP/WS traffic to internal services.
+- **Files service**: serves static front-end files/assets.
+- **Auth service**: registration, login, token lifecycle, password reset.
+- **User service**: profiles, friends, connected users, achievements, leaderboard/stats.
+- **Game service**: game state, turn logic, board/inventory actions, game lifecycle.
+- **Challenge service**: challenge orchestration and challenge-state transitions.
+- **Chat service**: chat rooms, history, and real-time messaging.
+
+#### Why this split made sense
+
+- Clear business boundaries (auth/user/game/chat/challenge).
+- Better maintainability: each domain can evolve independently.
+- Easier debugging and ownership by feature area.
+- Natural fit for different communication patterns (REST for request/response, WebSocket for real-time interactions).
+
+#### Difficulties encountered / what could be improved
+
+- Some flows span multiple services (e.g., challenge → game room → chat room), increasing orchestration complexity.
+- Cookie-based context (`gameId`) is practical but limits simultaneous games per user session.
+- In-memory state in some services is simple for development but should be externalized (shared persistent store/message bus) for horizontal scaling.
+
+### HTTP vs WebSocket strategy
+
+#### HTTP (request/response, deterministic operations)
+
+Used for:
+
+- Authentication operations (signup/login/renew/logout/forgot-password).
+- Profile and social operations (friends, search, stats, leaderboard).
+- Game commands and state fetches (create/join/action/get board/inventory/player state).
+- Challenge creation/list/accept/decline/cancel.
+- Chat history retrieval.
+
+HTTP is initiated mostly by the **front-end client** through the gateway, and by services for internal orchestration when needed.
+
+#### WebSocket (real-time events)
+
+Used for:
+
+- **Game service**: real-time match events (turn transitions, opponent actions, start/end dynamics).
+- **Chat service**: instant message broadcasting in chat rooms.
+- **Challenge service**: real-time challenge notifications to targeted users.
+
+Connection initiation:
+
+- Client opens Socket.IO connections via gateway (upgrade proxied to relevant service).
+- Services emit server-side events to connected clients/rooms.
+
+Why this choice is relevant:
+
+- Real-time gameplay/chat/challenge UX requires low-latency push events.
+- HTTP remains simpler for CRUD-like and transactional operations.
+- This hybrid model keeps protocol usage aligned with feature semantics.
 
 ---
 
-To create a new service:
-- Create a new folder inside `services/`
-- Run `npm init -y` inside the created folder
-- Create an `index.js` containing an HTTP server (and listening to a new port)
-- Add any logic you want
+## Additional Documentation
 
----
+For front-end architecture details, see the files service README:
 
-To call a service:
-
-2 external packages are allowed to transfer a request:
-- `http-proxy` allows you to easily transfer a request "as-is" to another HTTP Server (you have an example in the gateway service)
-- `axios` to perform specific REST requests.
+- [`services/files/README.md`](services/files/README.md)
