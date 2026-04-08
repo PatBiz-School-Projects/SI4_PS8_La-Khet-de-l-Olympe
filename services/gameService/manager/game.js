@@ -6,6 +6,7 @@ const { Piece }     = require("../entities/piece");
 
 const { LaserService } = require("./laserService");
 const { ActionValidator } = require("./ActionValidator");
+const { ActionTimer } = require("./ActionTimer");
 
 const { computeEloWithWinStreak, computeEloOnDraw } = require("./elo");
 
@@ -93,6 +94,8 @@ class Game {
         this.board.init();
         this.laserService = new LaserService(this.board);
         this.actionValidator = new ActionValidator(this);
+        this.actionTimer = new ActionTimer(this);
+        this.actionTimer.start();
 
         this.ACTIONS = {
             move: ({playerId, piece, from, to}) => {
@@ -245,7 +248,6 @@ class Game {
 
 
     nextTurn() {
-
         if (this.isFinished()) {
             return;
         }
@@ -262,11 +264,14 @@ class Game {
         if (this._turnCount > Game.TURN_LIMIT) {
             this._state = GameState.DRAW;
         }
+
         setTimeout(()=> {
             this._currActivePlayer.socket.emit("start-turn", {
                 playerId: this._currActivePlayer.playerId
             });
-        },500);
+
+            this.actionTimer.start();
+        }, 500);
     }
 
 
@@ -279,19 +284,16 @@ class Game {
         const {path, destroyedPieces} = this.laserService.fireLaser(this.currActivePlayer);
 
         for (const piece of destroyedPieces) {
-            if(piece.type === "Pharaoh"){
+            if (piece.type === "Pharaoh") {
                 this._state = GameState.GAME_OVER;
                 if (this._winner !== null) {
                     this._state = GameState.DRAW;
                     this._winner = null;
-
-                }
-                else{
+                } else {
                     this._winner= this.players.find(player =>
                         player.playerId !== piece.owner
                     );
                 }
-
             } else {
                 if (piece.type === "Pyramid") {
                     const opponent = this.players.filter(player => player !== this._currActivePlayer)[0];
