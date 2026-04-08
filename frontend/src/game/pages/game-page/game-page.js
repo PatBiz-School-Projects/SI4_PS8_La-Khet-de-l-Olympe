@@ -478,7 +478,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             })
         });
         if (!moveResponse.ok) {
-            throw moveResponse.error;
+            throw new Error((await moveResponse.json()).error);
         }
 
         actionResult = (await moveResponse.json()).result;
@@ -525,7 +525,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             }),
         });
         if (!placeResponse.ok) {
-            throw placeResponse.error;
+            throw new Error((await placeResponse.json()).error);
         }
 
         actionResult = (await placeResponse.json()).result;
@@ -569,7 +569,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
             })
         });
         if (!rotateResponse.ok) {
-            throw rotateResponse.error;
+            throw new Error((await rotateResponse.json()).error);
         }
 
         actionResult = (await rotateResponse.json()).result;
@@ -612,6 +612,9 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
         if (!switchResponse.ok) {
             // Simulate click on `piece2` at `pos2` in case the switch action is refused
             stateMachine.on({
+                type: GamePageActionType.CANCEL,
+            })
+            stateMachine.on({
                 type: GamePageActionType.CLICKED_PIECE_ON_BOARD,
                 payload: {
                     pos: pos2,
@@ -619,7 +622,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
                 },
             })
 
-            throw switchResponse.error;
+            throw new Error((await switchResponse.json()).error);
         }
 
         actionResult = (await switchResponse.json()).result;
