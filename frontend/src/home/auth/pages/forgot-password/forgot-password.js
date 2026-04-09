@@ -20,8 +20,7 @@ loadQuestionButton.addEventListener('click', async () => {
         return;
     }
 
-    loadQuestionButton.disabled = true;
-    loadQuestionButton.textContent = 'Chargement...';
+    loadQuestionButton.style.display = 'none';
 
     try {
         const response = await fetch('/api/auth/forgot-password/question', {
@@ -40,12 +39,10 @@ loadQuestionButton.addEventListener('click', async () => {
 
         form.elements.question.value = payload.question;
         questionBlock.classList.remove('hidden');
-        setStatus('Question chargée. Entrez votre réponse et un nouveau mot de passe.', 'ok');
     } catch (error) {
         setStatus('Erreur réseau. Réessayez.', 'error');
     } finally {
         loadQuestionButton.disabled = false;
-        loadQuestionButton.textContent = 'Afficher ma question';
     }
 });
 

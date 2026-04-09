@@ -1,7 +1,16 @@
 :root {
-    font-family: "Fauna One", serif;
-    background: #f6f2e8;
-    color: #2e2a24;
+    --bg-deep: #0a0a0f;
+    --bg-night: #121016;
+    --text-main: #e8dfc0;
+    --text-muted: #8a7d5a;
+    --gold: #c9a84c;
+    --gold-soft: #7a6028;
+    --danger: #ff9f93;
+    --success: #7de2ac;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
@@ -10,54 +19,100 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 20px;
+    background: radial-gradient(ellipse at 20% 30%, rgba(100, 70, 10, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 70%, rgba(60, 40, 120, 0.16) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 100%, rgba(180, 120, 20, 0.12) 0%, transparent 40%),
+    linear-gradient(150deg, var(--bg-night), var(--bg-deep));
+    color: var(--text-main);
+    font-family: 'Cinzel', serif;
 }
 
 .auth-card {
-    background: #fff9ee;
-    border: 1px solid #e0d6c7;
-    border-radius: 12px;
-    padding: 32px;
-    width: min(420px, 92vw);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08);
+    width: min(520px, 95vw);
+    border-radius: 20px;
+    border: 1px solid rgba(212, 177, 106, 0.25);
+    background: linear-gradient(145deg, rgba(25, 20, 16, 0.92), rgba(14, 12, 10, 0.96));
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
+    padding: clamp(24px, 4vw, 34px);
 }
 
 .auth-card h1 {
-    font-family: "Cinzel", serif;
     margin-top: 0;
     margin-bottom: 8px;
+    font-family: "Cinzel", serif;
+    letter-spacing: 0.04em;
+    color: #f0d080;
 }
 
 .auth-card p {
     margin-top: 0;
-    color: #5a5248;
+    color: var(--text-muted);
 }
 
 .auth-card label {
     display: block;
     margin-top: 16px;
+    font-size: 0.9rem;
     font-weight: 700;
+    letter-spacing: 0.04em;
 }
 
 .auth-card input {
     width: 100%;
+    min-height: 44px;
     padding: 10px 12px;
     margin-top: 8px;
-    border-radius: 8px;
-    border: 1px solid #c9bda9;
-    background: #fff;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(8, 10, 18, 0.92);
+    color: var(--text-main);
     font-size: 1rem;
+}
+
+.auth-card input::placeholder {
+    color: rgba(232, 223, 192, 0.45);
+}
+
+.auth-card input:focus {
+    outline: none;
+    border-color: rgba(212, 177, 106, 0.65);
+    box-shadow: 0 0 0 3px rgba(212, 177, 106, 0.15);
+}
+
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus,
+.auth-card input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--text-main);
+    caret-color: var(--text-main);
+    -webkit-box-shadow: 0 0 0 1000px rgba(8, 10, 18, 0.92) inset;
+    box-shadow: 0 0 0 1000px rgba(8, 10, 18, 0.92) inset;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: background-color 9999s ease-in-out 0s;
 }
 
 .auth-card button {
     width: 100%;
     margin-top: 20px;
-    padding: 12px;
-    border: none;
-    border-radius: 8px;
-    background: #3b5b70;
-    color: #fff;
-    font-size: 1rem;
+    min-height: 44px;
+    border: 1px solid rgba(212, 177, 106, 0.48);
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.22), rgba(201, 168, 76, 0.08));
+    color: #f0e5ca;
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     cursor: pointer;
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    font-family: 'Cinzel', serif;
+}
+
+.auth-card button:hover {
+    transform: translateY(-1px);
+    border-color: var(--gold);
+    background: linear-gradient(135deg, rgba(201, 168, 76, 0.34), rgba(201, 168, 76, 0.12));
 }
 
 .auth-card button:disabled {
@@ -68,14 +123,15 @@ body {
 .auth-card .status {
     margin-top: 16px;
     font-size: 0.95rem;
+    min-height: 20px;
 }
 
 .auth-card .status.ok {
-    color: #1b6b3b;
+    color: var(--success);
 }
 
 .auth-card .status.error {
-    color: #a43728;
+    color: var(--danger);
 }
 
 .auth-card .helper {
@@ -84,5 +140,5 @@ body {
 }
 
 .auth-card a {
-    color: #3b5b70;
+    color: #f0d080;
 }

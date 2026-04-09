@@ -81,7 +81,6 @@ function renderLeaderboard(users) {
 }
 
 async function loadLeaderboard(limit = 10) {
-    setLeaderboardStatus("Chargement du panthéon...");
     leaderboardList.innerHTML = "";
 
     try {
@@ -178,7 +177,6 @@ function renderFriendsList(targetElement, friends, canChallenge) {
 }
 
 async function loadFriendsPanel() {
-    setFriendsStatus("Chargement de vos amis...");
     friendsOnlineList.innerHTML = "";
     friendsOfflineList.innerHTML = "";
     friendsOnlineEmpty.hidden = true;
@@ -219,10 +217,6 @@ async function loadFriendsPanel() {
 
     friendsOnlineEmpty.hidden = onlineFriends.length !== 0;
     friendsOfflineEmpty.hidden = offlineFriends.length !== 0;
-
-    setFriendsStatus(
-        `${onlineFriends.length} ami(s) en ligne • ${offlineFriends.length} hors ligne.`
-    );
 }
 function renderSearchResults(users) {
     searchResults.innerHTML = "";
@@ -373,10 +367,10 @@ async function logout() {
     }
 }
 
-const signupBtn = document.getElementById("signup-btn");
+const signupBtn = document.getElementById("top-signup-btn");
 signupBtn.onclick = async () => signup();
 
-const loginBtn = document.getElementById("login-btn");
+const loginBtn = document.getElementById("top-login-btn");
 loginBtn.onclick = async () => login();
 
 const logoutBtn = document.getElementById("logout-btn");
@@ -501,6 +495,7 @@ function toggleAuthenticatedView(isLoggedIn) {
     loginBtn.style.display = isLoggedIn ? "none" : "flex";
     profileBtn.style.display = isLoggedIn ? "flex" : "none";
     logoutBtn.style.display = isLoggedIn ? "flex" : "none";
+    sidebarAvatar.style.display = isLoggedIn ? "flex" : "none";
     joinMultiplayerBtn.style.display = isLoggedIn ? "flex" : "none";
     sidebarStatus.textContent = isLoggedIn ? "En ligne" : "Hors ligne";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);

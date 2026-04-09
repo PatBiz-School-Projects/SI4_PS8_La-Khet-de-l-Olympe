@@ -74,16 +74,16 @@ body::before {
     font-family: 'Cinzel', serif;
     font-size: .72rem; letter-spacing: .12em; font-weight: 600;
     padding: 8px 20px;
-    border: 1px solid var(--gold-dim);
+    border: 1px solid var(--gold-soft);
     background: rgba(10,10,15,.65);
-    color: var(--text-dim);
+    color: var(--text-muted);
     cursor: pointer; border-radius: 2px;
     text-transform: uppercase;
     backdrop-filter: blur(8px);
     transition: color .25s, border-color .25s, background .25s, box-shadow .25s;
 }
 .btn-auth:hover {
-    color: var(--gold-light);
+    color: #f0d080;
     border-color: var(--gold);
     background: rgba(201,168,76,.08);
     box-shadow: 0 0 14px rgba(201,168,76,.25);
