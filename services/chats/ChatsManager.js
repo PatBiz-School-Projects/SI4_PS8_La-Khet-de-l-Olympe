@@ -7,8 +7,15 @@ class ChatsManager {
     /** @private */
     constructor() { throw new Error(`${this.constructor.name} is not instantiable`); }
 
-    /** @type {Record<ChatID, Chat>} */
+    /** @readonly @type {ChatID} */
+    static GLOBAL_CHAT_ID = "0";
+
+    /** @private @type {Record<ChatID, Chat>} */
     static _chats = {};
+
+    static {
+        this.newChat(this.GLOBAL_CHAT_ID);
+    }
 
     static newChat(chatId = undefined) {
         if (!chatId) {

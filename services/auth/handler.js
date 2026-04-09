@@ -1,28 +1,35 @@
-const { getDb } = require("./mongo");
 const hash = require("js-sha256");
-const { readJsonBody, sendJson } = require("./helpers/parser");
 const jwt = require("jsonwebtoken");
-const {createUserProfile, markUserConnected,markUserDisconnected} = require("./userClient");
-const {extractToken} = require("./helpers/token");
 
-const jwtSecret = process.env.JWT_SECRET;
-const accessTokenExpiry = process.env.ACCESS_TOKEN_EXPIRY;
-const refreshTokenExpiry = process.env.REFRESH_TOKEN_EXPIRY;
+const { readJsonBody, sendJson } = require("./helpers/parser");
+const { extractToken } = require("./helpers/token");
+
+const { getDb } = require("./mongo");
+const { createUserProfile, markUserConnected, markUserDisconnected } = require("./userClient");
+
+const {
+    JWT_SECRET,
+    ACCESS_TOKEN_EXPIRY,
+    REFRESH_TOKEN_EXPIRY,
+
+    USER_SERVICE_URL,
+    CHAT_SERVICE_URL,
+} = process.env;
 
 
 function createAccessToken(user) {
     return jwt.sign(
         { sub: user._id.toString(), username: user.username, type: 'access' },
-        jwtSecret,
-        { expiresIn: accessTokenExpiry }
+        JWT_SECRET,
+        { expiresIn: ACCESS_TOKEN_EXPIRY }
     );
 }
 
 function createRefreshToken(user) {
     return jwt.sign(
         { sub: user._id.toString(), username: user.username, type: 'refresh' },
-        jwtSecret,
-        { expiresIn: refreshTokenExpiry }
+        JWT_SECRET,
+        { expiresIn: REFRESH_TOKEN_EXPIRY }
     );
 }
 
@@ -71,16 +78,24 @@ async function register(req, res) {
             answer: answer
         })
 
-        return sendJson(res, 201, {
+        sendJson(res, 201, {
             ok: true,
             id: result.insertedId,
             detail : "Compte créé avec succès"
         });
-    } catch (error) {
-        return sendJson(res, 500, {
-            ok: false,
-            error: String(error?.message ?? error),
+
+        await fetch(`${CHAT_SERVICE_URL}/internal/api/chats/global-chat/add-user`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ userId: result.insertedId }),
         });
+    } catch (err) {
+        console.error("Internal error while creating user account:", err);
+        sendJson(res, 500, {
+            ok: false,
+            error: err.message,
+        });
+        return;
     }
 }
 
@@ -127,7 +142,7 @@ async function checkToken(req, res) {
             return sendJson(res, 400, { ok: false, error: 'MISSING_TOKEN' });
         }
 
-        const payload = jwt.verify(token, jwtSecret);
+        const payload = jwt.verify(token, JWT_SECRET);
         if (payload.type === 'refresh') {
             return sendJson(res, 401, { ok: false, error: 'INVALID_TOKEN_TYPE' });
         }
@@ -145,11 +160,11 @@ async function renewToken(req, res) {
             return sendJson(res, 400, { ok: false, error: 'MISSING_TOKEN' });
         }
 
-        const payload = jwt.verify(token, jwtSecret);
+        const payload = jwt.verify(token, JWT_SECRET);
         const newAccessToken = jwt.sign(
             { sub: payload.sub, username: payload.username, type: 'access' },
-            jwtSecret,
-            { expiresIn: accessTokenExpiry }
+            JWT_SECRET,
+            { expiresIn: ACCESS_TOKEN_EXPIRY }
         );
         return sendJson(res, 200, { ok: true, token: newAccessToken, accessToken: newAccessToken });
     } catch (error) {
