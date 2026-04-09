@@ -337,11 +337,11 @@ searchMenuItem.addEventListener("click", () => {
  * Auth logic
  */
 async function signup() {
-    window.location.href = "/home/auth/pages/signup/signup.html";
+    window.location.href = "/auth/pages/signup/signup.html";
 }
 
 async function login() {
-    window.location.href = "/home/auth/pages/login/login.html";
+    window.location.href = "/auth/pages/login/login.html";
 }
 
 async function logout() {
@@ -363,10 +363,10 @@ async function logout() {
     }
 }
 
-const signupBtn = document.getElementById("top-signup-btn");
+const signupBtn = document.getElementById("signup-btn");
 signupBtn.onclick = async () => signup();
 
-const loginBtn = document.getElementById("top-login-btn");
+const loginBtn = document.getElementById("login-btn");
 loginBtn.onclick = async () => login();
 
 const logoutBtn = document.getElementById("logout-btn");
