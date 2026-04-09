@@ -76,7 +76,7 @@ header {
         & button::before {
             content: "";
             display: inline-block;
-            width: 2.8vw;
+            width: 1.8vw;
             height: 2.8vh;
 
 
