@@ -482,7 +482,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
             })
         });
         if (!moveResponse.ok) {
-            throw new Error((await moveResponse.json()).error);
+            throw new Error(moveResponse.error);
         }
 
         actionResult = (await moveResponse.json()).result;
@@ -529,7 +529,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
             }),
         });
         if (!placeResponse.ok) {
-            throw new Error((await placeResponse.json()).error);
+            throw new Error(placeResponse.error);
         }
 
         actionResult = (await placeResponse.json()).result;
@@ -573,7 +573,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
             })
         });
         if (!rotateResponse.ok) {
-            throw new Error((await rotateResponse.json()).error);
+            throw new Error(rotateResponse.error);
         }
 
         actionResult = (await rotateResponse.json()).result;
@@ -626,7 +626,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
                 },
             })
 
-            throw new Error((await switchResponse.json()).error);
+            throw new Error(switchResponse.error);
         }
 
         actionResult = (await switchResponse.json()).result;
