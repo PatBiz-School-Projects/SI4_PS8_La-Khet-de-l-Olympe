@@ -34,6 +34,12 @@ async function register(req, res) {
         if (!username || !password || !question || !answer) {
             return sendJson(res, 400, { ok: false, error: "MISSING_FIELDS" });
         }
+        if(username.length<2){
+            return sendJson(res,403,{ok:false,error:"USERNAME_TOO_SHORT"});
+        }
+        if(password.length<8){
+            return sendJson(res,403,{ok:false,error:"PASSWORD_MUST_BE_AT_LEAST_8_CHARACTERS"});
+        }
         const db = await getDb();
         const users = db.collection("users");
         const questions = db.collection("questions");
