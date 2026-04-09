@@ -333,8 +333,8 @@ body {
 }
 
 .achievement-icon {
-    width: 64px;
-    height: 64px;
+    width: 90px;
+    height: 90px;
     object-fit: contain;
     margin-bottom: 10px;
     transition: filter 0.3s ease;
