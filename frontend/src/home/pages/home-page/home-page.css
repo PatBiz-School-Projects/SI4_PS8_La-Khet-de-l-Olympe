@@ -70,7 +70,7 @@ body::before {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-.btn-auth {
+.auth-btn {
     font-family: 'Cinzel', serif;
     font-size: .72rem; letter-spacing: .12em; font-weight: 600;
     padding: 8px 20px;
@@ -82,7 +82,7 @@ body::before {
     backdrop-filter: blur(8px);
     transition: color .25s, border-color .25s, background .25s, box-shadow .25s;
 }
-.btn-auth:hover {
+.auth-btn:hover {
     color: #f0d080;
     border-color: var(--gold);
     background: rgba(201,168,76,.08);
