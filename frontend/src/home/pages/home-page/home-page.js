@@ -81,7 +81,6 @@ function renderLeaderboard(users) {
 }
 
 async function loadLeaderboard(limit = 10) {
-    setLeaderboardStatus("Chargement du panthéon...");
     leaderboardList.innerHTML = "";
 
     try {
@@ -178,7 +177,6 @@ function renderFriendsList(targetElement, friends, canChallenge) {
 }
 
 async function loadFriendsPanel() {
-    setFriendsStatus("Chargement de vos amis...");
     friendsOnlineList.innerHTML = "";
     friendsOfflineList.innerHTML = "";
     friendsOnlineEmpty.hidden = true;
@@ -219,10 +217,6 @@ async function loadFriendsPanel() {
 
     friendsOnlineEmpty.hidden = onlineFriends.length !== 0;
     friendsOfflineEmpty.hidden = offlineFriends.length !== 0;
-
-    setFriendsStatus(
-        `${onlineFriends.length} ami(s) en ligne • ${offlineFriends.length} hors ligne.`
-    );
 }
 function renderSearchResults(users) {
     searchResults.innerHTML = "";
