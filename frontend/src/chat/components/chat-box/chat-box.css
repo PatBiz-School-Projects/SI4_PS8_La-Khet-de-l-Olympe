@@ -86,23 +86,6 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
-
-        & #unread-badge {
-            background: var(--gold);
-            color: var(--dark);
-            font-size: 0.52rem;
-            font-weight: 700;
-            letter-spacing: 0.04em;
-            min-width: 17px;
-            height: 17px;
-            border-radius: 9px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 0 5px;
-            flex-shrink: 0;
-            animation: badge-pulse 2.2s ease-in-out infinite;
-        }
     }
 
     & #fold-dir-indicator {

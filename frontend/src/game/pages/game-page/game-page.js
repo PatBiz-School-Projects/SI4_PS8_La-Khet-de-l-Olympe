@@ -235,8 +235,12 @@ onload = async _ => {
     }
 
     // Initialising chat box
-    chatBox.chatId = GAME_ID;
-    await chatBox.actualise();
+    if (GAME_MODE === GameMode.MULTIPLAYER) {
+        chatBox.chatId = GAME_ID;
+        await chatBox.actualise();
+    } else {
+        chatBox.remove();
+    }
 }
 
 
