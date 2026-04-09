@@ -18,11 +18,11 @@ const socket = io({
 onload = async _ => {
     let hasStarted;
     try {
-        const hasStartedResponse = await fetch("/api/game-service/game-has-started");
-        if (!hasStartedResponse.ok) {
-            throw hasStartedResponse.error;
+        const response = await fetch("/api/game-service/game-has-started");
+        if (!response.ok) {
+            throw (await response.json()).error;
         }
-        ({ hasStarted } = await hasStartedResponse.json());
+        ({ hasStarted } = await response.json());
     } catch (err) {
         throw err;
     }

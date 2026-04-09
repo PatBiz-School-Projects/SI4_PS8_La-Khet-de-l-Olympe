@@ -86,7 +86,7 @@ exports.HTTPHandler = {
             try {
                 const response = await fetch(`${USER_SERVICE_URL}/api/users/${userId}/minimal-profile`);
                 if (!response.ok) {
-                    throw new Error(response.error);
+                    throw new Error((await response.json()).error);
                 }
 
                 userMinimalProfile = await response.json();

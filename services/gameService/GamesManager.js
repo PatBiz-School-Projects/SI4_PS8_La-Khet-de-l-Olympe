@@ -221,7 +221,7 @@ class GamesManager {
                             ans => (
                                 (ans.ok)
                                     ? console.log(`Successfully updated stats of user w/ id '${player.userId}'`)
-                                    : console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, ans.error)
+                                    : ans.json().then(({error: err}) => console.error(`Failed to update stats of user w/ id '${player.userId} bcs:`, err))
                             )
                         )
                         .catch(
@@ -246,7 +246,7 @@ class GamesManager {
                 ans => (
                     (ans.ok)
                     ? console.log(`Successfully closed chat of game '${gameId}'`)
-                    : console.error(`Failed to close chat of game '${gameId}' bcs:`, ans.error)
+                    : ans.json().then(({error: err}) => console.error(`Failed to close chat of game '${gameId}' bcs:`, err))
                 )
             )
             .catch(

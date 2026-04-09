@@ -53,11 +53,11 @@ const chatBox = document.querySelector("chat-box");
 async function fetchGameMode() {
     let mode;
     try {
-        const modeResponse = await fetch(`/api/games/${GAME_ID}/mode`);
-        if (!modeResponse.ok) {
-            throw modeResponse.error;
+        const response = await fetch(`/api/games/${GAME_ID}/mode`);
+        if (!response.ok) {
+            throw (await response.json()).error;
         }
-        ({ mode } = await modeResponse.json());
+        ({ mode } = await response.json());
     } catch (err) {
         throw err;
     }
@@ -71,11 +71,11 @@ async function fetchGameMode() {
 async function fetchPlayers() {
     let players;
     try {
-        const playersResponse = await fetch(`/api/games/${GAME_ID}/players`);
-        if (!playersResponse.ok) {
-            throw playersResponse.error;
+        const response = await fetch(`/api/games/${GAME_ID}/players`);
+        if (!response.ok) {
+            throw (await response.json()).error;
         }
-        ({ players } = await playersResponse.json());
+        ({ players } = await response.json());
     } catch (err) {
         throw err;
     }
@@ -89,11 +89,11 @@ async function fetchPlayers() {
 async function fetchClientPlayer() {
     let player;
     try {
-        const playerResponse = await fetch(`/api/games/${GAME_ID}/players/client`);
-        if (!playerResponse.ok) {
-            throw playerResponse.error;
+        const response = await fetch(`/api/games/${GAME_ID}/players/client`);
+        if (!response.ok) {
+            throw (await response.json()).error;
         }
-        ({ player } = await playerResponse.json());
+        ({ player } = await response.json());
     } catch (err) {
         throw err;
     }
@@ -107,11 +107,11 @@ async function fetchClientPlayer() {
 async function askWhoIsPlaying() {
     let player;
     try {
-        const activePlayerResponse = await fetch(`/api/games/${GAME_ID}/players/active`);
-        if (!activePlayerResponse.ok) {
-            throw activePlayerResponse.error;
+        const response = await fetch(`/api/games/${GAME_ID}/players/active`);
+        if (!response.ok) {
+            throw (await response.json()).error;
         }
-        ({ player } = await activePlayerResponse.json());
+        ({ player } = await response.json());
     } catch (err) {
         throw err;
     }
@@ -468,7 +468,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
 
     let actionResult;
     try {
-        const moveResponse = await fetch("/api/game-service/action", {
+        const response = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -481,11 +481,11 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
                 },
             })
         });
-        if (!moveResponse.ok) {
-            throw new Error(moveResponse.error);
+        if (!response.ok) {
+            throw new Error((await response.json()).error);
         }
 
-        actionResult = (await moveResponse.json()).result;
+        actionResult = (await response.json()).result;
     } catch (err) {
         console.error("Movement refused:", err);
         return;
@@ -519,7 +519,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
 
     let actionResult;
     try {
-        const placeResponse = await fetch("/api/game-service/action", {
+        const response = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -531,11 +531,11 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
                 },
             }),
         });
-        if (!placeResponse.ok) {
-            throw new Error(placeResponse.error);
+        if (!response.ok) {
+            throw new Error((await response.json()).error);
         }
 
-        actionResult = (await placeResponse.json()).result;
+        actionResult = (await response.json()).result;
     } catch (err) {
         console.error("Placement refused:", err);
         return;
@@ -565,7 +565,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
 
     let actionResult;
     try {
-        const rotateResponse = await fetch("/api/game-service/action", {
+        const response = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -578,11 +578,11 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
                 },
             })
         });
-        if (!rotateResponse.ok) {
-            throw new Error(rotateResponse.error);
+        if (!response.ok) {
+            throw new Error((await response.json()).error);
         }
 
-        actionResult = (await rotateResponse.json()).result;
+        actionResult = (await response.json()).result;
     } catch (err) {
         console.error("Rotation refused:", err);
         return;
@@ -608,7 +608,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
 
     let actionResult;
     try {
-        const switchResponse = await fetch("/api/game-service/action", {
+        const response = await fetch("/api/game-service/action", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -622,23 +622,23 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
                 },
             })
         });
-        if (!switchResponse.ok) {
+        if (!response.ok) {
             // Simulate click on `piece2` at `pos2` in case the switch action is refused
             stateMachine.on({
                 type: GamePageActionType.CANCEL,
-            })
+            });
             stateMachine.on({
                 type: GamePageActionType.CLICKED_PIECE_ON_BOARD,
                 payload: {
                     pos: pos2,
                     piece: piece2,
                 },
-            })
+            });
 
-            throw new Error(switchResponse.error);
+            throw new Error((await response.json()).error);
         }
 
-        actionResult = (await switchResponse.json()).result;
+        actionResult = (await response.json()).result;
     } catch (err) {
         console.error("Switch refused:", err);
         return;
