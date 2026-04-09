@@ -80,6 +80,18 @@ body {
     box-shadow: 0 0 0 3px rgba(212, 177, 106, 0.15);
 }
 
+.auth-card input:-webkit-autofill,
+.auth-card input:-webkit-autofill:hover,
+.auth-card input:-webkit-autofill:focus,
+.auth-card input:-webkit-autofill:active {
+    -webkit-text-fill-color: var(--text-main);
+    caret-color: var(--text-main);
+    -webkit-box-shadow: 0 0 0 1000px rgba(8, 10, 18, 0.92) inset;
+    box-shadow: 0 0 0 1000px rgba(8, 10, 18, 0.92) inset;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    transition: background-color 9999s ease-in-out 0s;
+}
+
 .auth-card button {
     width: 100%;
     margin-top: 20px;
