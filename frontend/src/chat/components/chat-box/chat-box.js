@@ -269,7 +269,7 @@ export class ChatBox extends HTMLElement {
     async _fetchMessages() {
         const response = await fetch(`/api/chats/${this.chatId}/messages?start=${this._messages.length}`);
         if (!response.ok) {
-            throw new Error(response.error);
+            throw new Error((await response.json()).error);
         }
 
         const { messages } = await response.json();
