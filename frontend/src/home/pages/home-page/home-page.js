@@ -1,3 +1,7 @@
+import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
+
+import { ChatBox } from "/chat/components/index.js";
+
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
 import { ensureValidAccessToken, clearAuthTokens, authenticatedFetch } from "/utils/auth.js";
@@ -30,7 +34,9 @@ const friendsOnlineList = document.getElementById("friends-online-list");
 const friendsOfflineList = document.getElementById("friends-offline-list");
 const friendsOnlineEmpty = document.getElementById("friends-online-empty");
 const friendsOfflineEmpty = document.getElementById("friends-offline-empty");
-let currentUserId;
+const chatBox = document.querySelector("chat-box");
+
+let USER_ID;
 let searchDebounceId;
 
 function showMainPanel(section) {
@@ -271,7 +277,7 @@ async function runUserSearch(rawQuery) {
     }
 
     const payload = await response.json();
-    const users = payload.filter((user) => user.userId!==currentUserId);
+    const users = payload.filter((user) => user.userId!==USER_ID);
     if (!users.length) {
         searchResults.innerHTML = "";
         setSearchStatus("Aucun joueur trouvé.");
@@ -486,7 +492,7 @@ profileChipBtn.onclick = async () => {
 
 
 
-function toggleAuthenticatedView(isLoggedIn) {
+async function toggleAuthenticatedView(isLoggedIn) {
     signupBtn.style.display = isLoggedIn ? "none" : "flex";
     loginBtn.style.display = isLoggedIn ? "none" : "flex";
     profileBtn.style.display = isLoggedIn ? "flex" : "none";
@@ -504,12 +510,68 @@ function toggleAuthenticatedView(isLoggedIn) {
     }
 }
 
+async function toggleChatBox(isLoggedIn) {
+    // Initialising chat box
+    if (isLoggedIn) {
+        const chatSocket = io("/global-chat", {
+            path: "/api/chats/socket.io",
+            query: {
+                chatId: "0", // TODO : Manage it in the server
+            },
+        });
+
+        chatBox.chatId = "0";
+        await chatBox.actualise();
+
+        chatSocket.on("new-message", ({message}) => {
+            // DEBUG::
+            console.log(`Sending message on in-game chat from "${message.author.username}":\n${message.content}`);
+
+            chatBox.onNewMessage(message);
+        });
+
+        chatBox.addEventListener("send-message", async event => {
+            const content = event.detail.content;
+
+            // DEBUG::
+            console.log(`Sending message to in-game chat:\n${content}`);
+
+            let user;
+            try {
+                const response = await fetch(`/api/users/${USER_ID}/minimal-profile`);
+
+                if (!response.ok) {
+                    throw new Error(response.error);
+                }
+
+                user = await response.json();
+            } catch (err) {
+                console.error("Error in home page:", err);
+            }
+
+            const newMessage = {
+                author: {
+                    userId: USER_ID,
+                    username: user.username,
+                    profilePicture: user.profilePicture
+                },
+                content,
+                uploadTimestamp: Date.now(),
+            }
+
+            chatSocket.emit("new-message", { message: newMessage });
+        });
+    } else {
+        chatBox.remove();
+    }
+}
+
 function applySidebarIdentity(username, profilePicture) {
     sidebarUsername.textContent = username;
     sidebarAvatar.src = profilePicture;
 }
 async function loadSidebarProfile() {
-    const response = await authenticatedFetch(`/api/users/${currentUserId}/minimal-profile`, {
+    const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -522,23 +584,24 @@ onload = async () => {
     const token = await ensureValidAccessToken();
 
     if (!token) {
-        toggleAuthenticatedView(false);
+        await toggleAuthenticatedView(false);
+        await toggleChatBox(false);
         return;
     }
 
-    toggleAuthenticatedView(true);
     const payload = decodeJwtPayload(token);
     const userId = payload?.sub;
-    currentUserId = userId;
-
     if (!userId) {
         clearAuthTokens();
         return;
     }
 
+    USER_ID = userId;
+    setCookie("userId", USER_ID);
+
+    await toggleAuthenticatedView(true);
+    await toggleChatBox(true);
+
     await loadSidebarProfile();
     setSearchStatus("Tapez au moins 2 caractères.");
-
-    // TODO: remove `userId` dependency in the game and use user token directly.
-    setCookie("userId", userId);
 };
