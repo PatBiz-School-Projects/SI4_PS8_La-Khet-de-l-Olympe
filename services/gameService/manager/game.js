@@ -294,8 +294,11 @@ class Game {
 
             } else {
                 if (piece.type === "Pyramid") {
-                    const opponent = this.players.filter(player => player !== this._currActivePlayer)[0];
-                    this._playerInventories[opponent.playerId].pushPyramid();
+                    const opponent  = this.players.find(player => player.playerId !== piece.owner);
+
+                    if (opponent) {
+                        this._playerInventories[opponent.playerId].pushPyramid();
+                    }
                 }
                 this.board.removePiece({x:piece.x, y:piece.y});
             }

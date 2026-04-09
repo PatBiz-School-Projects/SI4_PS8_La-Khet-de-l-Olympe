@@ -488,6 +488,9 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
         await board.showLaserBeam(actionResult.laserPath);
         // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
+
+        await player1Inventory.actualise();
+        await player2Inventory.actualise();
     }
 });
 
@@ -539,6 +542,9 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
         await board.showLaserBeam(actionResult.laserPath);
         // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
+
+        await player1Inventory.actualise();
+        await player2Inventory.actualise();
     }
 });
 
@@ -579,6 +585,9 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
         await board.showLaserBeam(actionResult.laserPath);
         // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
+
+        await player1Inventory.actualise();
+        await player2Inventory.actualise();
     }
 });
 
@@ -629,6 +638,9 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
         await board.showLaserBeam(actionResult.laserPath);
         // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(actionResult.grid);
+
+        await player1Inventory.actualise();
+        await player2Inventory.actualise();
     }
 });
 
