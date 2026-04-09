@@ -243,11 +243,7 @@ function renderSearchResults(users) {
         addFriendButton.textContent = "Ajouter en ami";
         addFriendButton.onclick = async () => sendFriendRequest(user.userId, addFriendButton);
 
-        const challengeButton = document.createElement("button");
-        challengeButton.textContent = "⚔";
-        challengeButton.onclick = async () => challengeUser(user.userId);
-
-        actions.append(addFriendButton, challengeButton);
+        actions.append(addFriendButton);
         item.append(avatar, name, actions);
         searchResults.appendChild(item);
     });
@@ -363,7 +359,7 @@ async function logout() {
     } finally {
         clearAuthTokens();
         removeAllCookies();
-        window.location.href = "/home/auth/pages/login/login.html";
+        window.location.reload();
     }
 }
 
