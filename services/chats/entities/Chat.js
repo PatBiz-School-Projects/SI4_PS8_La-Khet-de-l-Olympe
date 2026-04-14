@@ -1,17 +1,6 @@
-const { Socket } = require('socket.io');
+const { ChatsRepository } = require("../repositories/ChatsRepository");
 
-/**
- * @typedef {string} UserID
- */
-
-/**
- * @typedef {Object} User
- *
- * @prop {UserID} userId
- * @prop {string} username
- * @prop {string} profilePicture
- * @prop {Socket|undefined} socket
- */
+const { ChatUserID, ChatUser, ChatUserDTO } = require("./ChatUser");
 
 
 /**
@@ -21,13 +10,13 @@ const ChatID = undefined;
 
 
 /**
- * @typedef {Object} ChatMessage
+ * @typedef {Object} ChatMessageDTO
  *
- * @prop {User} author
+ * @prop {ChatUserDTO} author
  * @prop {string} content
  * @prop {number} uploadTimestamp
  */
-const ChatMessage = undefined;
+const ChatMessageDTO = undefined;
 
 
 class Chat {
@@ -35,11 +24,30 @@ class Chat {
         /** @private @type {ChatID} */
         this._chatId = chatId;
 
-        /** @private @type {Record<UserID, User>} */
+        /** @private @type {Record<ChatUserID, ChatUser>} */
         this._users = {};
 
-        /** @private @type {ChatMessage[]} */
-        this._messages = []
+        /** @private @type {ChatMessageDTO[]} */
+        this._messages = [];
+
+        ChatsRepository.onceReady(repo => {
+            repo.findById(chatId)
+                .then(chatEntry => {
+                    if (!chatEntry) {
+                        repo.create(chatId);
+                        return;
+                    }
+
+                    for (const user of chatEntry.users) {
+                        this._users[user.userId] = ChatUser.fromDTO(user);
+                    }
+
+                    this._messages = [...this._messages, ...chatEntry.messages];
+                })
+                .catch(err => {
+                    console.error(`Unexpected error while instantiating chat of id '${chatId}':`, err);
+                });
+        });
     }
 
     /** @type {ChatID} */
@@ -47,52 +55,54 @@ class Chat {
         return this._chatId;
     }
 
-    /** @type {User[]} */
+    /**
+     * List of all messages in the chat from the latest to the oldest.
+     *
+     * @type {ChatMessageDTO[]}
+     */
+    get messages() {
+        return [ ...this._messages ];
+    }
+
+    /**
+     * Mapping by id of all the users in the chat (connected or not).
+     *
+     * @type {Record<ChatUserID, ChatUser>[]}
+     */
     get users() {
-        return this._users;
+        return { ...this._users };
     }
 
-    /** @type {User[]} */
-    get connectedUsers() {
-        return this._users.filter(user => user.socket !== undefined);
-    }
-
+    /**
+     * @param {ChatUserID} userId
+     *
+     * @returns {boolean}
+     */
     userIsAllowed(userId) {
         return userId in this._users;
     }
 
     /**
-     * @param {number} start
-     * @param {number} end
-     *
-     * @returns {ChatMessage[]}
+     * @param {ChatMessageDTO} message
      */
-    getMessages(start, end) {
-        return [ ...this._messages.slice(start, end) ].reverse();
-    }
+    addMessage(message) {
+        console.log(`[ Chat ]: Adding a message in the chat of id '${this._chatId}'`);
 
-    getUsers() {
-        return Object.values(this._users);
+        this._messages = [message, ...this._messages];
+
+        ChatsRepository.saveMessage(this._chatId, message);
     }
 
     /**
-     * @param {ChatMessage} message
+     * @param {ChatUserDTO} user
      */
-    addMessage(message) {
-        this._messages = [message, ...this._messages];
-    }
-
     addUser(user) {
-        this._users[user.userId] = user;
-    }
+        console.log(`[ Chat ]: Adding a user in the chat of id '${this._chatId}'`);
 
-    connectUser(userId, socket) {
-        this._users[userId].socket = socket;
-    }
+        this._users[user.userId] = ChatUser.fromDTO(user);
 
-    disconnectUser(userId) {
-        delete this._users[userId].socket;
+        ChatsRepository.saveUser(this._chatId, user);
     }
 }
 
-module.exports = { Chat, ChatID };
+module.exports = { Chat, ChatID, ChatMessageDTO, ChatUserDTO };

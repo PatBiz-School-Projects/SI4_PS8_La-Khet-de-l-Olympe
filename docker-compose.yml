@@ -27,6 +27,7 @@ x-dbs:
   - &games-db games
   - &users-db users
   - &auth-db  auth
+  - &chats-db chats
 
 
 #
@@ -127,6 +128,8 @@ services:
         condition: service_started
     environment:
       PORT: *chats-port
+      DB_URL:  *mongo-url
+      DB_NAME: *chats-db
       USER_SERVICE_URL: *users-url
     networks:
       - internal
@@ -137,12 +140,17 @@ services:
       context: ./services
       dockerfile: ./challengeService/Dockerfile
       network: host
-    networks:
-      - internal
+    depends_on:
+      user-service:
+        condition: service_started
+      game-service:
+        condition: service_started
     environment:
       PORT: *challenges-port
       USER_SERVICE_URL: *users-url
       GAME_SERVICE_URL: *games-url
+    networks:
+      - internal
 
   auth-service:
     <<: *common
