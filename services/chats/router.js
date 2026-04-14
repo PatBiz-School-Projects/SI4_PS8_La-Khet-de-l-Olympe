@@ -22,6 +22,9 @@ const ROUTER = (new Router()
     .add("/internal/api/chats/:chatId/", {
         DELETE: HTTPHandler.deleteChat,
     })
+    .add("/internal/api/chats/global-chat/add-user", {
+        POST: HTTPHandler.addUserInGlobalChat,
+    })
     .add("/internal/api/chats/:chatId/add-user/", {
         POST: HTTPHandler.addUserInChat,
     })

@@ -82,15 +82,15 @@ services:
       context: ./services
       dockerfile: ./userService/Dockerfile
       network: host
-    networks:
-      - internal
-    environment:
-      PORT:    *users-port
-      DB_URL:  *mongo-url
-      DB_NAME: *users-db
     depends_on:
       mongo:
         condition: service_healthy
+    environment:
+      PORT:    *users-port
+      DB_NAME: *users-db
+      DB_URL:  *mongo-url
+    networks:
+      - internal
 
   game-service:
     <<: *common
@@ -98,17 +98,21 @@ services:
       context: ./services
       dockerfile: ./gameService/Dockerfile
       network: host
-    networks:
-      - internal
-    environment:
-      PORT:             *games-port
-      DB_URL:           *mongo-url
-      DB_NAME:          *games-db
-      USER_SERVICE_URL: *users-url
-      CHAT_SERVICE_URL: *chats-url
     depends_on:
       mongo:
         condition: service_healthy
+      user-service:
+        condition: service_started
+      chat-service:
+        condition: service_started
+    environment:
+      PORT:             *games-port
+      DB_NAME:          *games-db
+      DB_URL:           *mongo-url
+      USER_SERVICE_URL: *users-url
+      CHAT_SERVICE_URL: *chats-url
+    networks:
+      - internal
 
   chat-service:
     <<: *common
@@ -116,11 +120,16 @@ services:
       context: ./services
       dockerfile: ./chats/Dockerfile
       network: host
-    networks:
-      - internal
+    depends_on:
+      mongo:
+        condition: service_healthy
+      user-service:
+        condition: service_started
     environment:
       PORT: *chats-port
       USER_SERVICE_URL: *users-url
+    networks:
+      - internal
 
   challenge-service:
     <<: *common
@@ -141,14 +150,20 @@ services:
       context: ./services
       dockerfile: ./auth/Dockerfile
       network: host
+    depends_on:
+      mongo:
+        condition: service_healthy
+      user-service:
+        condition: service_started
     environment:
       PORT:                 *auth-port
       JWT_SECRET:           ${JWT_SECRET}
       ACCESS_TOKEN_EXPIRY:  ${ACCESS_TOKEN_EXPIRY}
       REFRESH_TOKEN_EXPIRY: ${REFRESH_TOKEN_EXPIRY}
-      DB_URL:               *mongo-url
       DB_NAME:              *auth-db
+      DB_URL:               *mongo-url
       USER_SERVICE_URL:     *users-url
+      CHAT_SERVICE_URL:     *chats-url
     networks:
       - internal
 
@@ -158,26 +173,26 @@ services:
     volumes:
       - ./data/db:/data/db
     command: ["mongod", "--quiet", "--logpath", "/dev/null"]
-    networks:
-      - internal
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - internal
 
   mongo-express:
     <<: *common
     image: mongo-express:1.0.2-20-alpine3.19
-    ports:
-      - "8081:8081"
+    depends_on:
+      mongo:
+        condition: service_healthy
     environment:
       ME_CONFIG_MONGODB_URL:        *mongo-url
       ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER}
       ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD}
-    depends_on:
-      mongo:
-        condition: service_healthy
+    ports:
+      - "8081:8081"
     networks:
       - internal
       - public

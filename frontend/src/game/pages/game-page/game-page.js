@@ -11,7 +11,7 @@ import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 
-import { ChatBox } from "/chat/components/chat-box/chat-box.js";
+import { ChatBox } from "/chat/components/index.js";
 
 import { getCookie } from "/utils/cookie.js";
 import { EventQueue } from "/utils/event.js";

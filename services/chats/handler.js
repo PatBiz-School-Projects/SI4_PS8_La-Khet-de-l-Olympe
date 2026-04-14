@@ -2,7 +2,7 @@ const { readJsonBody, sendJson, parseCookies } = require("./helpers/parser");
 
 const { ChatsManager } = require("./ChatsManager");
 
-const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
+const { USER_SERVICE_URL } = process.env;
 
 
 //
@@ -60,6 +60,40 @@ exports.HTTPHandler = {
         sendJson(res, 200, {ok: true, success: true});
     },
 
+    addUserInGlobalChat: async (req, res) => {
+        const globalChat = ChatsManager.getChatById(ChatsManager.GLOBAL_CHAT_ID);
+
+        let { userId } = await readJsonBody(req);
+        if (!userId) {
+            const err = "Missing 'userId' in request's body";
+            console.error(err)
+            sendJson(res, 400, {ok: false, error: err});
+            return;
+        }
+
+        let user;
+        {
+            let userMinimalProfile;
+            try {
+                const response = await fetch(`${USER_SERVICE_URL}/api/users/${userId}/minimal-profile`);
+                if (!response.ok) {
+                    throw new Error((await response.json()).error);
+                }
+
+                userMinimalProfile = await response.json();
+            } catch (err) {
+                console.error(err);
+                sendJson(res, 400, {ok: false, error: err.message});
+                return;
+            }
+
+            user = { userId, ...userMinimalProfile };
+        }
+
+        globalChat.addUser(user);
+        sendJson(res, 200, {ok: true, success: true});
+    },
+
     addUserInChat: async (req, res) => {
         const { chatId } = req.routeParams;
 
@@ -99,14 +133,7 @@ exports.HTTPHandler = {
             user = { userId, ...userMinimalProfile };
         }
 
-        try {
-            chat.addUser(user);
-        } catch (err) {
-            console.error(err)
-            sendJson(res, 400, {ok: false, error: err.message});
-            return;
-        }
-
+        chat.addUser(user);
         sendJson(res, 200, {ok: true, success: true});
     },
 
