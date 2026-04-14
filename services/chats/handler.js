@@ -11,14 +11,18 @@ const { USER_SERVICE_URL } = process.env;
 
 
 exports.HTTPMiddleware_UserAccess = (handlerCb) => async (req, res) => {
-    const { chatId } = req.routeParams;
+    // TODO : Stop reading user's id in the cookie. Use user's JWT token instead
     const { userId, userToken } = parseCookies(req.headers.cookie);
+    const { chatId } = req.routeParams;
     try {
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
         if (!userToken) {
             throw new Error("Missing 'userToken' cookie");
+        }
+
+        // TODO : Check validity of user's token
+
+        if (!userId) {
+            throw new Error("Missing 'userId' cookie");
         }
         const chat = ChatsManager.getChatById(chatId);
         if (!chat.userIsAllowed(userId)) {
@@ -157,7 +161,7 @@ exports.HTTPHandler = {
             return;
         }
 
-        const messages = chat.getMessages(start, end);
+        const messages = chat.messages.slice(start, end);
         // DEBUG::
         console.log(`Sending ${messages.length} older messages`);
         sendJson(res, 200, {ok: true, messages});
@@ -175,7 +179,10 @@ exports.HTTPHandler = {
             return;
         }
 
-        sendJson(res, 200, { ok: true, users: chat.getUsers() });
+        const users = Object.values(chat.users)
+            .map(user => user.toDTO());
+
+        sendJson(res, 200, { ok: true, users });
     },
 };
 
@@ -186,14 +193,18 @@ exports.HTTPHandler = {
 
 
 exports.SocketIOMiddleware = (socket, next) => {
+    // TODO : Stop reading user's id in the cookie. Use user's JWT token instead
     const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
     const { chatId } = socket.handshake.query;
     try {
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
         if (!userToken) {
             throw new Error("Missing 'userToken' cookie");
+        }
+
+        // TODO : Check validity of user's token
+
+        if (!userId) {
+            throw new Error("Missing 'userId' cookie");
         }
         if (!chatId) {
             throw new Error("Missing 'chatId' query parameter");
@@ -212,14 +223,14 @@ exports.SocketIOMiddleware = (socket, next) => {
 
 
 exports.SocketIOHandler = {
-    onConnection: async (io, socket, msgPayload) => {
+    onConnection: async (io, socket, payload) => {
         const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
         const { chatId } = socket.handshake.query;
 
         const chat = ChatsManager.getChatById(chatId);
-        chat.connectUser(userId, socket);
+        chat.users[userId].connect(socket);
 
-        socket.join(chatId); // ← Rejoindre la room spécifique à ce chat
+        socket.join(chatId);
     },
 
     onNewMessage: async (io, socket, {message}) => {
@@ -237,12 +248,12 @@ exports.SocketIOHandler = {
 
     // Add more if needed ...
 
-    onDisconnection: async (io, socket, msgPayload) => {
+    onDisconnection: async (io, socket, payload) => {
         const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
         const { chatId } = socket.handshake.query;
 
         const chat = ChatsManager.getChatById(chatId);
-        chat.disconnectUser(userId);
+        chat.users[userId].disconnect();
 
         socket.leave(chatId);
     },
