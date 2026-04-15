@@ -25,12 +25,18 @@ class LaserService {
         const destroyedPieces = [];
 
         let laserActive = true;
+        let safetyGuard = 0;
 
         path.push(laserPos);
         while (laserActive
             &&0<=laserPos.x && laserPos.x<Board.GRID_LEN
             && 0<=laserPos.y && laserPos.y<Board.GRID_LEN
         ) {
+            safetyGuard++;
+            if (safetyGuard > 100) {
+                console.warn("Boucle infinie de laser détectée et stoppée !");
+                break;
+            }
             const variation = VECTORIZED_LASER_DIRECTIONS[laserDir];
 
             laserPos = {
