@@ -55,6 +55,9 @@ const ROUTER = (new Router()
     .add("/api/games/:gameId/action", {
         POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.action)),
     })
+    .add("/api/games/:gameId/forfeit", {
+        POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.forfeit)),
+    })
     .add("/api/games/:gameId/board", {
         GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getBoard)),
     })
