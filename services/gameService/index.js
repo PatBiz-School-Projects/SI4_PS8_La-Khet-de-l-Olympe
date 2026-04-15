@@ -13,7 +13,7 @@ const server = http.createServer(function (request, response) {
 
 
 const io = new Server(server, {
-    path: "/api/game-service/socket.io",
+    path: "/api/games/socket.io",
     cors: false,
 });
 router.manageSocket(io);

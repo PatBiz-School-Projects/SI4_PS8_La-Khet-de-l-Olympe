@@ -16,70 +16,8 @@ const ROUTER = (new Router()
     // Outside a game
     //
 
-    .add("/api/game-service/new-player", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.newPlayer)),
-    })
-    .add("/api/game-service/start-solo-game", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.startSoloGame)),
-    })
-    .add("/api/game-service/start-local-multiplayer-game", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.startLocalMultiplayerGame)),
-    })
-    .add("/api/game-service/join-multiplayer-game", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.joinMultiplayerGame)),
-    })
-    .add("/api/game-service/open-multiplayer-room", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.openMultiplayerRoom)),
-    })
-
-    //
-    // Inside a waiting room
-    //
-
-    .add("/api/game-service/game-has-started", {
-        GET: authenticated(HTTPMiddleware_InsideWaitingRoom(HTTPHandler.hasGameStarted)),
-    })
-
-    //
-    // Inside a game
-    //
-
-    .add("/api/game-service/action", {
-        POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.action)),
-    })
-    .add("/api/game-service/board/piece?x={}&y={}", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getPieceAt)),
-    })
-    .add("/api/game-service/possible-actions?x={}&y={}", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getPossibleMoves)),
-    })
-    .add("/api/game-service/board", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getBoard)),
-    })
-    .add("/api/game-service/inventory", {
-        POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getInventoryOfPlayer)),
-    })
-    .add("/api/game-service/players", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getPlayers)),
-    })
-    .add("/api/game-service/active-player", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getActivePlayer)),
-    })
-    .add("/api/game-service/client-player", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getClientPlayer)),
-    })
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-
-    // TODO : Fully migrates from the old routes to the new routes
-
-    //
-    // Outside a game
-    //
-
     .add("/api/games/new-player", {
-        PUT: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.newPlayer)),
+        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.newPlayer)),
     })
     .add("/api/games/start-solo-game", {
         POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.startSoloGame)),
@@ -90,9 +28,14 @@ const ROUTER = (new Router()
     .add("/api/games/join-multiplayer-game", {
         POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.joinMultiplayerGame)),
     })
+
+    .add("/api/games/open-multiplayer-room", {
+        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.openMultiplayerRoom)),
+    })
     .add("/api/games/join-private-multiplayer-game", {
         POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.joinPrivateMultiplayerGame)),
     })
+
     .add("/api/games/history/:userId", {
         GET: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.getUserHistory)),
     })
@@ -122,7 +65,7 @@ const ROUTER = (new Router()
         POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getInventories)),
     })
     .add("/api/games/:gameId/inventories/:ownerId", {
-        POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getInventoryOfPlayer)),
+        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getInventoryOfPlayer)),
     })
     .add("/api/games/:gameId/mode", {
         GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getGameMode)),
