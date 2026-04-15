@@ -31,8 +31,7 @@ const ROUTER = (new Router()
     })
 
     .add("/api/users/:userId/profile", {
-        GET: HTTPUsersHandler.getProfile,
-        POST: HTTPUsersHandler.updateUserProfilePicture,
+        GET: HTTPUsersHandler.getProfile
     })
     .add("/api/users/:userId/public-profile", {
         GET: HTTPUsersHandler.getPublicProfile,
@@ -40,7 +39,9 @@ const ROUTER = (new Router()
     .add("/api/users/:userId/minimal-profile", {
         GET: HTTPUsersHandler.getUserMinimalProfile,
     })
-
+        .add("/api/users/:userId/profilePicture",{
+        PUT: HTTPUsersHandler.updateUserProfilePicture,
+    })
     .add("/api/users/:userId/stats", {
         GET: HTTPUsersHandler.getUserStats,
         POST: HTTPUsersHandler.updateUserStats,

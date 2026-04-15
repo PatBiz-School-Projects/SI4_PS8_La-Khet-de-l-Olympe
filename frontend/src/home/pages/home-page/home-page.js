@@ -576,7 +576,8 @@ async function loadSidebarProfile() {
         headers: { "Content-Type": "application/json" },
     });
     const profile = await response.json();
-    applySidebarIdentity(profile.username, profile.profilePicture);
+    const newPicture = getPictureUrl(profile.profilePicture)
+    applySidebarIdentity(profile.username, newPicture);
 }
 
 onload = async () => {

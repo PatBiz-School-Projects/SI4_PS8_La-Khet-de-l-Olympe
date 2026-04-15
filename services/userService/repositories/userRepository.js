@@ -30,7 +30,7 @@ async function createUser(authId,username) {
         username,
         createdAt: new Date(),
         elo : 1000,
-        profilePicture : 'assets/pyramid-red.png',
+        profilePicture : 'pyramid-red.png',
         totalGames: 0,
         totalWins:0,
         totalLosses:0,

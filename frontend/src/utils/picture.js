@@ -10,4 +10,7 @@ export function getPictureUrl(profilePicture) {
     return `/assets/${profilePicture}`;
 }
 
-
+export function getGlobalPicturePath(profilePicture) {
+    const parts = profilePicture.split("/");
+    return parts[parts.length - 1];
+}
