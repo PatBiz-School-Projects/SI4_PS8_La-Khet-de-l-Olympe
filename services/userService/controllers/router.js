@@ -1,70 +1,83 @@
 const { Router } = require("../helpers/router");
+const { public, authenticated } = require("../helpers/middlewares");
 
 const HTTPUsersHandler = require('./handler');
 const HTTPFriendsHandler = require('./friendshipHandler');
 
 
 const ROUTER = (new Router()
-    .add("/api/users", {
+    .add("/internal/api/users", {
         POST: HTTPUsersHandler.createUser,
     })
     .add("/api/users?query={}", {
-        GET: HTTPUsersHandler.findUsers,
+        GET: public(HTTPUsersHandler.findUsers),
     })
     .add("/api/users/:userId/", {
-        GET: HTTPUsersHandler.getPublicProfile,
+        GET: public(HTTPUsersHandler.getPublicProfile),
     })
     .add("/api/users/leaderboard?limit={}",{
-        GET: HTTPUsersHandler.getLeaderboard,
+        GET: public(HTTPUsersHandler.getLeaderboard),
     })
-    .add("/api/users/connect", {
+    .add("/internal/api/users/connect", {
         POST: HTTPUsersHandler.connectUser,
     })
-    .add("/api/users/disconnect", {
+    .add("/internal/api/users/disconnect", {
         POST: HTTPUsersHandler.disconnectUser,
     })
     .add("/api/users/connected", {
-        GET: HTTPUsersHandler.getConnectedUsers,
+        GET: authenticated(HTTPUsersHandler.getConnectedUsers),
     })
     .add("/api/users/connected/is-connected", {
-        GET: HTTPUsersHandler.isUserConnected,
+        GET: authenticated(HTTPUsersHandler.isUserConnected),
     })
 
     .add("/api/users/:userId/profile", {
-        GET: HTTPUsersHandler.getProfile
+        GET: public(HTTPUsersHandler.getProfile),
     })
+    // REVIEW : Better route
+    // .add("/api/users/:userId/profile?view=public", {
+    //     GET: public(HTTPUsersHandler.getUserMinimalProfile)
+    // })
     .add("/api/users/:userId/public-profile", {
-        GET: HTTPUsersHandler.getPublicProfile,
+        GET: public(HTTPUsersHandler.getPublicProfile),
     })
+    // REVIEW : Better route
+    // .add("/api/users/:userId/profile?view=minimal", {
+    //     GET: public(HTTPUsersHandler.getUserMinimalProfile)
+    // })
     .add("/api/users/:userId/minimal-profile", {
-        GET: HTTPUsersHandler.getUserMinimalProfile,
+        GET: public(HTTPUsersHandler.getUserMinimalProfile),
     })
-        .add("/api/users/:userId/profilePicture",{
-        PUT: HTTPUsersHandler.updateUserProfilePicture,
+
+    .add("/api/users/:userId/profilePicture",{
+        PUT: authenticated(HTTPUsersHandler.updateUserProfilePicture),
     })
-    .add("/api/users/:userId/stats", {
-        GET: HTTPUsersHandler.getUserStats,
+
+    .add("/internal/api/users/:userId/stats", {
         POST: HTTPUsersHandler.updateUserStats,
     })
+    .add("/api/users/:userId/stats", {
+        GET: public(HTTPUsersHandler.getUserStats),
+    })
     .add("/api/users/:userId/live-stats", {
-        GET: HTTPUsersHandler.getUserLiveStats,
+        GET: public(HTTPUsersHandler.getUserLiveStats),
     })
     .add("/api/users/achievements/catalogue",{
-        GET:HTTPUsersHandler.getAchievementsCatalogue,
+        GET: public(HTTPUsersHandler.getAchievementsCatalogue),
     })
     .add("/api/users/friends", {
-        GET: HTTPFriendsHandler.handleListFriends,
-        DELETE: HTTPFriendsHandler.handleDeleteFriend,
+        GET: public(HTTPFriendsHandler.handleListFriends),
+        DELETE: authenticated(HTTPFriendsHandler.handleDeleteFriend),
     })
     .add("/api/users/friends/accept", {
-        POST: HTTPFriendsHandler.handleAcceptRequest,
+        POST: authenticated(HTTPFriendsHandler.handleAcceptRequest),
     })
     .add("/api/users/friends/request", {
-        POST: HTTPFriendsHandler.handleSendRequest,
-        DELETE: HTTPFriendsHandler.handleDeleteRequest,
+        POST: authenticated(HTTPFriendsHandler.handleSendRequest),
+        DELETE: authenticated(HTTPFriendsHandler.handleDeleteRequest),
     })
     .add("/api/users/friends/requests", {
-        GET: HTTPFriendsHandler.handleListRequests,
+        GET: authenticated(HTTPFriendsHandler.handleListRequests),
     })
 );
 

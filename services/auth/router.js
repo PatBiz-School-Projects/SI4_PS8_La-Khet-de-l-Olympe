@@ -1,38 +1,37 @@
-const handler = require('./handler.js');
+const { Router } = require("./helpers/router");
+const { public, authenticated } = require("./helpers/middlewares");
 
-const routes = {
-    "/api/auth/login" : (req, res) => {
-        handler.login(req, res);
-    },
-    "/api/auth/signup" : (req, res) => {
-        handler.register(req, res);
-    },
-    "/api/auth/renew" : (req, res) => {
-        handler.renewToken(req, res);
-    },
-    "/api/auth/check" : (req, res) => {
-        handler.checkToken(req, res);
-    },
-    "/api/auth/forgot-password" : (req, res) => {
-        handler.resetPassword(req, res);
-    },
-    "/api/auth/forgot-password/question" : (req, res) => {
-        handler.getQuestion(req, res);
-    },
-    "/api/auth/logout" : (req, res) => {
-        handler.logout(req, res);
-    }
-};
+const { HTTPHandler } = require('./handler.js');
 
-async function manage(request,response){
-    const url = request.url;
-    if(routes[url]){
-        await routes[url](request, response);
-    }
-    else{
-        response.writeHead(404, {'Content-Type': 'text/plain'});
-        response.end(JSON.stringify({error: 'Not Found'}));
-    }
+
+const ROUTER = (new Router()
+    .add("/api/auth/login", {
+        POST: public(HTTPHandler.login),
+    })
+    .add("/api/auth/signup", {
+        POST: public(HTTPHandler.signup),
+    })
+    .add("/api/auth/renew", {
+        POST: public(HTTPHandler.renewToken),
+    })
+    .add("/api/auth/check", {
+        POST: public(HTTPHandler.checkToken),
+    })
+    .add("/api/auth/forgot-password", {
+        POST: public(HTTPHandler.resetPassword),
+    })
+    .add("/api/auth/forgot-password/question", {
+        POST: public(HTTPHandler.getQuestion),
+    })
+    .add("/api/auth/logout", {
+        POST: authenticated(HTTPHandler.logout),
+    })
+);
+
+
+async function manage(req, res){
+    ROUTER.handle(req, res);
 }
 
-module.exports = {manage};
+
+module.exports = { manage };

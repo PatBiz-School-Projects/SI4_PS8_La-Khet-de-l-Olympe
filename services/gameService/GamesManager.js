@@ -212,7 +212,7 @@ class GamesManager {
                 const USER_SERVICE_URL = process.env.USER_SERVICE_URL;
 
                 for (const player of this._games[gameId].players) {
-                    fetch(`${USER_SERVICE_URL}/api/users/${player.userId}/stats`, {
+                    fetch(`${USER_SERVICE_URL}/internal/api/users/${player.userId}/stats`, {
                         method: "POST",
                         headers: {"Content-Type": "application/json"},
                         body: JSON.stringify(summary.statsUpdates[player.playerId]),

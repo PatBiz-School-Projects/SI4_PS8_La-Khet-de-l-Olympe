@@ -48,15 +48,15 @@ services:
       - user-service
       - challenge-service
     environment:
-      IS_PROD: ${IS_PROD}
-      SSL_CERTIFICATE: ${SSL_CERTIFICATE}
-      SSL_PRIVATE_KEY: ${SSL_PRIVATE_KEY}
-      FILE_SERVICE_URL: *files-url
-      GAME_SERVICE_URL: *games-url
-      AUTH_SERVICE_URL: *auth-url
-      USER_SERVICE_URL: *users-url
+      IS_PROD:               ${IS_PROD}
+      SSL_CERTIFICATE:       ${SSL_CERTIFICATE}
+      SSL_PRIVATE_KEY:       ${SSL_PRIVATE_KEY}
+      FILE_SERVICE_URL:      *files-url
+      GAME_SERVICE_URL:      *games-url
+      AUTH_SERVICE_URL:      *auth-url
+      USER_SERVICE_URL:      *users-url
       CHALLENGE_SERVICE_URL: *challenges-url
-      CHAT_SERVICE_URL: *chats-url
+      CHAT_SERVICE_URL:      *chats-url
     ports:
       - "8000:8000"
       - "8443:8443"
@@ -87,9 +87,10 @@ services:
       mongo:
         condition: service_healthy
     environment:
-      PORT:    *users-port
-      DB_NAME: *users-db
-      DB_URL:  *mongo-url
+      PORT:             *users-port
+      DB_NAME:          *users-db
+      DB_URL:           *mongo-url
+      AUTH_SERVICE_URL: *auth-url
     networks:
       - internal
 
@@ -107,11 +108,13 @@ services:
       chat-service:
         condition: service_started
     environment:
+      IS_PROD:          ${IS_PROD}
       PORT:             *games-port
       DB_NAME:          *games-db
       DB_URL:           *mongo-url
       USER_SERVICE_URL: *users-url
       CHAT_SERVICE_URL: *chats-url
+      AUTH_SERVICE_URL: *auth-url
     networks:
       - internal
 
@@ -127,10 +130,12 @@ services:
       user-service:
         condition: service_started
     environment:
-      PORT: *chats-port
-      DB_URL:  *mongo-url
-      DB_NAME: *chats-db
+      IS_PROD:          ${IS_PROD}
+      PORT:             *chats-port
+      DB_NAME:          *chats-db
+      DB_URL:           *mongo-url
       USER_SERVICE_URL: *users-url
+      AUTH_SERVICE_URL: *auth-url
     networks:
       - internal
 
@@ -146,9 +151,11 @@ services:
       game-service:
         condition: service_started
     environment:
-      PORT: *challenges-port
+      IS_PROD:          ${IS_PROD}
+      PORT:             *challenges-port
       USER_SERVICE_URL: *users-url
       GAME_SERVICE_URL: *games-url
+      AUTH_SERVICE_URL: *auth-url
     networks:
       - internal
 
@@ -164,6 +171,7 @@ services:
       user-service:
         condition: service_started
     environment:
+      IS_PROD:              ${IS_PROD}
       PORT:                 *auth-port
       JWT_SECRET:           ${JWT_SECRET}
       ACCESS_TOKEN_EXPIRY:  ${ACCESS_TOKEN_EXPIRY}
@@ -172,6 +180,7 @@ services:
       DB_URL:               *mongo-url
       USER_SERVICE_URL:     *users-url
       CHAT_SERVICE_URL:     *chats-url
+      AUTH_SERVICE_URL:     *auth-url
     networks:
       - internal
 
