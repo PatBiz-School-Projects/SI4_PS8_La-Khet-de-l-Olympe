@@ -1,4 +1,6 @@
 const { Router } = require('../helpers/router');
+const { authenticated } = require('../helpers/middlewares');
+
 const {
     handleCreateChallenge,
     handleListIncomingChallenges,
@@ -7,22 +9,24 @@ const {
     handleCancelChallenge,
 } = require('./handler');
 
-const ROUTER = new Router()
+
+const ROUTER = (new Router()
     .add('/api/challenge-service/challenges', {
-        POST: handleCreateChallenge,
+        POST: authenticated(handleCreateChallenge),
     })
     .add('/api/challenge-service/challenges/incoming', {
-        GET: handleListIncomingChallenges,
+        GET: authenticated(handleListIncomingChallenges),
     })
     .add('/api/challenge-service/challenges/:challengeId/accept', {
-        POST: handleAcceptChallenge,
+        POST: authenticated(handleAcceptChallenge),
     })
     .add('/api/challenge-service/challenges/:challengeId/decline', {
-        POST: handleDeclineChallenge,
+        POST: authenticated(handleDeclineChallenge),
     })
     .add('/api/challenge-service/challenges/:challengeId/cancel', {
-        POST: handleCancelChallenge,
-    });
+        POST: authenticated(handleCancelChallenge),
+    })
+);
 
 exports.manage = async (req, res) => {
     await ROUTER.handle(req, res);

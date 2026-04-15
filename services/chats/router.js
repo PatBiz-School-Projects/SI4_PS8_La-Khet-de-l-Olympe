@@ -1,4 +1,5 @@
 const { Router } = require("./helpers/router");
+const { authenticated } = require("./helpers/middlewares");
 
 const {
     HTTPMiddleware_UserAccess,
@@ -34,13 +35,13 @@ const ROUTER = (new Router()
     //
 
     .add("/api/chats/:chatId/messages", {
-        GET: HTTPMiddleware_UserAccess(HTTPHandler.getChatMessages)
+        GET: authenticated(HTTPMiddleware_UserAccess(HTTPHandler.getChatMessages))
     })
     .add("/api/chats/:chatId/messages?start={}", {
-        GET: HTTPMiddleware_UserAccess(HTTPHandler.getChatMessages)
+        GET: authenticated(HTTPMiddleware_UserAccess(HTTPHandler.getChatMessages))
     })
     .add("/api/chats/:chatId/users/", {
-        GET: HTTPMiddleware_UserAccess(HTTPHandler.getUsersInChat),
+        GET: authenticated(HTTPMiddleware_UserAccess(HTTPHandler.getUsersInChat)),
     })
 );
 

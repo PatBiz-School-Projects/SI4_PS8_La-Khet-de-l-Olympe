@@ -1,29 +1,30 @@
 const { Router } = require("./helpers/router");
+const { public, authenticated } = require("./helpers/middlewares");
 
 const { HTTPHandler } = require('./handler.js');
 
 
 const ROUTER = (new Router()
     .add("/api/auth/login", {
-        POST: HTTPHandler.login,
+        POST: public(HTTPHandler.login),
     })
     .add("/api/auth/signup", {
-        POST: HTTPHandler.signup,
+        POST: public(HTTPHandler.signup),
     })
     .add("/api/auth/renew", {
-        POST: HTTPHandler.renewToken,
+        POST: public(HTTPHandler.renewToken),
     })
     .add("/api/auth/check", {
-        POST: HTTPHandler.checkToken,
+        POST: public(HTTPHandler.checkToken),
     })
     .add("/api/auth/forgot-password", {
-        POST: HTTPHandler.resetPassword,
+        POST: public(HTTPHandler.resetPassword),
     })
     .add("/api/auth/forgot-password/question", {
-        POST: HTTPHandler.getQuestion,
+        POST: public(HTTPHandler.getQuestion),
     })
     .add("/api/auth/logout", {
-        POST: HTTPHandler.logout,
+        POST: authenticated(HTTPHandler.logout),
     })
 );
 

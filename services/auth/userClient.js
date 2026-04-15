@@ -1,9 +1,9 @@
-const userServiceUrl = process.env.USER_SERVICE_URL;
+const { USER_SERVICE_URL } = process.env;
 
 async function createUserProfile({ authId, username }) {
     const payload = { authId, username };
 
-    const response = await fetch(userServiceUrl+'/api/users', {
+    const response = await fetch(`${USER_SERVICE_URL}/internal/api/users`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -18,7 +18,7 @@ async function createUserProfile({ authId, username }) {
 }
 
 async function markUserConnected(token) {
-    const response = await fetch(userServiceUrl+'/api/users/connect', {
+    const response = await fetch(`${USER_SERVICE_URL}/internal/api/users/connect`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -33,7 +33,7 @@ async function markUserConnected(token) {
 }
 
 async function markUserDisconnected(token) {
-    const response = await fetch(`${userServiceUrl}/api/users/disconnect`, {
+    const response = await fetch(`${USER_SERVICE_URL}/internal/api/users/disconnect`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
