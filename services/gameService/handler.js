@@ -1,4 +1,5 @@
 const { readJsonBody, sendJson, parseCookies } = require("./helpers/parser");
+const { extractUserId } = require("./helpers/token");
 
 const { GamesManager } = require("./GamesManager");
 const { GameMode } = require("./manager/game");
@@ -18,13 +19,6 @@ const { GameSummariesRepository } = require("./repositories/GameSummaryRepositor
 
 exports.HTTPMiddleware_OutsideGame = (handlerCb) => async (req, res) => {
     try {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
 
         // Add more verifications here (if needed)
 
@@ -40,8 +34,6 @@ exports.HTTPMiddleware_OutsideGame = (handlerCb) => async (req, res) => {
 
 exports.HTTPMiddleware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
     try {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
-
         let { gameId } = req.routeParams;
         if (!gameId) {
             // If old route was used
@@ -51,12 +43,6 @@ exports.HTTPMiddleware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
             }
         }
 
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
         if (!GamesManager.waitingRoomsId.includes(gameId) && !GamesManager.runningGamesId.includes(gameId)) {
             throw new Error(`No waiting room nor game with id=${gameId}`);
         }
@@ -75,8 +61,6 @@ exports.HTTPMiddleware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
 
 exports.HTTPMiddleware_InsideGame = (handlerCb) => async (req, res) => {
     try {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
-
         let { gameId } = req.routeParams;
         if (!gameId) {
             // If old route was used
@@ -86,12 +70,6 @@ exports.HTTPMiddleware_InsideGame = (handlerCb) => async (req, res) => {
             }
         }
 
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
         if (!GamesManager.runningGamesId.includes(gameId)) {
             throw new Error(`No running game with id=${gameId}`);
         }
@@ -114,7 +92,8 @@ exports.HTTPHandler = {
     //
 
     newPlayer: async (req, res) => {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
+        const { userToken } = parseCookies(req.headers.cookie);
+        const userId = extractUserId(userToken);
 
         let userProfile;
         {
@@ -141,7 +120,7 @@ exports.HTTPHandler = {
             userProfile = {...userMinimalProfile, ...userLiveStats};
         }
 
-        const player = PlayersManager.newPlayer(userId, userToken, userProfile);
+        const player = PlayersManager.newPlayer(userId, userProfile);
         sendJson(res, 200, { ok: true, playerId: player.playerId });
     },
 
@@ -490,7 +469,8 @@ exports.HTTPHandler = {
     },
 
     getClientPlayer: async (req, res) => {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
+        const { userToken } = parseCookies(req.headers.cookie);
+        const userId = extractUserId(userToken);
 
         let { gameId } = req.routeParams;
         if (!gameId) {
@@ -502,7 +482,7 @@ exports.HTTPHandler = {
 
         let playerOfClient;
         for (const player of game.players)
-            if (player.userId === userId && player.userToken === userToken) {
+            if (player.userId === userId) {
                 if (playerOfClient) {
                     // If we already found one player corresponding to the user,
                     // which only happens if we are in a local multiplayer game,
@@ -563,16 +543,11 @@ exports.HTTPHandler = {
 
 
 exports.SocketIOMiddleware = (socket, next) => {
-    try {
-        const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
-        const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
+    // TODO : Removing game's id from the cookie
+    const { gameId } = parseCookies(socket.handshake.headers.cookie || "")
+    const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
 
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
+    try {
         if (!gameId) {
             throw new Error("Missing 'gameId' cookie");
         }
@@ -600,7 +575,9 @@ exports.SocketIOHandler = {
     //
 
     onConnection: async (io, socket, msgPayload) => {
-        const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const userId = extractUserId(userToken);
+
         let { gameId } = socket.handshake.query;
         if (!gameId) {
             // If old socket connection route was used
@@ -616,9 +593,7 @@ exports.SocketIOHandler = {
         );
 
         game.players
-            .filter(player => (
-                player.userId === userId && player.userToken === userToken
-            ))
+            .filter(player => player.userId === userId)
             .forEach(player => {
                 player.socket = socket;
             });
