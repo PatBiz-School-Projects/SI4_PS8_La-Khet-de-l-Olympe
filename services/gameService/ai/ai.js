@@ -11,7 +11,7 @@ const AIActionGenerator = {
         method: "move",
         args: {
             playerId,
-            piece: piece.toDTO(),
+            piece: piece,
             from,
             to,
         },
@@ -20,7 +20,7 @@ const AIActionGenerator = {
         method: "place",
         args: {
             playerId,
-            piece: piece.toDTO(),
+            piece: piece,
             pos,
         },
     }),
@@ -28,7 +28,7 @@ const AIActionGenerator = {
         method: "rotate",
         args: {
             playerId,
-            piece: piece.toDTO(),
+            piece: piece,
             pos,
             rotation,
         },
@@ -37,13 +37,15 @@ const AIActionGenerator = {
         method: "switch",
         args: {
             playerId,
-            piece1: piece1.toDTO(),
+            piece1: piece1,
             pos1,
-            piece2: piece2.toDTO(),
+            piece2: piece2,
             pos2,
         },
     }),
 }
+
+const DIRS = [ {dx: 1, dy: 0}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 0, dy: -1} ];
 
 
 /**
@@ -65,14 +67,6 @@ class AI {
      * @protected
      */
     _getLegalActions(playerId, board, inventory) {
-        const computeOrthogonalNeighbourPositions = (pos) => [
-            {x:pos.x+1, y:pos.y},
-            {x:pos.x, y:pos.y+1},
-            {x:pos.x-1, y:pos.y},
-            {x:pos.x, y:pos.y-1},
-        ];
-
-        const isWithinBounds = (p) => p.x >= 0 && p.x < Board.GRID_LEN && p.y >= 0 && p.y < Board.GRID_LEN;
 
         const ret = [];
 
@@ -82,14 +76,29 @@ class AI {
 
         for (let x=0; x<Board.GRID_LEN; x++) {
             for (let y=0; y<Board.GRID_LEN; y++) {
+
                 const pos = {x, y};
+
                 if (board.hasPieceAt(pos)) {
+
                     const piece = board.getPieceAt(pos);
+
                     if (piece.owner === playerId) {
+
                         if (piece.canMove()) {
-                            computeOrthogonalNeighbourPositions(pos)
-                                .filter(npos => isWithinBounds(npos) && !board.hasPieceAt(npos))
-                                .forEach(npos => ret.push(AIActionGenerator.move(playerId, piece, pos, npos)));
+
+                            for (const dir of DIRS) {
+
+                                const nx = x + dir.dx;
+                                const ny = y + dir.dy;
+
+                                if (nx >= 0 && nx < Board.GRID_LEN && ny >= 0 && ny < Board.GRID_LEN) {
+
+                                    if (!board.hasPieceAt({x: nx, y: ny})) {
+                                        ret.push(AIActionGenerator.move(playerId, piece, pos, {x: nx, y: ny}));
+                                    }
+                                }
+                            }
                         }
 
                         if (piece.canRotate()) {
@@ -113,36 +122,48 @@ class AI {
                                 break;
                         }
                     }
-                } else if (
-                    !inventory.isEmpty()
-                    && computeOrthogonalNeighbourPositions(pos).filter(isWithinBounds).every(npos => {
-                        if (board.hasPieceAt(npos)) {
-                            const npiece = board.getPieceAt(npos);
-                            if (npiece.type === "Sphinx") {
-                                return false;
-                            }
-                            if (npiece.type === "Pharaoh" && npiece.owner === playerId) {
-                                return false
+                } else if (!inventory.isEmpty()){
+
+                    let isValidPlace = true;
+
+                    for (const dir of DIRS) {
+
+                        const nx = x + dir.dx;
+                        const ny = y + dir.dy;
+
+                        if (nx >= 0 && nx < Board.GRID_LEN && ny >= 0 && ny < Board.GRID_LEN) {
+
+                            if(board.hasPieceAt({x: nx, y: ny})) {
+
+                                const npiece = board.getPieceAt({x: nx, y: ny});
+
+                                if (npiece && (npiece.type === "Sphinx" || (npiece.type === "Pharaoh" && npiece.owner === playerId))) {
+                                    isValidPlace = false;
+                                    break;
+                                }
                             }
                         }
-                        return true;
-                    })
-                ) {
-                    for (const orientation of ["N", "E", "W", "S"]) {
-                        const piece = Piece.fromDTO({
-                            type: "Pyramid",
-                            owner: playerId,
-                            color: inventory.color,
-                            orientation: orientation,
-                        });
-                        ret.push(AIActionGenerator.place(playerId, piece, pos));
+
+                    }
+
+                    if(isValidPlace) {
+                        for (const orientation of ["N", "E", "W", "S"]) {
+
+                            const pieceDTO = {
+                                type: "Pyramid",
+                                owner: playerId,
+                                color: inventory.color,
+                                orientation: orientation,
+                            };
+                            ret.push(AIActionGenerator.place(playerId, pieceDTO, pos));
+                        }
                     }
                 }
             }
         }
 
-        ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, sphinx, sphinxPos));
-        ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, pharaoh, pharaohPos))
+        if(scarab && sphinx)ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, sphinx, sphinxPos));
+        if(scarab && pharaoh)ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, pharaoh, pharaohPos))
 
         return ret;
     }
@@ -161,7 +182,19 @@ class RandomAI extends AI {
 
     computeNextAction() {
         const legalActions = this._getLegalActions(this._playerId,this._board,this._inventory);
-        return legalActions[Math.floor(Math.random() * legalActions.length)];
+
+        const randomIndex = Math.floor(Math.random() * legalActions.length);
+        const finalAction = legalActions[randomIndex];
+
+        const formattedArgs = { ...finalAction.args };
+        if (formattedArgs.piece && typeof formattedArgs.piece.toDTO === 'function') formattedArgs.piece = formattedArgs.piece.toDTO();
+        if (formattedArgs.piece1 && typeof formattedArgs.piece1.toDTO === 'function') formattedArgs.piece1 = formattedArgs.piece1.toDTO();
+        if (formattedArgs.piece2 && typeof formattedArgs.piece2.toDTO === 'function') formattedArgs.piece2 = formattedArgs.piece2.toDTO();
+        return {
+            method: finalAction.method,
+            args: formattedArgs
+        };
+
     }
 }
 
@@ -206,7 +239,17 @@ class MiniMaxAI extends AI {
 
         }
         console.log("MINIMAXAI : ",bestAction);
-        return bestAction || legalActions[0];
+        const finalAction = bestAction || legalActions[0];
+
+        const formattedArgs = { ...finalAction.args };
+        if (formattedArgs.piece && typeof formattedArgs.piece.toDTO === 'function') formattedArgs.piece = formattedArgs.piece.toDTO();
+        if (formattedArgs.piece1 && typeof formattedArgs.piece1.toDTO === 'function') formattedArgs.piece1 = formattedArgs.piece1.toDTO();
+        if (formattedArgs.piece2 && typeof formattedArgs.piece2.toDTO === 'function') formattedArgs.piece2 = formattedArgs.piece2.toDTO();
+
+        return {
+            method: finalAction.method,
+            args: formattedArgs
+        };
     }
 
 
@@ -250,9 +293,9 @@ class MiniMaxAI extends AI {
             }
             if (record.piece.type === "Pyramid") {
                 if (record.piece.owner === this._playerId) {
-                    myInv.popPyramid();
-                } else {
                     oppInv.popPyramid();
+                } else {
+                    myInv.popPyramid();
                 }
             }
         }
@@ -280,7 +323,7 @@ class MiniMaxAI extends AI {
                 break;
 
             case "place":
-                const newPiece = Piece.fromDTO(args.piece)
+                const newPiece = Piece.fromDTO(args.piece);
                 simulatedBoard.placePiece(newPiece, args.pos);
                 simulatedInventory.popPyramid();
                 break;
@@ -298,10 +341,17 @@ class MiniMaxAI extends AI {
         const {destroyedPieces} = simulatedLaserService.fireLaser(fakePlayer);
 
         const destroyedLog = [];
+        const seenCoords = new Set();
 
         for (const piece of destroyedPieces) {
 
+            const coordKey = `${piece.x},${piece.y}`;
+            if (seenCoords.has(coordKey)) continue;
+            seenCoords.add(coordKey);
+
             const realPieceObj = newBoard.getPieceAt({x: piece.x, y: piece.y});
+
+            if (!realPieceObj) continue;
 
             destroyedLog.push({ pos: {x: piece.x, y: piece.y}, piece: realPieceObj });
 
@@ -312,9 +362,9 @@ class MiniMaxAI extends AI {
             if (piece.type === "Pyramid") {
 
                 if (realPieceObj.owner === this._playerId) {
-                    myInv.pushPyramid();
-                } else {
                     oppInv.pushPyramid();
+                } else {
+                    myInv.pushPyramid();
                 }
 
             }
