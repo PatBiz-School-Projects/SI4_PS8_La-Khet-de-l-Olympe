@@ -4,6 +4,9 @@ import { InventoryRenderer } from "./InventoryRenderer.js";
 import { GamePageActionType } from "/game/pages/game-page/GamePageStateMachine/GamePageAction.js";
 
 
+const GAME_ID = localStorage.getItem("gameId");
+
+
 export class GamePlayerInventory extends HTMLElement {
     static MAX_SIZE = 15;
 
@@ -115,11 +118,7 @@ export class GamePlayerInventory extends HTMLElement {
     }
 
     async actualise() {
-        const inventoryResponse = await fetch("/api/game-service/inventory", {
-            method: "POST", // Just bcs GET request cannot have a body
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ playerId: this._owner }),
-        });
+        const inventoryResponse = await fetch(`/api/games/${GAME_ID}/inventories/${this._owner}`);
         const { inventory } = await inventoryResponse.json();
 
         for (let i=0; i<GamePlayerInventory.MAX_SIZE; i++) {

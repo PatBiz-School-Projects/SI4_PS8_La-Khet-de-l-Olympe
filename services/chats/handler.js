@@ -1,4 +1,5 @@
 const { readJsonBody, sendJson, parseCookies } = require("./helpers/parser");
+const { extractUserId } = require("./helpers/token");
 
 const { ChatsManager } = require("./ChatsManager");
 
@@ -11,19 +12,11 @@ const { USER_SERVICE_URL } = process.env;
 
 
 exports.HTTPMiddleware_UserAccess = (handlerCb) => async (req, res) => {
-    // TODO : Stop reading user's id in the cookie. Use user's JWT token instead
-    const { userId, userToken } = parseCookies(req.headers.cookie);
+    const { userToken } = parseCookies(req.headers.cookie);
+    const userId = extractUserId(userToken);
+
     const { chatId } = req.routeParams;
     try {
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
-
-        // TODO : Check validity of user's token
-
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
         const chat = ChatsManager.getChatById(chatId);
         if (!chat.userIsAllowed(userId)) {
             throw new Error("User is not allowed to access this chat");
@@ -193,19 +186,11 @@ exports.HTTPHandler = {
 
 
 exports.SocketIOMiddleware = (socket, next) => {
-    // TODO : Stop reading user's id in the cookie. Use user's JWT token instead
-    const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
+    const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
+    const userId = extractUserId(userToken);
+
     const { chatId } = socket.handshake.query;
     try {
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
-
-        // TODO : Check validity of user's token
-
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
         if (!chatId) {
             throw new Error("Missing 'chatId' query parameter");
         }
@@ -224,9 +209,10 @@ exports.SocketIOMiddleware = (socket, next) => {
 
 exports.SocketIOHandler = {
     onConnection: async (io, socket, payload) => {
-        const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
-        const { chatId } = socket.handshake.query;
+        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const userId = extractUserId(userToken);
 
+        const { chatId } = socket.handshake.query;
         const chat = ChatsManager.getChatById(chatId);
         chat.users[userId].connect(socket);
 
@@ -249,9 +235,10 @@ exports.SocketIOHandler = {
     // Add more if needed ...
 
     onDisconnection: async (io, socket, payload) => {
-        const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
-        const { chatId } = socket.handshake.query;
+        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const userId = extractUserId(userToken);
 
+        const { chatId } = socket.handshake.query;
         const chat = ChatsManager.getChatById(chatId);
         chat.users[userId].disconnect();
 

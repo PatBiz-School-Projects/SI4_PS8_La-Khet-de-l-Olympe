@@ -13,7 +13,6 @@ import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 
 import { ChatBox } from "/chat/components/index.js";
 
-import { getCookie } from "/utils/cookie.js";
 import { EventQueue } from "/utils/event.js";
 // REVIEW : It's a feature instead of an utils
 import { sendChallenge } from "/utils/challenge.js"
@@ -125,8 +124,7 @@ async function askWhoIsPlaying() {
 //
 
 
-// TODO : Remove `gameId` from the cookies & use local storage instead to enable simultaneous games
-const GAME_ID = getCookie("gameId");
+const GAME_ID = localStorage.getItem("gameId");
 
 /** @type {GameMode} */
 let GAME_MODE;
@@ -183,7 +181,7 @@ const chatSocket = io("/game-chat", {
     },
 });
 const gameSocket = io({
-    path: "/api/game-service/socket.io",
+    path: "/api/games/socket.io",
     query: {
         gameId: GAME_ID,
     },
@@ -433,7 +431,7 @@ stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos
                 await activeRotation.showPiece(piece, null, 'inventory');
             }
         } else {
-            const response = await fetch(`/api/game-service/possible-actions?x=${pos.x}&y=${pos.y}`);
+            const response = await fetch(`/api/games/${GAME_ID}/possible-actions?x=${pos.x}&y=${pos.y}`);
             const legalMoves = await response.json();
             await board.showVisualisationMoves(legalMoves);
 
@@ -468,7 +466,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
 
     let actionResult;
     try {
-        const response = await fetch("/api/game-service/action", {
+        const response = await fetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -519,7 +517,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
 
     let actionResult;
     try {
-        const response = await fetch("/api/game-service/action", {
+        const response = await fetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -565,7 +563,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
 
     let actionResult;
     try {
-        const response = await fetch("/api/game-service/action", {
+        const response = await fetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -608,7 +606,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
 
     let actionResult;
     try {
-        const response = await fetch("/api/game-service/action", {
+        const response = await fetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

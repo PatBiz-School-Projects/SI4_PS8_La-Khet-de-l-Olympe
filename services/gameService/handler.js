@@ -1,4 +1,5 @@
 const { readJsonBody, sendJson, parseCookies } = require("./helpers/parser");
+const { extractUserId } = require("./helpers/token");
 
 const { GamesManager } = require("./GamesManager");
 const { GameMode } = require("./manager/game");
@@ -18,13 +19,6 @@ const { GameSummariesRepository } = require("./repositories/GameSummaryRepositor
 
 exports.HTTPMiddleware_OutsideGame = (handlerCb) => async (req, res) => {
     try {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
 
         // Add more verifications here (if needed)
 
@@ -39,24 +33,8 @@ exports.HTTPMiddleware_OutsideGame = (handlerCb) => async (req, res) => {
 
 
 exports.HTTPMiddleware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
+    const { gameId } = req.routeParams;
     try {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
-
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-            if (!gameId) {
-                throw new Error("Missing 'gameId' cookie");
-            }
-        }
-
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
         if (!GamesManager.waitingRoomsId.includes(gameId) && !GamesManager.runningGamesId.includes(gameId)) {
             throw new Error(`No waiting room nor game with id=${gameId}`);
         }
@@ -74,24 +52,8 @@ exports.HTTPMiddleware_InsideWaitingRoom = (handlerCb) => async (req, res) => {
 
 
 exports.HTTPMiddleware_InsideGame = (handlerCb) => async (req, res) => {
+    const { gameId } = req.routeParams;
     try {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
-
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-            if (!gameId) {
-                throw new Error("Missing 'gameId' cookie");
-            }
-        }
-
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
         if (!GamesManager.runningGamesId.includes(gameId)) {
             throw new Error(`No running game with id=${gameId}`);
         }
@@ -114,7 +76,8 @@ exports.HTTPHandler = {
     //
 
     newPlayer: async (req, res) => {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
+        const { userToken } = parseCookies(req.headers.cookie);
+        const userId = extractUserId(userToken);
 
         let userProfile;
         {
@@ -141,7 +104,7 @@ exports.HTTPHandler = {
             userProfile = {...userMinimalProfile, ...userLiveStats};
         }
 
-        const player = PlayersManager.newPlayer(userId, userToken, userProfile);
+        const player = PlayersManager.newPlayer(userId, userProfile);
         sendJson(res, 200, { ok: true, playerId: player.playerId });
     },
 
@@ -276,172 +239,11 @@ exports.HTTPHandler = {
         sendJson(res, 200, { ok: true, gameId });
     },
 
-    //
-    // Inside a waiting room
-    //
-
-    hasGameStarted: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        sendJson(res, 200, { ok: true, hasStarted: GamesManager.runningGamesId.includes(gameId) });
-    },
-
-    //
-    // Inside a game
-    //
-
-    action: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        const game = GamesManager.getGameById(gameId);
-
-        try {
-            const action = await readJsonBody(req);
-            const actionResult = game.onPlayerAction(action);
-            sendJson(res, 200, { ok:true, result: actionResult });
-        } catch (err) {
-            console.error(err)
-            sendJson(res, 400, { ok: false, error: err.message });
-        }
-    },
-
-    getPieceAt: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
-        if (isNaN(x) || isNaN(y)) {
-            const err = "Missing or wrong query parameters 'x' & 'y'";
-            console.error(err);
-            sendJson(res, 400, { ok: false, error: err });
-        }
-
-        const game = GamesManager.getGameById(gameId);
-
-        try {
-            const piece = game.board.getPieceAt({x, y});
-            sendJson(res, 200, { ok: true, ...piece.toDTO() });
-        } catch (err) {
-            console.error(err);
-            sendJson(res, 400, { ok: false, error: err.message });
-        }
-    },
-
-    getBoard: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        const game = GamesManager.getGameById(gameId);
-
-        sendJson(res, 200, { ok: true, ...game.board.toDTO() });
-    },
-
-    getPossibleMoves: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
-        if (isNaN(x) || isNaN(y)) {
-            const err = "Missing or wrong query parameters 'x' & 'y'";
-            console.error(err);
-            sendJson(res, 400, { ok: false, error: err });
-        }
-
-        const game = GamesManager.getGameById(gameId);
-
-        try {
-            const possibleMoves = game.getPossibleMoveForPiece({x, y});
-            sendJson(res, 200, { ok: true, ...possibleMoves });
-        } catch (err) {
-            sendJson(res, 400, { ok: false, error: err.message });
-        }
-    },
-
-    getInventories: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        const game = GamesManager.getGameById(gameId);
-
-        const inventories = [];
-        for (const player of game.players) {
-            inventories.push(game.getInventoryOfPlayer(player.playerId));
-        }
-
-        sendJson(res, 200, { ok: true, inventories: inventories.map(inv => inv.toDTO()) });
-    },
-
-    getInventoryOfPlayer: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        let { playerId } = req.routeParams;
-        if (!playerId) {
-            // If old route was used
-            ({ playerId } = await readJsonBody(req));
-        }
-
-        const game = GamesManager.getGameById(gameId);
-
-        try {
-            const inventory = game.getInventoryOfPlayer(playerId);
-            sendJson(res, 200, { ok: true, inventory: inventory.toDTO() });
-        } catch (err) {
-            console.error(err);
-            sendJson(res, 400, { ok:false, error: err.message });
-        }
-    },
-
-    getPlayers: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        const game = GamesManager.getGameById(gameId);
-
-        sendJson(res, 200, { ok: true, players: game.players.map(player => player.toDTO()) });
-    },
-
     getUserHistory: async (req, res) => {
+        const { userId } = req.routeParams;
+
         try {
-            let { userId } = req.routeParams;
-            if (!userId) {
-                const cookies = parseCookies(req.headers.cookie);
-                userId = cookies.userId;
-            }
-
-            if (!userId) {
-                return sendJson(res, 400, { ok: false, error: "Missing userId" });
-            }
-
             const rawGames = await GameSummariesRepository.findLastGamesByUserId(userId, 10);
-
-            console.log("GameSummary :",rawGames);
 
             const formattedGames = rawGames.map(game => {
                 const myPlayerId = Object.keys(game.users).find(key => game.users[key] === userId);
@@ -460,7 +262,7 @@ exports.HTTPHandler = {
                 }
 
                 return {
-                    id: game._id,
+                    id: game.gameId,
                     playerName: myName,
                     opponentName: opponentName,
                     result: result,
@@ -477,32 +279,131 @@ exports.HTTPHandler = {
         }
     },
 
-    getActivePlayer: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
+    //
+    // Inside a waiting room
+    //
+
+    hasGameStarted: async (req, res) => {
+        const { gameId } = req.routeParams;
+
+        sendJson(res, 200, { ok: true, hasStarted: GamesManager.runningGamesId.includes(gameId) });
+    },
+
+    //
+    // Inside a game
+    //
+
+    action: async (req, res) => {
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        try {
+            const action = await readJsonBody(req);
+            const actionResult = game.onPlayerAction(action);
+            sendJson(res, 200, { ok:true, result: actionResult });
+        } catch (err) {
+            console.error(err)
+            sendJson(res, 400, { ok: false, error: err.message });
+        }
+    },
+
+    getPieceAt: async (req, res) => {
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
+        if (isNaN(x) || isNaN(y)) {
+            const err = "Missing or wrong query parameters 'x' & 'y'";
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err });
         }
 
+        try {
+            const piece = game.board.getPieceAt({x, y});
+            sendJson(res, 200, { ok: true, ...piece.toDTO() });
+        } catch (err) {
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err.message });
+        }
+    },
+
+    getBoard: async (req, res) => {
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        sendJson(res, 200, { ok: true, ...game.board.toDTO() });
+    },
+
+    getPossibleMoves: async (req, res) => {
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        const {x, y} = {x: parseInt(req.queryParams.x), y: parseInt(req.queryParams.y)};
+        if (isNaN(x) || isNaN(y)) {
+            const err = "Missing or wrong query parameters 'x' & 'y'";
+            console.error(err);
+            sendJson(res, 400, { ok: false, error: err });
+        }
+
+        try {
+            const possibleMoves = game.getPossibleMoveForPiece({x, y});
+            sendJson(res, 200, { ok: true, ...possibleMoves });
+        } catch (err) {
+            sendJson(res, 400, { ok: false, error: err.message });
+        }
+    },
+
+    getInventories: async (req, res) => {
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        const inventories = [];
+        for (const player of game.players) {
+            inventories.push(game.getInventoryOfPlayer(player.playerId));
+        }
+
+        sendJson(res, 200, { ok: true, inventories: inventories.map(inv => inv.toDTO()) });
+    },
+
+    getInventoryOfPlayer: async (req, res) => {
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        const { ownerId } = req.routeParams;
+
+        try {
+            const inventory = game.getInventoryOfPlayer(ownerId);
+            sendJson(res, 200, { ok: true, inventory: inventory.toDTO() });
+        } catch (err) {
+            console.error(err);
+            sendJson(res, 400, { ok:false, error: err.message });
+        }
+    },
+
+    getPlayers: async (req, res) => {
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        sendJson(res, 200, { ok: true, players: game.players.map(player => player.toDTO()) });
+    },
+
+    getActivePlayer: async (req, res) => {
+        const { gameId } = req.routeParams;
         const game = GamesManager.getGameById(gameId);
 
         sendJson(res, 200, { ok: true, player: game.currActivePlayer.toDTO() });
     },
 
     getClientPlayer: async (req, res) => {
-        const { userId, userToken } = parseCookies(req.headers.cookie);
+        const { userToken } = parseCookies(req.headers.cookie);
+        const userId = extractUserId(userToken);
 
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
+        const { gameId } = req.routeParams;
         const game = GamesManager.getGameById(gameId);
 
         let playerOfClient;
         for (const player of game.players)
-            if (player.userId === userId && player.userToken === userToken) {
+            if (player.userId === userId) {
                 if (playerOfClient) {
                     // If we already found one player corresponding to the user,
                     // which only happens if we are in a local multiplayer game,
@@ -521,20 +422,10 @@ exports.HTTPHandler = {
     },
 
     getPlayerById: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
-        let { playerId } = req.routeParams;
-        if (!playerId) {
-            // If old route was used
-            ({ playerId } = await readJsonBody(req));
-        }
-
+        const { gameId } = req.routeParams;
         const game = GamesManager.getGameById(gameId);
 
+        const { playerId } = req.routeParams;
         const player = game.players.filter(player => player.playerId === playerId);
         if (!player) {
             sendJson(res, 404, { ok: false, error: `No player of id '${playerId}' in game of id '${gameId}' found` });
@@ -544,12 +435,7 @@ exports.HTTPHandler = {
     },
 
     getGameMode: async (req, res) => {
-        let { gameId } = req.routeParams;
-        if (!gameId) {
-            // If old route was used
-            ({ gameId } = parseCookies(req.headers.cookie));
-        }
-
+        const { gameId } = req.routeParams;
         const game = GamesManager.getGameById(gameId);
 
         sendJson(res, 200, { ok: true, mode: game.mode });
@@ -563,18 +449,12 @@ exports.HTTPHandler = {
 
 
 exports.SocketIOMiddleware = (socket, next) => {
-    try {
-        const { userId, userToken, gameId } = parseCookies(socket.handshake.headers.cookie || "");
-        const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
+    const { gameId } = socket.handshake.query;
+    const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
 
-        if (!userId) {
-            throw new Error("Missing 'userId' cookie");
-        }
-        if (!userToken) {
-            throw new Error("Missing 'userToken' cookie");
-        }
+    try {
         if (!gameId) {
-            throw new Error("Missing 'gameId' cookie");
+            throw new Error("Missing 'gameId' query parameter");
         }
         if (inWaitingRoom) {
             if (!GamesManager.waitingRoomsId.includes(gameId)) {
@@ -600,15 +480,11 @@ exports.SocketIOHandler = {
     //
 
     onConnection: async (io, socket, msgPayload) => {
-        const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || "");
-        let { gameId } = socket.handshake.query;
-        if (!gameId) {
-            // If old socket connection route was used
-            ({ gameId } = parseCookies(socket.handshake.headers.cookie || ""));
-        }
+        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const userId = extractUserId(userToken);
 
+        const { gameId } = socket.handshake.query;
         const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
-
         const game = (
             (inWaitingRoom)
             ? GamesManager.getWaitingRoomById(gameId)
@@ -616,9 +492,7 @@ exports.SocketIOHandler = {
         );
 
         game.players
-            .filter(player => (
-                player.userId === userId && player.userToken === userToken
-            ))
+            .filter(player => player.userId === userId)
             .forEach(player => {
                 player.socket = socket;
             });

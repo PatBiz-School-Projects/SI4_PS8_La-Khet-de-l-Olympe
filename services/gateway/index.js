@@ -30,9 +30,6 @@ async function handleHTTPRequest(req, res) {
         // If the URL starts by /api, then it's a REST request (you can change that if you want).
         if (filePath[1] === "api") {
             switch(filePath[2]) {
-                case "game-service":
-                    console.warn(`Deprecated request to game-service received: "${req.url}"`);
-                    /* continue in "games" case */
                 case "games":
                     console.log("-> Transfer request to game-service (8002)");
                     proxy.web(req, res, { target: GAME_SERVICE_URL });
@@ -74,9 +71,6 @@ function handleWebSocket(req, socket, head) {
 
     if (filePath[1] === "api") {
         switch(filePath[2]) {
-            case "game-service":
-                console.warn("Deprecated socket connection method used");
-                /* continue in "games" case */
             case "games":
                 console.log("Transfer WS upgrade to game-service (8002)");
                 proxy.ws(req, socket, head, { target: GAME_SERVICE_URL });

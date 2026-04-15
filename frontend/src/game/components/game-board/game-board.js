@@ -4,6 +4,9 @@ import { Coord } from "/game/logic/board/Coord.js"
 import { Piece } from "/game/logic/board/Piece.js";
 
 
+const GAME_ID = localStorage.getItem("gameId");
+
+
 export class GameBoard extends HTMLElement {
     constructor() {
         super();
@@ -65,7 +68,7 @@ export class GameBoard extends HTMLElement {
      * @private
      */
     async _initializeBoard() {
-        const boardResponse = await fetch("/api/game-service/board");
+        const boardResponse = await fetch(`/api/games/${GAME_ID}/board`);
         const { grid } = await boardResponse.json();
 
         for (let i=0; i<grid.length; i++) {

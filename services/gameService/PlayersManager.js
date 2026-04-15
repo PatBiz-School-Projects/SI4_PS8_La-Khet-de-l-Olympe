@@ -12,20 +12,19 @@ class PlayersManager {
 
     /**
      * @param {UserID} userId The id of the associated user
-     * @param {UserToken} userToken The authentication token of the client to the user account
      * @param {unknown} userProfile The (minimal) profile of the user
      *
      * @returns {Player}
      */
-    static newPlayer(userId, userToken, userProfile) {
+    static newPlayer(userId, userProfile) {
         const playerId = randomUUID();
-        const player = new Player(playerId, userId, userToken, userProfile);
+        const player = new Player(playerId, userId, userProfile);
         this._players[playerId] = player;
         return player;
     }
 
     static newBot(AI_Impl) {
-        const playerId = `ai#${randomUUID()}`;
+        const playerId = `ai-${randomUUID()}`;
         const bot = new Bot(playerId, AI_Impl);
         this._players[playerId] = bot;
         return bot;

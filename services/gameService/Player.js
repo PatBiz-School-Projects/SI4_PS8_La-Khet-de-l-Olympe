@@ -32,18 +32,14 @@ class Player {
     /**
      * @param {PlayerID} playerId
      * @param {UserID} userId
-     * @param {UserToken} userToken
      * @param {InGameProfile} profile
      */
-    constructor(playerId, userId, userToken, userProfile) {
+    constructor(playerId, userId, userProfile) {
         /** @private @type {PlayerID} */
         this._playerId = playerId;
 
         /** @private @type {UserID} */
         this._userId = userId;
-
-        /** @private @type {UserToken} */
-        this._userToken = userToken;
 
         /** @private @type {InGameProfile} */
         this._profile = userProfile;
@@ -63,11 +59,6 @@ class Player {
     /** @type {UserID} */
     get userId() {
         return this._userId;
-    }
-
-    /** @type {UserToken} */
-    get userToken() {
-        return this._userToken;
     }
 
     /** @type {InGameProfile} */
@@ -115,7 +106,7 @@ class Bot extends Player {
     }
 
     constructor (playerId, AI_Impl) {
-        super(playerId, playerId, playerId, Bot.genUserProfile());
+        super(playerId, playerId, Bot.genUserProfile());
         this._ai;
 
         // Fake socket to be notified of game's updates

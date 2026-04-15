@@ -34,6 +34,7 @@ const friendsOnlineList = document.getElementById("friends-online-list");
 const friendsOfflineList = document.getElementById("friends-offline-list");
 const friendsOnlineEmpty = document.getElementById("friends-online-empty");
 const friendsOfflineEmpty = document.getElementById("friends-offline-empty");
+/** @type {ChatBox} */
 const chatBox = document.querySelector("chat-box");
 
 let USER_ID;
@@ -382,10 +383,10 @@ logoutBtn.onclick = async () => logout();
  * Game join logic
  */
 async function newPlayer() {
-    const res = await fetch("/api/game-service/new-player", {
+    const res = await fetch("/api/games/new-player", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({}),
+        body: JSON.stringify({/* nothing */}),
     });
 
     if (!res.ok) {
@@ -418,7 +419,7 @@ btnHard.onclick = async () => {
 async function startSoloGame(difficulty) {
     const playerId = await newPlayer();
 
-    const res = await fetch("/api/game-service/start-solo-game", {
+    const res = await fetch("/api/games/start-solo-game", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId, difficulty }),
@@ -429,7 +430,7 @@ async function startSoloGame(difficulty) {
     }
 
     const { gameId } = await res.json();
-    setCookie("gameId", gameId);
+    localStorage.setItem("gameId", gameId);
     window.location.href = "/waiting-room/pages/waiting-room-page/waiting-room-page.html";
 }
 
@@ -437,7 +438,7 @@ async function startLocalMultiplayerGame() {
     const playerId1 = await newPlayer();
     const playerId2 = await newPlayer();
 
-    const res = await fetch("/api/game-service/start-local-multiplayer-game", {
+    const res = await fetch("/api/games/start-local-multiplayer-game", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId1, playerId2 }),
@@ -448,14 +449,14 @@ async function startLocalMultiplayerGame() {
     }
 
     const { gameId } = await res.json();
-    setCookie("gameId", gameId);
+    localStorage.setItem("gameId", gameId);
     window.location.href = "/waiting-room/pages/waiting-room-page/waiting-room-page.html";
 }
 
 async function joinMultiplayerGame() {
     const playerId = await newPlayer();
 
-    const res = await fetch("/api/game-service/join-multiplayer-game", {
+    const res = await fetch("/api/games/join-multiplayer-game", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId }),
@@ -466,7 +467,7 @@ async function joinMultiplayerGame() {
     }
 
     const { gameId } = await res.json();
-    setCookie("gameId", gameId);
+    localStorage.setItem("gameId", gameId);
     window.location.href = "/waiting-room/pages/waiting-room-page/waiting-room-page.html";
 }
 
@@ -598,7 +599,6 @@ onload = async () => {
     }
 
     USER_ID = userId;
-    setCookie("userId", USER_ID);
 
     await toggleAuthenticatedView(true);
     await toggleChatBox(true);
