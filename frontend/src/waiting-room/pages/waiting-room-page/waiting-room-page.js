@@ -1,13 +1,11 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-import { getCookie } from "/utils/cookie.js";
 
-// TODO : Remove `gameId` & use local storage instead to enable simultaneous games
-const GAME_ID = getCookie("gameId");
+const GAME_ID = localStorage.getItem("gameId");
 
 
 const socket = io({
-    path: "/api/game-service/socket.io",
+    path: "/api/games/socket.io",
     query: {
         gameId: GAME_ID,
         inWaitingRoom: true,
@@ -18,7 +16,7 @@ const socket = io({
 onload = async _ => {
     let hasStarted;
     try {
-        const response = await fetch("/api/game-service/game-has-started");
+        const response = await fetch(`/api/games/${GAME_ID}/has-started`);
         if (!response.ok) {
             throw (await response.json()).error;
         }

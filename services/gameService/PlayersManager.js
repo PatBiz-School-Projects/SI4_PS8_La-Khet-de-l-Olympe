@@ -24,7 +24,7 @@ class PlayersManager {
     }
 
     static newBot(AI_Impl) {
-        const playerId = `ai#${randomUUID()}`;
+        const playerId = `ai-${randomUUID()}`;
         const bot = new Bot(playerId, AI_Impl);
         this._players[playerId] = bot;
         return bot;
