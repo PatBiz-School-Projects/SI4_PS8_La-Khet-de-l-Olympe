@@ -28,6 +28,7 @@ const playPanel = document.getElementById("play-panel");
 const leaderboardPanel = document.getElementById("leaderboard-panel");
 const leaderboardStatus = document.getElementById("leaderboard-status");
 const leaderboardList = document.getElementById("leaderboard-list");
+const friendsMenuSelector = document.querySelector('.menu-item[data-section="friends"]')
 const friendsPanel = document.getElementById("friends-panel");
 const friendsStatus = document.getElementById("friends-status");
 const friendsOnlineList = document.getElementById("friends-online-list");
@@ -519,6 +520,7 @@ async function toggleAuthenticatedView(isLoggedIn) {
     sidebarAvatar.style.display = isLoggedIn ? "flex" : "none";
     joinMultiplayerBtn.style.display = isLoggedIn ? "flex" : "none";
     sidebarStatus.textContent = isLoggedIn ? "En ligne" : "Hors ligne";
+    friendsMenuSelector.style.display = isLoggedIn ? "flex" : "none";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
     if (!isLoggedIn) {
