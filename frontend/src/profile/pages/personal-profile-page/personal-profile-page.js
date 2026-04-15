@@ -7,6 +7,7 @@ import {
     declineChallenge,
     createChallengeSocket,
 } from '/utils/challenge.js';
+import {getPictureUrl,getGlobalPicturePath} from "/utils/picture.js";
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
@@ -32,22 +33,54 @@ let challengeSocket = null;
 
 const openAvatarModal = () => document.getElementById('avatar-modal')?.classList.remove('hidden');
 const closeAvatarModal = () => document.getElementById('avatar-modal')?.classList.add('hidden');
+function setStatus(message, isError = true) {
+    statusEl.textContent = message;
+    statusEl.style.color = isError ? '#ffb3b3' : '#b8f7c5';
+}
 
 async function handleAvatarSelection(event) {
     const newPicture = event.target.getAttribute('src');
+    const previousPicture = pictureEl.src;
+    try{
+        const token = await ensureValidAccessToken();
 
-    pictureEl.src = newPicture;
-    closeAvatarModal();
+        if (!token) {
+            setStatus("Session expirée. Merci de te reconnecter.");
+            return;
+        }
+        const globalPicture = getGlobalPicturePath(newPicture);
+        const userId = getUserIdFromToken(token);
+        await syncProfilePicture(userId, globalPicture);
+        pictureEl.src = newPicture;
+        closeAvatarModal();
+    }
+    catch(error) {
+        pictureEl.src = previousPicture;
+        console.error("Erreur lors du changement d'avatar :", error);
+        setStatus(error.message || "Impossible de sauvegarder la photo.");
+    }
+}
 
-    const token = await ensureValidAccessToken();
-    const userId = getUserIdFromToken(token);
+async function syncProfilePicture(userId,pictureUrl) {
+    try{
+        const response = await authenticatedFetch(`/api/users/${userId}/profilePicture`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({profilePicture: pictureUrl })
+        });
+        if (!response) {
+            throw new Error("Aucune réponse du serveur");
+        }
 
-    if (!userId) {
-        setStatus('Erreur : Impossible de récupérer ton identifiant.');
-        return;
+        if (!response.ok) {
+            throw new Error("Erreur lors de la sauvegarde de la photo")
+        }
+
+    } catch (error) {
+        console.error("Erreur réseau :", error);
+        throw error;
     }
 
-    await syncProfilePicture(userId, newPicture);
 }
 
 function bindAvatarModalEvents() {
@@ -91,54 +124,6 @@ function bindTabEvents() {
             }
         });
     });
-}
-
-function getPictureUrl(profilePicture) {
-    if (!profilePicture) {
-        return '/assets/pharaoh-blue.png';
-    }
-
-    if (profilePicture.startsWith('http://') || profilePicture.startsWith('https://') || profilePicture.startsWith('/')) {
-        return profilePicture;
-    }
-
-    return `/assets/${profilePicture}`;
-}
-
-async function syncProfilePicture(userId,pictureUrl) {
-    try{
-        const token = ensureValidAccessToken()
-        const response = await authenticatedFetch(`/api/users/${userId}/profile`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({profilePicture: pictureUrl })
-        });
-        if (!response) {
-            setStatus('Session expirée. Impossible de sauvegarder la photo.');
-            return;
-        }
-
-        const payload = await response.json();
-
-        if (!response.ok) {
-
-            setStatus(payload.error || 'Erreur lors de la sauvegarde de la photo.');
-            return;
-        }
-
-        setStatus('Photo de profil mise à jour avec succès.', false);
-
-    } catch (error) {
-        console.error("Erreur réseau :", error);
-        setStatus("Impossible de joindre le serveur pour sauvegarder la photo.");
-    }
-
-}
-
-
-function setStatus(message, isError = true) {
-    statusEl.textContent = message;
-    statusEl.style.color = isError ? '#ffb3b3' : '#b8f7c5';
 }
 
 async function challengeUser(friendId) {
