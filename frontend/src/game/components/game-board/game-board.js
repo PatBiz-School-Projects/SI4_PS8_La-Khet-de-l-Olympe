@@ -144,6 +144,8 @@ export class GameBoard extends HTMLElement {
         return piece;
     }
 
+     pacingDelay = (ms = 400) => new Promise(res => setTimeout(res, ms));
+
 
     /**
      * Moves the given piece to the given position
@@ -163,6 +165,7 @@ export class GameBoard extends HTMLElement {
 
         // NOTE : Temporary solution
         await this.renderer.drawBoard(this.grid);
+        await this.pacingDelay(400);
 
         // DEBUG::
         console.log("Rendered the whole grid.\nDoes it match the following grid ?\n" + this.gridRepr);
@@ -184,6 +187,7 @@ export class GameBoard extends HTMLElement {
 
         // NOTE : Temporary solution
         await this.renderer.drawBoard(this.grid);
+        await this.pacingDelay(400);
 
         // DEBUG::
         console.log("Rendered the whole grid.\nDoes it match the following grid ?\n" + this.gridRepr);
@@ -200,14 +204,11 @@ export class GameBoard extends HTMLElement {
      * @param {"left"|"right"} rotation - The rotation to apply
      */
     async rotatePiece(piece, pos, rotation) {
+
         piece.rotate(rotation);
 
-        // TODO : Uncomment once `BoardRenderer::_convCoordToCanvasCoord` is fixed
-        // await this.renderer.clearPieceAt(pos);
-        // await this.renderer.drawPieceAt(piece, pos);
-
-        // NOTE : Temporary solution
         await this.renderer.drawBoard(this.grid);
+        await this.pacingDelay(400);
     }
 
 
@@ -234,6 +235,7 @@ export class GameBoard extends HTMLElement {
 
         // NOTE : Temporary solution
         await this.renderer.drawBoard(this.grid);
+        await this.pacingDelay(400);
     }
 
 

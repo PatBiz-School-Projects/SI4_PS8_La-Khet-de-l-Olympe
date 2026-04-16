@@ -390,6 +390,11 @@ gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
 }));
 
 gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {
+
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+        return;
+    }
+
     // DEBUG::
     console.log(
         "Opponent's action:",
@@ -710,6 +715,9 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
 
     // DEBUG::
     console.log("Rotation accepted");
+
+    player1RotationIndicator.active = false;
+    player2RotationIndicator.active = false;
 
     await board.rotatePiece(piece, pos, rotation);
     if (actionResult?.laserPath) {
