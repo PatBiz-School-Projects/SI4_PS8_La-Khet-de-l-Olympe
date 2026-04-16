@@ -1,4 +1,4 @@
-const { Player, PlayerID } = require("../Player");
+const { Player, PlayerID,Bot } = require("../Player");
 
 const { Board }     = require("../entities/board");
 const { Inventory } = require("../entities/inventory");
@@ -95,7 +95,9 @@ class Game {
         this.laserService = new LaserService(this.board);
         this.actionValidator = new ActionValidator(this);
         this.actionTimer = new ActionTimer(this);
-        this.actionTimer.start();
+        if (!this._currActivePlayer.playerId.startsWith("ai#")) {
+            this.actionTimer.start();
+        }
 
         this.ACTIONS = {
             move: ({playerId, piece, from, to}) => {
@@ -251,6 +253,7 @@ class Game {
         if (this.isFinished()) {
             return;
         }
+        this.actionTimer._stop();
 
         this._currActivePlayer.socket.emit("end-turn", {});
 
@@ -266,12 +269,18 @@ class Game {
         }
 
         setTimeout(()=> {
+
             this._currActivePlayer.socket.emit("start-turn", {
                 playerId: this._currActivePlayer.playerId
             });
 
-            this.actionTimer.start();
+            if(!this._currActivePlayer.playerId.startsWith("ai#")){
+                this.actionTimer.start();
+            }
+
         }, 500);
+
+
     }
 
 

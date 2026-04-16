@@ -199,6 +199,14 @@ onload = async _ => {
     await setupVariables();
 
     const activePlayer = await askWhoIsPlaying();
+
+    const isBot = activePlayer.playerId.startsWith("ai#") || activePlayer.profile?.username === "Bot";
+    if (isBot) {
+        actionTimer.style.visibility = "hidden";
+    } else {
+        actionTimer.style.visibility = "visible";
+    }
+
     if (CLIENT_PLAYER.playerId === activePlayer.playerId) {
         // DEBUG::
         console.log(`Faked reception of 'start-turn' event for player with id=${CLIENT_PLAYER.playerId}`);
@@ -254,6 +262,8 @@ gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
     console.log(`Received 'start-turn' event for player with id=${payload.playerId}`);
 
     const activePlayer = PLAYERS_BY_ID[payload.playerId];
+    actionTimer.style.visibility = "visible";
+
 
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
 
@@ -279,6 +289,11 @@ gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
     console.log(`Received 'end-turn' event for player with id=${CLIENT_PLAYER.playerId}`);
 
     const activePlayer = PLAYERS[(PLAYERS_ID.indexOf(CLIENT_PLAYER.playerId)+1) % 2];
+
+    const isNextBot = activePlayer.playerId.startsWith("ai#") || activePlayer.profile?.username === "Bot";
+    if (isNextBot) {
+        actionTimer.style.visibility = "hidden";
+    }
 
     stateMachine.on({ type: GamePageActionType.END_TURN })
 
