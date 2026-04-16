@@ -7,7 +7,7 @@ import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
 import { ensureValidAccessToken, clearAuthTokens, authenticatedFetch } from "/utils/auth.js";
 import { getPictureUrl } from "/utils/picture.js";
-import { sendChallenge } from "/utils/challenge.js";
+import { createChallengeSocket, listIncomingChallenges, sendChallenge } from "/utils/challenge.js";
 
 
 /**
@@ -36,7 +36,7 @@ const friendsOnlineList = document.getElementById("friends-online-list");
 const friendsOfflineList = document.getElementById("friends-offline-list");
 const friendsOnlineEmpty = document.getElementById("friends-online-empty");
 const friendsOfflineEmpty = document.getElementById("friends-offline-empty");
-
+const homeNotifications = document.getElementById("home-notifications");
 /** @type {ChatBox} */
 const chatBox = document.querySelector("chat-box");
 
@@ -585,6 +585,194 @@ async function toggleChatBox(isLoggedIn) {
 }
 
 /**
+ * Notifications
+ */
+let challengeSocket;
+let friendRequestsPollingId;
+
+const FRIEND_REQUESTS_REFRESH_MS = 10000;
+const NOTIFICATION_AUTO_CLOSE_MS = 12000;
+const CONSUMED_HOME_NOTIFICATIONS_KEY = "home.notifications.consumed";
+
+function readConsumedNotifications() {
+    try {
+        return JSON.parse(localStorage.getItem(CONSUMED_HOME_NOTIFICATIONS_KEY) || "[]");
+    } catch {
+        return [];
+    }
+}
+
+function markNotificationAsConsumed(key) {
+    const consumed = new Set(readConsumedNotifications());
+    consumed.add(key);
+    localStorage.setItem(CONSUMED_HOME_NOTIFICATIONS_KEY, JSON.stringify(Array.from(consumed).slice(-200)));
+}
+
+function hasBeenConsumed(key) {
+    return readConsumedNotifications().includes(key);
+}
+
+function updateChatBoxOffset() {
+    if (!homeNotifications || !chatBox) {
+        return;
+    }
+    const offset = homeNotifications.childElementCount === 0
+        ? 0
+        : homeNotifications.getBoundingClientRect().height + 12;
+
+    chatBox.style.setProperty("--chatbox-offset", `${Math.ceil(offset)}px`);
+}
+
+function showHomeNotification({ key, title, text, actions=[] }) {
+    if (!homeNotifications || hasBeenConsumed(key)) {
+        return;
+    }
+
+    markNotificationAsConsumed(key);
+
+    const notification = document.createElement("article");
+    notification.className = "home-notification";
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "home-notification__close";
+    closeButton.textContent = "×";
+
+    const titleElement = document.createElement("p");
+    titleElement.className = "home-notification__title";
+    titleElement.textContent = title;
+
+    const textElement = document.createElement("p");
+    textElement.className = "home-notification__text";
+    textElement.textContent = text;
+    const actionsWrapper = document.createElement("div");
+    actionsWrapper.className = "home-notification__actions";
+
+    actions.forEach((action) => {
+        const actionButton = document.createElement("button");
+        actionButton.type = "button";
+        actionButton.className = `home-notification__action-btn ${action.className || ""}`.trim();
+        actionButton.textContent = action.label;
+
+        actionButton.onclick = async () => {
+            actionButton.disabled = true;
+            try {
+                await action.onClick();
+                notification.remove();
+                updateChatBoxOffset();
+            } finally {
+                actionButton.disabled = false;
+            }
+        };
+
+        actionsWrapper.append(actionButton);
+    });
+
+    closeButton.onclick = () => {
+        notification.remove();
+        updateChatBoxOffset();
+    };
+    if (actions.length === 0) {
+        actionsWrapper.hidden = true;
+    }
+
+    notification.append(closeButton, titleElement, textElement, actionsWrapper);
+
+    notification.append(closeButton, titleElement, textElement);
+    homeNotifications.prepend(notification);
+    updateChatBoxOffset();
+
+    setTimeout(() => {
+        if (!notification.isConnected) {
+            return;
+        }
+        notification.remove();
+        updateChatBoxOffset();
+    }, NOTIFICATION_AUTO_CLOSE_MS);
+}
+
+async function refreshFriendRequestNotifications() {
+    const response = await authenticatedFetch("/api/users/friends/requests", {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+
+    if (!response || !response.ok) {
+        return;
+    }
+
+    const payload = await response.json();
+    for (const request of payload.requests || []) {
+        const notificationKey = `friend-request:${request.id}`;
+        showHomeNotification({
+            key: notificationKey,
+            title: "Demande d'ami",
+            text: `${request.requester?.username || "Un joueur"} vous a envoyé une demande d'ami.`,
+            actions: [
+                {
+                    label: "Refuser",
+                    className: "danger",
+                    onClick: async () => {
+                        const declineResponse = await authenticatedFetch("/api/users/friends/request", {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ userId: request.requester?.id }),
+                        });
+
+                        if (!declineResponse) {
+                            throw new Error("SESSION_EXPIRED");
+                        }
+
+                        if (!declineResponse.ok) {
+                            const declinePayload = await declineResponse.json();
+                            throw new Error(declinePayload.error || "UNABLE_TO_DECLINE_REQUEST");
+                        }
+                    },
+                },
+                {
+                    label: "Accepter",
+                    onClick: async () => {
+                        const response = await authenticatedFetch('/api/users/friends/accept', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({requestUserId: request.requester?.id})
+                        });
+                        if (!response) {
+                            setStatus('Session expirée. Veuillez vous reconnecter.');
+                            return;
+                        }
+                        const payload = await response.json();
+
+                        if (!response.ok) {
+                            setStatus(payload.error || 'Impossible d’accepter cette demande.');
+                        }
+                    },
+                }
+            ]
+        });
+    }
+}
+
+async function initHomeNotifications() {
+    await refreshFriendRequestNotifications();
+
+    if (friendRequestsPollingId) {
+        clearInterval(friendRequestsPollingId);
+    }
+    friendRequestsPollingId = setInterval(() => {
+        refreshFriendRequestNotifications().catch((error) => {
+            console.error("Unable to refresh friend request notifications", error);
+        });
+    }, FRIEND_REQUESTS_REFRESH_MS);
+}
+
+window.addEventListener("beforeunload", () => {
+    if (friendRequestsPollingId) {
+        clearInterval(friendRequestsPollingId);
+    }
+    challengeSocket?.disconnect();
+});
+/**
  onLoad function
  */
 onload = async () => {
@@ -608,7 +796,7 @@ onload = async () => {
 
     await toggleAuthenticatedView(true);
     await toggleChatBox(true);
-
+    await initHomeNotifications();
     await loadSidebarProfile();
     setSearchStatus("Tapez au moins 2 caractères.");
 };
