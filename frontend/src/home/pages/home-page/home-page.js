@@ -28,6 +28,7 @@ const playPanel = document.getElementById("play-panel");
 const leaderboardPanel = document.getElementById("leaderboard-panel");
 const leaderboardStatus = document.getElementById("leaderboard-status");
 const leaderboardList = document.getElementById("leaderboard-list");
+const friendsMenuSelector = document.querySelector('.menu-item[data-section="friends"]')
 const friendsPanel = document.getElementById("friends-panel");
 const friendsStatus = document.getElementById("friends-status");
 const friendsOnlineList = document.getElementById("friends-online-list");
@@ -40,6 +41,9 @@ const chatBox = document.querySelector("chat-box");
 let USER_ID;
 let searchDebounceId;
 
+/**
+ * Sidebar functions
+ */
 function showMainPanel(section) {
     const showLeaderboard = section === "leaderboard";
     const showFriends = section === "friends";
@@ -340,6 +344,29 @@ searchMenuItem.addEventListener("click", () => {
     setSearchStatus("Tapez au moins 2 caractères.");
 });
 
+const profileBtn = document.getElementById("profile-btn");
+profileBtn.onclick = async () => {
+    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+};
+
+profileChipBtn.onclick = async () => {
+    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+};
+
+function applySidebarIdentity(username, profilePicture) {
+    sidebarUsername.textContent = username;
+    sidebarAvatar.src = profilePicture;
+}
+async function loadSidebarProfile() {
+    const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+    const profile = await response.json();
+    const newPicture = getPictureUrl(profile.profilePicture)
+    applySidebarIdentity(profile.username, newPicture);
+}
+
 /**
  * Auth logic
  */
@@ -482,16 +509,9 @@ startLocalMultiplayerBtn.onclick = async () => startLocalMultiplayerGame();
 const joinMultiplayerBtn = document.getElementById("join-multiplayer-btn");
 joinMultiplayerBtn.onclick = async () => joinMultiplayerGame();
 
-const profileBtn = document.getElementById("profile-btn");
-profileBtn.onclick = async () => {
-    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
-};
-
-profileChipBtn.onclick = async () => {
-    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
-};
-
-
+/**
+ Authenticated view
+ */
 
 async function toggleAuthenticatedView(isLoggedIn) {
     signupBtn.style.display = isLoggedIn ? "none" : "flex";
@@ -501,6 +521,7 @@ async function toggleAuthenticatedView(isLoggedIn) {
     sidebarAvatar.style.display = isLoggedIn ? "flex" : "none";
     joinMultiplayerBtn.style.display = isLoggedIn ? "flex" : "none";
     sidebarStatus.textContent = isLoggedIn ? "En ligne" : "Hors ligne";
+    friendsMenuSelector.style.display = isLoggedIn ? "flex" : "none";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
     if (!isLoggedIn) {
@@ -511,6 +532,9 @@ async function toggleAuthenticatedView(isLoggedIn) {
     }
 }
 
+/**
+ Global chatbox functions
+ */
 async function toggleChatBox(isLoggedIn) {
     // Initialising chat box
     if (isLoggedIn) {
@@ -567,20 +591,9 @@ async function toggleChatBox(isLoggedIn) {
     }
 }
 
-function applySidebarIdentity(username, profilePicture) {
-    sidebarUsername.textContent = username;
-    sidebarAvatar.src = profilePicture;
-}
-async function loadSidebarProfile() {
-    const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-    });
-    const profile = await response.json();
-    const newPicture = getPictureUrl(profile.profilePicture)
-    applySidebarIdentity(profile.username, newPicture);
-}
-
+/**
+ onLoad function
+ */
 onload = async () => {
     showMainPanel("play");
     const token = await ensureValidAccessToken();
