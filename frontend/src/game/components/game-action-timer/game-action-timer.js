@@ -44,6 +44,7 @@ export class GameActionTimer extends HTMLElement {
         if (!this._isReady) {
             return;
         }
+        if(remainingTime<0) remainingTime =0;
 
         const totalSeconds = Math.ceil(remainingTime / 1000);
         const minutes = Math.floor(totalSeconds / 60).toString().padStart(2, '0');

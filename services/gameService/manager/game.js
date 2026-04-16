@@ -95,7 +95,7 @@ class Game {
         this.laserService = new LaserService(this.board);
         this.actionValidator = new ActionValidator(this);
         this.actionTimer = new ActionTimer(this);
-        if (!(this._currActivePlayer instanceof Bot)) {
+        if (!this._currActivePlayer.playerId.startsWith("ai#")) {
             this.actionTimer.start();
         }
 
@@ -274,7 +274,7 @@ class Game {
                 playerId: this._currActivePlayer.playerId
             });
 
-            if(!(this.currActivePlayer instanceof Bot)){
+            if(!this._currActivePlayer.playerId.startsWith("ai#")){
                 this.actionTimer.start();
             }
 
