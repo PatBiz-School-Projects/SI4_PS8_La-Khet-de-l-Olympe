@@ -1,5 +1,6 @@
 const { randomUUID } = require('node:crypto');
 const { prepareChallengeMatch, acceptChallengeMatch } = require('./gameClient');
+const {isUserConnected} = require('./userClient');
 
 const challenges = new Map();
 
@@ -73,6 +74,11 @@ async function createChallenge({ challengerUserId, targetUserId, cookieHeader })
     const existing = findPendingBetween(challengerUserId, targetUserId);
     if (existing) {
         return toDTO(existing);
+    }
+
+    const targetUserConnected = await isUserConnected(targetUserId, cookieHeader);
+    if (!targetUserConnected) {
+        throw new Error('TARGET_USER_NOT_CONNECTED');
     }
 
     const { gameId, playerId } = await prepareChallengeMatch(cookieHeader);
