@@ -134,23 +134,29 @@
     </main>
 </div>
 
-<div id="difficulty-modal" class="modal-overlay" style="display: none;">
-    <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="difficulty-title">
+<app-modal id="difficulty-modal">
+    <div slot="modal-header">
         <h2 id="difficulty-title">Choisissez votre destin</h2>
-        <div class="modal-buttons">
-            <button id="btn-easy" class="btn-play" type="button">
+    </div>
+
+    <div slot="modal-content">
+        <div id="modal-btns">
+            <button id="btn-easy" class="btn-play">
                 <div class="glow-bg"></div>
-                <span class="btn-play__icon" aria-hidden="true">🜂</span>
+                <span class="btn-play__icon">🜂</span>
                 <span>Mortel (Facile)</span>
             </button>
-            <button id="btn-hard" class="btn-play primary" type="button">
+            <button id="btn-hard" class="btn-play primary">
                 <div class="glow-bg"></div>
-                <span class="btn-play__icon" aria-hidden="true">🜁</span>
+                <span class="btn-play__icon">🜁</span>
                 <span>Demi-dieu (difficile)</span>
             </button>
         </div>
-        <button id="close-modal-btn" class="text-button" type="button">Fermer</button>
     </div>
-</div>
+
+    <div slot="modal-footer">
+        <!-- nothing -->
+    </div>
+</app-modal>
 </body>
 </html>
