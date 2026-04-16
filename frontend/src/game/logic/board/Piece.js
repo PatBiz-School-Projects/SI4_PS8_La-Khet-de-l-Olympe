@@ -104,13 +104,15 @@ export class Piece {
         const currOrientationIdx = ORDERED_ORIENTATIONS.indexOf(this._orientation );
         switch (rotation) {
             case "left":
-                return ORDERED_ORIENTATIONS[
+                this._orientation = ORDERED_ORIENTATIONS[
                     posMod(currOrientationIdx-1, ORDERED_ORIENTATIONS.length)
                 ];
+                break;
             case "right":
-                return ORDERED_ORIENTATIONS[
+                this._orientation = ORDERED_ORIENTATIONS[
                     posMod(currOrientationIdx+1, ORDERED_ORIENTATIONS.length)
                 ];
+                break;
         }
     }
 }
