@@ -10,7 +10,7 @@ function mapError(error) {
     if (message === 'CHALLENGE_NOT_FOUND') return [404, 'CHALLENGE_NOT_FOUND'];
     if (message === 'INVALID_CHALLENGE_STATUS') return [409, 'INVALID_CHALLENGE_STATUS'];
     if (message === 'FORBIDDEN') return [403, 'FORBIDDEN'];
-
+    if (message === 'TARGET_USER_NOT_CONNECTED') return [409, 'TARGET_USER_NOT_CONNECTED'];
     return [500, message];
 }
 
