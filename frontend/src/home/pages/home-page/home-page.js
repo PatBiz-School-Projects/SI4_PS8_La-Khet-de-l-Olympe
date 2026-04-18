@@ -1,6 +1,7 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
 import { ChatBox } from "/chat/components/index.js";
+import { AppModal } from "/shared/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
@@ -35,6 +36,7 @@ const friendsOnlineList = document.getElementById("friends-online-list");
 const friendsOfflineList = document.getElementById("friends-offline-list");
 const friendsOnlineEmpty = document.getElementById("friends-online-empty");
 const friendsOfflineEmpty = document.getElementById("friends-offline-empty");
+
 /** @type {ChatBox} */
 const chatBox = document.querySelector("chat-box");
 
@@ -319,7 +321,7 @@ menuItems.forEach((item) => {
     });
 });
 
-clickableCards.forEach((card) => {
+clickableCards.forEach(card => {
     card.addEventListener("click", () => {
         const action = card.dataset.action;
         if (action === "ranked") {
@@ -328,11 +330,7 @@ clickableCards.forEach((card) => {
             });
             return;
         }
-
-        if (action === "daily" || action === "academy") {
-            modal.style.display = "flex";
-        }
-    });
+    })
 });
 
 searchInput.addEventListener("input", async (event) => {
@@ -424,22 +422,17 @@ async function newPlayer() {
     return playerId;
 }
 
-const modal = document.getElementById("difficulty-modal");
-const closeModalBtn = document.getElementById("close-modal-btn");
-const btnEasy = document.getElementById("btn-easy");
-const btnHard = document.getElementById("btn-hard");
+/** @type {AppModal} */
+const difficultyModal = document.querySelector("#difficulty-modal");
 
-closeModalBtn.onclick = () => {
-    modal.style.display = "none";
-};
+const btnEasy = document.querySelector("#btn-easy");
+const btnHard = document.querySelector("#btn-hard");
 
 btnEasy.onclick = async () => {
-    modal.style.display = "none";
     await startSoloGame("easy");
 };
 
 btnHard.onclick = async () => {
-    modal.style.display = "none";
     await startSoloGame("hard");
 };
 
@@ -500,7 +493,7 @@ async function joinMultiplayerGame() {
 
 const startSoloGameBtn = document.getElementById("start-solo-btn");
 startSoloGameBtn.onclick = () => {
-    modal.style.display = "flex";
+    difficultyModal.show();
 };
 
 const startLocalMultiplayerBtn = document.getElementById("start-local-multiplayer-btn");

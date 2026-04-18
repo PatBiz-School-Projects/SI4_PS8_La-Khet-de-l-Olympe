@@ -1,6 +1,13 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-import { GameActionTimer, GameBoard, GamePlayerInventory, GameRotationIndicator, GameTurnIndicator } from "/game/components/index.js";
+import {
+    GameActionTimer,
+    GameBoard,
+    GameOverModal,
+    GamePlayerInventory,
+    GameRotationIndicator,
+    GameTurnIndicator,
+} from "/game/components/index.js";
 
 import { Piece } from "/game/logic/board/Piece.js";
 import { GameActionType } from "/game/logic/GameAction.js";
@@ -30,13 +37,15 @@ const turnIndicator = document.querySelector("game-turn-indicator");
 /** @type { GameActionTimer } */
 const actionTimer = document.querySelector("game-action-timer");
 /** @type { GamePlayerInventory } */
-const player1Inventory = document.querySelector("game-player-inventory#player1-inventory");
+const player1Inventory = document.querySelector("#player1-inventory");
 /** @type { GamePlayerInventory } */
-const player2Inventory = document.querySelector("game-player-inventory#player2-inventory");
+const player2Inventory = document.querySelector("#player2-inventory");
 /** @type { GameRotationIndicator } */
 const player1RotationIndicator = document.querySelector("#player1-rotation-indicator");
 /** @type { GameRotationIndicator } */
 const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
+/** @type { GameOverModal } */
+const gameOverModal = document.querySelector("game-over-modal");
 /** @type { ChatBox } */
 const chatBox = document.querySelector("chat-box");
 
@@ -168,6 +177,8 @@ async function setupVariables() {
     PLAYERS_ROTATION_INDICATOR_BY_ID = { [PLAYERS_ID[0]]: player1RotationIndicator, [PLAYERS_ID[1]]: player2RotationIndicator };
 }
 
+let isGameOver = false;
+
 
 //
 // Game page's logical components
@@ -246,6 +257,7 @@ onload = async _ => {
         await chatBox.actualise();
     } else {
         chatBox.remove();
+        gameOverModal.deactivateChallenge();
     }
 }
 
@@ -365,11 +377,37 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
     }
 }));
 
-gameSocket.on("game-over", gameEventQueue.enqueue(payload => {
+gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratingUpdate}) => {
     // DEBUG::
-    console.log("Received 'game-over' event:", payload);
+    console.log("Received 'game-over' event, with state:" + state + " , winner of id:" + winnerId + "& rating update being:" + ratingUpdate);
 
-    showGameOver(payload);
+    const formatRatingUpdate = (ratingUpdate) => {
+        if (!ratingUpdate) {
+            return "";
+        }
+
+        const signedDelta = ratingUpdate.delta >= 0 ? `+${ratingUpdate.delta}` : `${ratingUpdate.delta}`;
+        return `ELO ${signedDelta} · nouveau score ${ratingUpdate.newRating}.`;
+    }
+
+    let baseMessage;
+    if (state === "DRAW") {
+        baseMessage = "Match nul.";
+    } else {
+        switch (GAME_MODE) {
+            case GameMode.SOLO:
+            case GameMode.MULTIPLAYER:
+                baseMessage = (CLIENT_PLAYER.playerId === winnerId) ? "Victoire !" : "Défaite...";
+                break;
+            case GameMode.LOCAL_MULTIPLAYER:
+                baseMessage = "Victoire de " + PLAYERS_COLOR_BY_ID[winnerId].toUpperCase();
+                break;
+        }
+    }
+
+    isGameOver = true;
+    gameOverModal.show();
+    gameOverModal.detail = `${baseMessage} ${formatRatingUpdate(ratingUpdate)}`;
 }));
 
 gameSocket.on("action-timer-sync", async ({remainingTime}) => {
@@ -673,76 +711,44 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
 
 
 //
-// Game Over Logic & Components
+// End Game
 //
 
 
-// TODO : Make it a component
+gameOverModal.addEventListener("challenge-opponent", async _ => {
+    alert("Ce sera supporté un jour ( ദ്ദി ˙ᗜ˙ )");
 
+    // TODO : To support
 
-const gameOverOverlay = document.querySelector("#game-over-overlay");
-const gameOverMessage = document.querySelector("#game-over-message");
-const gameOverChallengeButton = document.querySelector("#game-over-challenge-btn");
-const gameOverStatus = document.querySelector("#game-over-status");
-let isGameOver = false;
-gameOverChallengeButton.addEventListener('click', challengeOpponent);
-
-function getOpponentId() {
-    return PLAYERS_ID.find(playerId => playerId !== CLIENT_PLAYER.playerId);
-}
-
-function setGameOverStatus(message, isError = false) {
-    gameOverStatus.textContent = message;
-    gameOverStatus.style.color = isError ? '#ffb3b3' : '#b8f7c5';
-}
-
-async function challengeOpponent() {
-    const opponentId = getOpponentId();
-
-    if (!opponentId) {
-        setGameOverStatus('Adversaire introuvable.', true);
-        return;
-    }
-
-    gameOverChallengeButton.disabled = true;
-    const result = await sendChallenge(opponentId);
-
-    if (!result.ok) {
-        const message = result.payload?.error || (result.error === 'MISSING_TOKEN'
-            ? 'Session expirée. Veuillez vous reconnecter.'
-            : 'Impossible de défier');
-        setGameOverStatus(message, true);
-        gameOverChallengeButton.disabled = false;
-        return;
-    }
-
-    setGameOverStatus('Défi envoyé avec succès.');
-    gameOverChallengeButton.textContent = 'Défi envoyé';
-}
-
-function formatRatingUpdate(ratingUpdate) {
-    if (!ratingUpdate) {
-        return "";
-    }
-
-    const signedDelta = ratingUpdate.delta >= 0 ? `+${ratingUpdate.delta}` : `${ratingUpdate.delta}`;
-    return ` ELO ${signedDelta} · nouveau score ${ratingUpdate.newRating}.`;
-}
-
-function showGameOver({ state, winnerId, ratingUpdate }) {
-    isGameOver = true;
-    const isDraw = state === "DRAW";
-    const didIWin = winnerId === CLIENT_PLAYER.playerId;
-
-    // REVIEW : What happens if the game was a local multiplayer game
-
-    const baseMessage = (
-        isDraw
-            ? "Match nul."
-            : didIWin
-                ? "Victoire !"
-                : "Défaite..."
-    );
-    gameOverMessage.textContent = `${baseMessage}${formatRatingUpdate(ratingUpdate)}`;
-    gameOverOverlay.classList.remove("hidden");
-}
+    // Old code (Before modal refactor):
+    // ---------------------------------
+    //
+    // function setGameOverStatus(message, isError = false) {
+    //     gameOverStatus.textContent = message;
+    //     gameOverStatus.style.color = isError ? '#ffb3b3' : '#b8f7c5';
+    // }
+    //
+    // const opponentId = PLAYERS_ID.find(playerId => playerId !== CLIENT_PLAYER.playerId);
+    // if (!opponentId) {
+    //     setGameOverStatus('Adversaire introuvable.', true);
+    //     return;
+    // }
+    //
+    // gameOverChallengeButton.disabled = true;
+    // const result = await sendChallenge(opponentId);
+    //
+    // if (!result.ok) {
+    //     const message = result.payload?.error
+    //         || (
+    //         (result.error === 'MISSING_TOKEN')
+    //         ? 'Session expirée. Veuillez vous reconnecter.'
+    //         : 'Impossible de défier'
+    //     );
+    //     setGameOverStatus(message, true);
+    //     gameOverChallengeButton.disabled = false;
+    //     return;
+    // }
+    //
+    // setGameOverStatus('Défi envoyé avec succès.');
+    // gameOverChallengeButton.textContent = 'Défi envoyé';
+});
