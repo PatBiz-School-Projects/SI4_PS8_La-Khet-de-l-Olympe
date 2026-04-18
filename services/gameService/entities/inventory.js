@@ -76,7 +76,17 @@ class Inventory {
         this._locked2++;
     }
 
+
+    //MINMAXAI
+    popLockedPyramid() {
+        if (this._locked2 > 0) {
+            this._locked2--;
+        }
+    }
+
     unlockPendingPyramids() {
+
+        const previousState = { locked1: this._locked1, locked2: this._locked2 };
 
         for (let i = 0; i < this._locked1; i++) {
             this.pushPyramid();
@@ -84,6 +94,18 @@ class Inventory {
 
         this._locked1 = this._locked2;
         this._locked2 = 0;
+
+        return previousState;
+    }
+
+    //MINMAXAI
+    undoUnlockPendingPyramids(savedState) {
+
+        for (let i = 0; i < savedState.locked1; i++) {
+            this.popPyramid();
+        }
+        this._locked1 = savedState.locked1;
+        this._locked2 = savedState.locked2;
     }
 }
 

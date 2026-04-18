@@ -52,7 +52,7 @@ const DIRS = [ {dx: 1, dy: 0}, {dx: 0, dy: 1}, {dx: -1, dy: 0}, {dx: 0, dy: -1} 
  * @abstract
  */
 class AI {
-    constructor(playerId, board, inventory) {
+    constructor(playerId, board, inventory, swapCooldowns) {
         /** @private @type {PlayerID} */
         this._playerId = playerId;
 
@@ -61,12 +61,14 @@ class AI {
 
         /** @private @type {Inventory} */
         this._inventory = inventory;
+
+        this._swapCooldowns = swapCooldowns || { "Sphinx": 0, "Pharaoh": 0 };
     }
 
     /**
      * @protected
      */
-    _getLegalActions(playerId, board, inventory) {
+    _getLegalActions(playerId, board, inventory,cooldowns) {
 
         const ret = [];
 
@@ -162,8 +164,10 @@ class AI {
             }
         }
 
-        if(scarab && sphinx)ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, sphinx, sphinxPos));
-        if(scarab && pharaoh)ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, pharaoh, pharaohPos))
+        const playerCooldowns = cooldowns || this._swapCooldowns;
+
+        if(scarab && sphinx && playerCooldowns["Sphinx"] <= 0)ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, sphinx, sphinxPos));
+        if(scarab && pharaoh && playerCooldowns["Pharaoh"] <= 0)ret.push(AIActionGenerator.switch(playerId, scarab, scarabPos, pharaoh, pharaohPos))
 
         return ret;
     }
@@ -176,12 +180,12 @@ class AI {
 
 
 class RandomAI extends AI {
-    constructor(playerId, board, inventory) {
-        super(playerId, board, inventory)
+    constructor(playerId, board, inventory,swapCooldowns) {
+        super(playerId, board, inventory, swapCooldowns)
     }
 
     computeNextAction() {
-        const legalActions = this._getLegalActions(this._playerId,this._board,this._inventory);
+        const legalActions = this._getLegalActions(this._playerId,this._board,this._inventory,this._swapCooldowns);
 
         const randomIndex = Math.floor(Math.random() * legalActions.length);
         const finalAction = legalActions[randomIndex];
@@ -200,10 +204,11 @@ class RandomAI extends AI {
 
 
 class MiniMaxAI extends AI {
-    constructor(playerId, board, inventory, opponentInventory,opponentId) {
-        super(playerId, board, inventory);
+    constructor(playerId, board, inventory, opponentInventory,opponentId,swapCooldowns,oppSwapCooldowns) {
+        super(playerId, board, inventory,swapCooldowns);
         this._opponentInventory = opponentInventory;
         this._opponentId = opponentId;
+        this._oppSwapCooldowns = oppSwapCooldowns || { "Sphinx": 0, "Pharaoh": 0 };
         this._maxDepth = 2;
     }
 
@@ -214,22 +219,36 @@ class MiniMaxAI extends AI {
         const board = this._board;
         const myInventory = this._inventory;
         const opponentInventory = this._opponentInventory;
+        const myCooldowns = { ...this._swapCooldowns };
+        const oppCooldowns = { ...this._oppSwapCooldowns };
 
         console.log("MINIMAX COMMENCE À RÉFLÉCHIR...");
-        const legalActions = this._getLegalActions(this._playerId,this._board,this._inventory);
+        const legalActions = this._getLegalActions(this._playerId,this._board,this._inventory,myCooldowns);
 
         const simulatedLaserService = new LaserService(this._board);
         for(const action of legalActions) {
+
+            let previousCooldown = null;
+
+            if (action.method === "switch") {
+                const targetType = action.args.piece2.type;
+                previousCooldown = myCooldowns[targetType];
+                myCooldowns[targetType] = 4;
+            }
 
             this._applyAction(board,myInventory,action);
             const  result = this._simulateFireLaser(simulatedLaserService, board, myInventory, opponentInventory,this._playerId);
             let pharaohDead = result.pharaohDead;
             const pieceDestroyed = result.destroyedLog;
-            let score = this._minimax(board, myInventory,opponentInventory,simulatedLaserService, this._maxDepth - 1, -Infinity, Infinity, false,pharaohDead);
+            let score = this._minimax(board, myInventory,opponentInventory,simulatedLaserService, this._maxDepth - 1, -Infinity, Infinity, false,pharaohDead,myCooldowns, oppCooldowns);
 
 
             this._undoLaser(board, myInventory, opponentInventory,pieceDestroyed, this._playerId);
             this._undoAction(board,myInventory,action);
+
+            if (action.method === "switch") {
+                myCooldowns[action.args.piece2.type] = previousCooldown;
+            }
 
 
             if (score > bestScore) {
@@ -293,9 +312,9 @@ class MiniMaxAI extends AI {
             }
             if (record.piece.type === "Pyramid") {
                 if (record.piece.owner === this._playerId) {
-                    oppInv.popPyramid();
+                    oppInv.popLockedPyramid();
                 } else {
-                    myInv.popPyramid();
+                    myInv.popLockedPyramid();
                 }
             }
         }
@@ -362,9 +381,9 @@ class MiniMaxAI extends AI {
             if (piece.type === "Pyramid") {
 
                 if (realPieceObj.owner === this._playerId) {
-                    oppInv.pushPyramid();
+                    oppInv.pushLockedPyramid();
                 } else {
-                    myInv.pushPyramid();
+                    myInv.pushLockedPyramid();
                 }
 
             }
@@ -373,16 +392,33 @@ class MiniMaxAI extends AI {
         return {pharaohDead,destroyedLog};
     }
 
-    _minimax(board,myInv,oppInv,laserService,depth,alpha,beta,isMaximizingPlayer,pharaohDead) {
+    _minimax(board,myInv,oppInv,laserService,depth,alpha,beta,isMaximizingPlayer,pharaohDead,myCooldowns, oppCooldowns) {
         if (depth === 0 || pharaohDead) {
             return this._evaluateBoard(board);
         }
 
         if (isMaximizingPlayer) {
+
             let maxEval = -Infinity;
-            const actions = this._getLegalActions(this._playerId, board, myInv);
+
+            const savedInvState = myInv.unlockPendingPyramids();
+
+            const simulatedMyCooldowns = {
+                "Sphinx": Math.max(0, myCooldowns["Sphinx"] - 1),
+                "Pharaoh": Math.max(0, myCooldowns["Pharaoh"] - 1)
+            };
+
+            const actions = this._getLegalActions(this._playerId, board, myInv,simulatedMyCooldowns);
 
             for (const action of actions) {
+
+                let previousCooldown = null;
+
+                if (action.method === "switch") {
+                    previousCooldown = simulatedMyCooldowns[action.args.piece2.type];
+                    simulatedMyCooldowns[action.args.piece2.type] = 4;
+                }
+
 
                 this._applyAction(board, myInv, action);
 
@@ -390,23 +426,40 @@ class MiniMaxAI extends AI {
                 const isDead = result.pharaohDead;
                 const pieceDestroyed = result.destroyedLog;
 
-                let evalScore = this._minimax(board, myInv,oppInv,laserService,depth - 1, alpha, beta, false,isDead);
+                let evalScore = this._minimax(board, myInv,oppInv,laserService,depth - 1, alpha, beta, false,isDead,simulatedMyCooldowns, oppCooldowns);
                 maxEval = Math.max(maxEval, evalScore);
-
                 alpha = Math.max(alpha, evalScore);
 
                 this._undoLaser(board, myInv, oppInv,pieceDestroyed, this._playerId);
                 this._undoAction(board,myInv,action);
+                if (action.method === "switch") simulatedMyCooldowns[action.args.piece2.type] = previousCooldown;
+
                 if (beta <= alpha) break;
             }
+            myInv.undoUnlockPendingPyramids(savedInvState);
+
             return maxEval;
 
         } else {
 
             let minEval = Infinity;
-            const actions = this._getLegalActions(this._opponentId, board, oppInv);
+
+            const savedInvState = oppInv.unlockPendingPyramids();
+
+            const simulatedOppCooldowns = {
+                "Sphinx": Math.max(0, oppCooldowns["Sphinx"] - 1),
+                "Pharaoh": Math.max(0, oppCooldowns["Pharaoh"] - 1)
+            };
+
+            const actions = this._getLegalActions(this._opponentId, board, oppInv, simulatedOppCooldowns);
 
             for (const action of actions) {
+
+                let previousCooldown = null;
+                if (action.method === "switch") {
+                    previousCooldown = simulatedOppCooldowns[action.args.piece2.type];
+                    simulatedOppCooldowns[action.args.piece2.type] = 4;
+                }
 
                 this._applyAction(board, oppInv, action);
 
@@ -414,7 +467,7 @@ class MiniMaxAI extends AI {
                 const isDead = result.pharaohDead;
                 const pieceDestroyed = result.destroyedLog;
 
-                let evalScore = this._minimax(board, myInv,oppInv, laserService,depth - 1, alpha, beta, true,isDead);
+                let evalScore = this._minimax(board, myInv,oppInv, laserService,depth - 1, alpha, beta, true,isDead,myCooldowns, simulatedOppCooldowns);
                 minEval = Math.min(minEval, evalScore);
 
 
@@ -422,8 +475,12 @@ class MiniMaxAI extends AI {
 
                 this._undoLaser(board, myInv, oppInv,pieceDestroyed, this._playerId);
                 this._undoAction(board,oppInv,action);
+                if (action.method === "switch") simulatedOppCooldowns[action.args.piece2.type] = previousCooldown;
+
                 if (beta <= alpha) break;
             }
+
+            oppInv.undoUnlockPendingPyramids(savedInvState);
             return minEval;
         }
     }
