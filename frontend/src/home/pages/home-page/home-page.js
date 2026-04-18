@@ -1,12 +1,19 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
 import { ChatBox } from "/chat/components/index.js";
+import { AppModal } from "/shared/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
 import { ensureValidAccessToken, clearAuthTokens, authenticatedFetch } from "/utils/auth.js";
 import { getPictureUrl } from "/utils/picture.js";
-import { sendChallenge } from "/utils/challenge.js";
+import {
+    acceptChallenge,
+    createChallengeSocket,
+    declineChallenge,
+    listIncomingChallenges,
+    sendChallenge
+} from "/utils/challenge.js";
 
 
 /**
@@ -28,18 +35,23 @@ const playPanel = document.getElementById("play-panel");
 const leaderboardPanel = document.getElementById("leaderboard-panel");
 const leaderboardStatus = document.getElementById("leaderboard-status");
 const leaderboardList = document.getElementById("leaderboard-list");
+const friendsMenuSelector = document.querySelector('.menu-item[data-section="friends"]')
 const friendsPanel = document.getElementById("friends-panel");
 const friendsStatus = document.getElementById("friends-status");
 const friendsOnlineList = document.getElementById("friends-online-list");
 const friendsOfflineList = document.getElementById("friends-offline-list");
 const friendsOnlineEmpty = document.getElementById("friends-online-empty");
 const friendsOfflineEmpty = document.getElementById("friends-offline-empty");
+const homeNotifications = document.getElementById("home-notifications");
 /** @type {ChatBox} */
 const chatBox = document.querySelector("chat-box");
 
 let USER_ID;
 let searchDebounceId;
 
+/**
+ * Sidebar functions
+ */
 function showMainPanel(section) {
     const showLeaderboard = section === "leaderboard";
     const showFriends = section === "friends";
@@ -315,7 +327,7 @@ menuItems.forEach((item) => {
     });
 });
 
-clickableCards.forEach((card) => {
+clickableCards.forEach(card => {
     card.addEventListener("click", () => {
         const action = card.dataset.action;
         if (action === "ranked") {
@@ -324,11 +336,7 @@ clickableCards.forEach((card) => {
             });
             return;
         }
-
-        if (action === "daily" || action === "academy") {
-            modal.style.display = "flex";
-        }
-    });
+    })
 });
 
 searchInput.addEventListener("input", async (event) => {
@@ -339,6 +347,29 @@ searchInput.addEventListener("input", async (event) => {
 searchMenuItem.addEventListener("click", () => {
     setSearchStatus("Tapez au moins 2 caractères.");
 });
+
+const profileBtn = document.getElementById("profile-btn");
+profileBtn.onclick = async () => {
+    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+};
+
+profileChipBtn.onclick = async () => {
+    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+};
+
+function applySidebarIdentity(username, profilePicture) {
+    sidebarUsername.textContent = username;
+    sidebarAvatar.src = profilePicture;
+}
+async function loadSidebarProfile() {
+    const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
+        method: "GET",
+        headers: { "Content-Type": "application/json" },
+    });
+    const profile = await response.json();
+    const newPicture = getPictureUrl(profile.profilePicture)
+    applySidebarIdentity(profile.username, newPicture);
+}
 
 /**
  * Auth logic
@@ -397,22 +428,17 @@ async function newPlayer() {
     return playerId;
 }
 
-const modal = document.getElementById("difficulty-modal");
-const closeModalBtn = document.getElementById("close-modal-btn");
-const btnEasy = document.getElementById("btn-easy");
-const btnHard = document.getElementById("btn-hard");
+/** @type {AppModal} */
+const difficultyModal = document.querySelector("#difficulty-modal");
 
-closeModalBtn.onclick = () => {
-    modal.style.display = "none";
-};
+const btnEasy = document.querySelector("#btn-easy");
+const btnHard = document.querySelector("#btn-hard");
 
 btnEasy.onclick = async () => {
-    modal.style.display = "none";
     await startSoloGame("easy");
 };
 
 btnHard.onclick = async () => {
-    modal.style.display = "none";
     await startSoloGame("hard");
 };
 
@@ -473,7 +499,7 @@ async function joinMultiplayerGame() {
 
 const startSoloGameBtn = document.getElementById("start-solo-btn");
 startSoloGameBtn.onclick = () => {
-    modal.style.display = "flex";
+    difficultyModal.show();
 };
 
 const startLocalMultiplayerBtn = document.getElementById("start-local-multiplayer-btn");
@@ -482,16 +508,9 @@ startLocalMultiplayerBtn.onclick = async () => startLocalMultiplayerGame();
 const joinMultiplayerBtn = document.getElementById("join-multiplayer-btn");
 joinMultiplayerBtn.onclick = async () => joinMultiplayerGame();
 
-const profileBtn = document.getElementById("profile-btn");
-profileBtn.onclick = async () => {
-    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
-};
-
-profileChipBtn.onclick = async () => {
-    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
-};
-
-
+/**
+ Authenticated view
+ */
 
 async function toggleAuthenticatedView(isLoggedIn) {
     signupBtn.style.display = isLoggedIn ? "none" : "flex";
@@ -501,6 +520,7 @@ async function toggleAuthenticatedView(isLoggedIn) {
     sidebarAvatar.style.display = isLoggedIn ? "flex" : "none";
     joinMultiplayerBtn.style.display = isLoggedIn ? "flex" : "none";
     sidebarStatus.textContent = isLoggedIn ? "En ligne" : "Hors ligne";
+    friendsMenuSelector.style.display = isLoggedIn ? "flex" : "none";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
     if (!isLoggedIn) {
@@ -511,6 +531,9 @@ async function toggleAuthenticatedView(isLoggedIn) {
     }
 }
 
+/**
+ Global chatbox functions
+ */
 async function toggleChatBox(isLoggedIn) {
     // Initialising chat box
     if (isLoggedIn) {
@@ -567,20 +590,287 @@ async function toggleChatBox(isLoggedIn) {
     }
 }
 
-function applySidebarIdentity(username, profilePicture) {
-    sidebarUsername.textContent = username;
-    sidebarAvatar.src = profilePicture;
+/**
+ * Notifications
+ */
+let challengeSocket;
+let challengePollingId;
+let friendRequestsPollingId;
+const FRIEND_REQUESTS_REFRESH_MS = 10000;
+const CHALLENGES_REFRESH_MS = 10000;
+const NOTIFICATION_AUTO_CLOSE_MS = 12000;
+const CONSUMED_HOME_NOTIFICATIONS_KEY = "home.notifications.consumed";
+const profileNameCache = new Map();
+
+function readConsumedNotifications() {
+    try {
+        return JSON.parse(localStorage.getItem(CONSUMED_HOME_NOTIFICATIONS_KEY) || "[]");
+    } catch {
+        return [];
+    }
 }
-async function loadSidebarProfile() {
-    const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
+
+function markNotificationAsConsumed(key) {
+    const consumed = new Set(readConsumedNotifications());
+    consumed.add(key);
+    localStorage.setItem(CONSUMED_HOME_NOTIFICATIONS_KEY, JSON.stringify(Array.from(consumed).slice(-200)));
+}
+
+function hasBeenConsumed(key) {
+    return readConsumedNotifications().includes(key);
+}
+
+function updateChatBoxOffset() {
+    if (!homeNotifications || !chatBox) {
+        return;
+    }
+    const offset = homeNotifications.childElementCount === 0
+        ? 0
+        : homeNotifications.getBoundingClientRect().height + 12;
+
+    chatBox.style.setProperty("--chatbox-offset", `${Math.ceil(offset)}px`);
+}
+
+function showHomeNotification({ key, title, text, actions=[] }) {
+    if (!homeNotifications || hasBeenConsumed(key)) {
+        return;
+    }
+
+    markNotificationAsConsumed(key);
+
+    const notification = document.createElement("article");
+    notification.className = "home-notification";
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.className = "home-notification__close";
+    closeButton.textContent = "×";
+
+    const titleElement = document.createElement("p");
+    titleElement.className = "home-notification__title";
+    titleElement.textContent = title;
+
+    const textElement = document.createElement("p");
+    textElement.className = "home-notification__text";
+    textElement.textContent = text;
+    const actionsWrapper = document.createElement("div");
+    actionsWrapper.className = "home-notification__actions";
+
+    actions.forEach((action) => {
+        const actionButton = document.createElement("button");
+        actionButton.type = "button";
+        actionButton.className = `home-notification__action-btn ${action.className || ""}`.trim();
+        actionButton.textContent = action.label;
+
+        actionButton.onclick = async () => {
+            actionButton.disabled = true;
+            try {
+                await action.onClick();
+                notification.remove();
+                updateChatBoxOffset();
+            } finally {
+                actionButton.disabled = false;
+            }
+        };
+
+        actionsWrapper.append(actionButton);
+    });
+
+    closeButton.onclick = () => {
+        notification.remove();
+        updateChatBoxOffset();
+    };
+    if (actions.length === 0) {
+        actionsWrapper.hidden = true;
+    }
+
+    notification.append(closeButton, titleElement, textElement, actionsWrapper);
+    homeNotifications.prepend(notification);
+    updateChatBoxOffset();
+
+    setTimeout(() => {
+        if (!notification.isConnected) {
+            return;
+        }
+        notification.remove();
+        updateChatBoxOffset();
+    }, NOTIFICATION_AUTO_CLOSE_MS);
+}
+
+async function refreshFriendRequestNotifications() {
+    const response = await authenticatedFetch("/api/users/friends/requests", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
-    const profile = await response.json();
-    const newPicture = getPictureUrl(profile.profilePicture)
-    applySidebarIdentity(profile.username, newPicture);
+
+    if (!response || !response.ok) {
+        return;
+    }
+
+    const payload = await response.json();
+    for (const request of payload.requests || []) {
+        const notificationKey = `friend-request:${request.id}`;
+        showHomeNotification({
+            key: notificationKey,
+            title: "Demande d'ami",
+            text: `${request.requester?.username || "Un joueur"} vous a envoyé une demande d'ami.`,
+            actions: [
+                {
+                    label: "Refuser",
+                    className: "danger",
+                    onClick: async () => {
+                        const declineResponse = await authenticatedFetch("/api/users/friends/request", {
+                            method: "DELETE",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ userId: request.requester?.id }),
+                        });
+
+                        if (!declineResponse) {
+                            throw new Error("SESSION_EXPIRED");
+                        }
+
+                        if (!declineResponse.ok) {
+                            const declinePayload = await declineResponse.json();
+                            throw new Error(declinePayload.error || "UNABLE_TO_DECLINE_REQUEST");
+                        }
+                    },
+                },
+                {
+                    label: "Accepter",
+                    onClick: async () => {
+                        const response = await authenticatedFetch('/api/users/friends/accept', {
+                            method: 'POST',
+                            headers: {'Content-Type': 'application/json'},
+                            body: JSON.stringify({requestUserId: request.requester?.id})
+                        });
+                        if (!response) {
+                            setStatus('Session expirée. Veuillez vous reconnecter.');
+                            return;
+                        }
+                        const payload = await response.json();
+
+                        if (!response.ok) {
+                            setStatus(payload.error || 'Impossible d’accepter cette demande.');
+                        }
+                    },
+                }
+            ]
+        });
+    }
 }
 
+async function getUsernameFromUserId(userId) {
+    if (!userId) {
+        return "Un joueur";
+    }
+
+    if (profileNameCache.has(userId)) {
+        return profileNameCache.get(userId);
+    }
+
+    const response = await authenticatedFetch(`/api/users/${encodeURIComponent(userId)}/minimal-profile`, {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    });
+
+    if (!response || !response.ok) {
+        return "Un joueur";
+    }
+
+    const payload = await response.json();
+    const username = payload?.username || "Un joueur";
+    profileNameCache.set(userId, username);
+    return username;
+}
+
+async function showIncomingChallengeNotification(challenge) {
+    const challengerName = await getUsernameFromUserId(challenge.challengerUserId);
+    const notificationKey = `challenge-incoming:${challenge.id}`;
+
+    showHomeNotification({
+        key: notificationKey,
+        title: "Défi reçu",
+        text: `${challengerName} vous a défié.`,
+        actions: [
+            {
+                label: "Refuser",
+                className: "danger",
+                onClick: async () => {
+                    const result = await declineChallenge(challenge.id);
+                    if (!result.ok) {
+                        throw new Error(result.payload?.error || "UNABLE_TO_DECLINE_CHALLENGE");
+                    }
+                }
+            },
+            {
+                label: "Accepter",
+                onClick: async () => {
+                    const result = await acceptChallenge(challenge.id);
+                    if (!result.ok) {
+                        throw new Error(result.payload?.error || "UNABLE_TO_ACCEPT_CHALLENGE");
+                    }
+                }
+            }
+        ]
+    });
+}
+
+async function refreshChallengeNotifications() {
+    const result = await listIncomingChallenges();
+    if (!result.ok) {
+        return;
+    }
+
+    for (const challenge of result.payload?.challenges || []) {
+        await showIncomingChallengeNotification(challenge);
+    }
+}
+
+async function initHomeNotifications() {
+    await refreshFriendRequestNotifications();
+    await refreshChallengeNotifications();
+
+    challengeSocket?.disconnect();
+    challengeSocket = createChallengeSocket();
+    challengeSocket.on("challenge:incoming", ({ challenge }) => {
+        if (!challenge) {
+            return;
+        }
+        showIncomingChallengeNotification(challenge).catch((error) => {
+            console.error("Unable to show challenge notification", error);
+        });
+    });
+
+    if (friendRequestsPollingId) {
+        clearInterval(friendRequestsPollingId);
+    }
+    if (challengePollingId) {
+        clearInterval(challengePollingId);
+    }
+    challengePollingId = setInterval(() => {
+        refreshChallengeNotifications().catch((error) => {
+            console.error("Unable to refresh challenge notifications", error);
+        });
+    }, CHALLENGES_REFRESH_MS);
+    friendRequestsPollingId = setInterval(() => {
+        refreshFriendRequestNotifications().catch((error) => {
+            console.error("Unable to refresh friend request notifications", error);
+        });
+    }, FRIEND_REQUESTS_REFRESH_MS);
+}
+
+window.addEventListener("beforeunload", () => {
+    if (friendRequestsPollingId) {
+        clearInterval(friendRequestsPollingId);
+    }
+    if (challengePollingId) {
+        clearInterval(challengePollingId);
+    }
+    challengeSocket?.disconnect();
+});
+/**
+ onLoad function
+ */
 onload = async () => {
     showMainPanel("play");
     const token = await ensureValidAccessToken();
@@ -602,7 +892,7 @@ onload = async () => {
 
     await toggleAuthenticatedView(true);
     await toggleChatBox(true);
-
+    await initHomeNotifications();
     await loadSidebarProfile();
     setSearchStatus("Tapez au moins 2 caractères.");
 };

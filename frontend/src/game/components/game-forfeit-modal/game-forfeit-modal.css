@@ -1,0 +1,62 @@
+:host {
+    --gold:       #c9a84c;
+    --gold-light: #f0d080;
+    --gold-dim:   #7a6028;
+    --dark:       #0a0a0f;
+    --text:       #e8dfc0;
+    --text-dim:   #8a7d5a;
+}
+
+app-modal {
+    z-index: 1000;
+
+    & [slot="modal-header"] h2 {
+        color: var(--text-main);
+        font-size: 1.5rem;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+    }
+
+    & [slot="modal-content"] {
+        display: flex;
+        flex-direction: column;
+        flex-wrap: wrap;
+        gap: 4rem;
+        justify-content: center;
+
+        & #buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            justify-content: center;
+
+            & button {
+                border: 1px solid var(--gold);
+                background: #1a1208;
+                color: var(--text);
+                font-family: 'Cinzel', serif;
+                padding: 0.8rem 1.3rem;
+                cursor: pointer;
+
+                &:hover:not(:disabled) {
+                    color: #f0d080;
+                    transform: translateY(-3px);
+
+                    &::before {
+                        opacity: 0;
+                    }
+
+                    &::after {
+                        opacity: 1;
+                        transform: scale(1);
+                    }
+                }
+
+                &:disabled {
+                    opacity: 0.45;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+}

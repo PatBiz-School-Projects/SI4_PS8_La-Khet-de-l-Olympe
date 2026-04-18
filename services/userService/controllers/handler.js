@@ -48,14 +48,14 @@ exports.getConnectedUsers = async (req, res) => {
 exports.isUserConnected = async (req, res) => {
     try{
         const body = await readJsonBody(req);
-        const { authId} = body;
-        if (!authId) {
-            sendJson(res, 400, { ok: false, error: 'MISSING_AUTH_ID' });
+        const { userId} = body;
+        if (!userId) {
+            sendJson(res, 400, { ok: false, error: 'MISSING_USER_ID' });
             return;
         }
 
         return sendJson(res, 200, {
-            connected: connectedUsersService.isUserConnected(authId),
+            connected: connectedUsersService.isUserConnected(userId),
         });
     } catch (error) {
         throw new Error(error);

@@ -137,7 +137,7 @@ class Game {
     }
 
     /** @type {GameID} */
-    get id() {
+    get gameId() {
         return this._gameId;
     }
 
@@ -164,6 +164,20 @@ class Game {
     /** @type {Player | null} */
     get winner() {
         return this._winner;
+    }
+
+    /**
+     * @param {PlayerID} playerId
+     *
+     * @returns {Player}
+     * @throws if no player with the given id has been found
+     */
+    getPlayerById(playerId) {
+        const player = this._players.find(p => p.playerId === playerId);
+        if (!player) {
+            throw new Error(`No player has id=${playerId}`);
+        }
+        return player;
     }
 
     /**
@@ -268,17 +282,14 @@ class Game {
             this._state = GameState.DRAW;
         }
 
-        setTimeout(()=> {
+        this._currActivePlayer.socket.emit("start-turn", {
+            playerId: this._currActivePlayer.playerId
+        });
 
-            this._currActivePlayer.socket.emit("start-turn", {
-                playerId: this._currActivePlayer.playerId
-            });
+        if(!this._currActivePlayer.playerId.startsWith("ai#")){
+            this.actionTimer.start();
+        }
 
-            if(!this._currActivePlayer.playerId.startsWith("ai#")){
-                this.actionTimer.start();
-            }
-
-        }, 500);
 
 
     }
@@ -305,8 +316,7 @@ class Game {
                 }
             } else {
                 if (piece.type === "Pyramid") {
-                    const opponent  = this.players.find(player => player.playerId !== piece.owner);
-
+                    const opponent = this.players.find(player => player.playerId !== piece.owner);
                     if (opponent) {
                         this._playerInventories[opponent.playerId].pushPyramid();
                     }
@@ -344,7 +354,35 @@ class Game {
             result,
         });
 
-        this.nextTurn();
+        const currentTurnCount = this._turnCount;
+
+        let spectatorSocket = this._currActivePlayer.socket;
+
+        if (this._currActivePlayer.playerId.startsWith("ai#") || this._currActivePlayer.constructor.name === "Bot") {
+            spectatorSocket = currInactivePlayer.socket;
+        }
+
+        if(spectatorSocket){
+
+            spectatorSocket.once("animation-complete", () => {
+
+                if (this._turnCount === currentTurnCount) {
+                    this.nextTurn();
+                }
+            });
+
+            setTimeout(() => {
+                if (this._turnCount === currentTurnCount) {
+                    console.log("[Serveur] Forçage du tour (timeout animation)");
+                    this.nextTurn();
+                }
+            }, 5000);
+        }
+        else{
+            this.nextTurn();
+        }
+
+
 
         if (this.isFinished()) {
             this.onGameOver();
@@ -353,6 +391,25 @@ class Game {
         return result;
     }
 
+    /**
+     * @param {Player} player The player who forfeited the game
+     */
+    onPlayerForfeit(player) {
+        if (this.mode === GameMode.LOCAL_MULTIPLAYER) {
+            this._state = GameState.DRAW;
+            this._winner = null;
+        } else {
+            const opponent = this.players.find(otherPlayer => otherPlayer.playerId !== player.playerId);
+            this._state = GameState.GAME_OVER;
+            this._winner = opponent;
+        }
+
+        // DEBUG::
+        console.log(`Player of id '${player.playerId}' forfeited the game of id: '${this._gameId}'`);
+
+        this.onGameOver();
+        return;
+    }
 
     /**
      * @private

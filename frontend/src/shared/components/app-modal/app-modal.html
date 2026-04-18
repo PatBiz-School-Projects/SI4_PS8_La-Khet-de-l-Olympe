@@ -1,0 +1,20 @@
+<div id="modal" style="display: none;">
+    <div id="modal-body">
+        <div id="modal-header">
+            <!-- Header of the modal -->
+            <slot name="modal-header"></slot>
+            <button id="close-modal-btn">🗙</button>
+        </div>
+
+        <div id="modal-content">
+            <!-- Content of the modal -->
+            <slot name="modal-content"></slot>
+        </div>
+
+        <div id="modal-footer">
+            <!-- Footer of the modal -->
+            <slot name="modal-footer"></slot>
+        </div>
+    </div>
+    <div id="modal-overlay"></div>
+</div>

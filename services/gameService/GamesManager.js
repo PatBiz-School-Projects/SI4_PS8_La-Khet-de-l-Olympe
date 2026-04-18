@@ -1,5 +1,5 @@
 const { Game, GameID, GameMode } = require("./manager/game");
-const { Player } = require("./Player");
+const { Player, PlayerID } = require("./Player");
 
 const { GameSummariesRepository } = require("./repositories/GameSummaryRepository");
 
@@ -61,6 +61,17 @@ class GamesManager {
     /** @private @type {Record<GameID, Game>} */
     static _games = {};
 
+    /** @private @readonly */
+    static _scheduler = {
+        /** @type {Record<GameID, Record<PlayerID, Timeout>>} */
+        gamesForfeiture: {},
+
+        // Probably more later ...
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////
+
 
     /** @type {GameID[]} */
     static get waitingRoomsId() {
@@ -71,6 +82,39 @@ class GamesManager {
     static get runningGamesId() {
         return Object.keys(this._games);
     }
+
+    /**
+     * @param {GameID} gameId
+     *
+     * @returns {WaitingRoom}
+     * @throws if no match has been found for the given waiting room game id
+     */
+    static getWaitingRoomById(gameId) {
+        const waitingRoom = this._waitingRooms[gameId];
+        if (!waitingRoom) {
+            throw new Error(`Waiting room with id=${gameId} not found`);
+        }
+
+        return waitingRoom;
+    }
+
+    /**
+     * @param {GameID} gameId
+     *
+     * @returns {Game}
+     * @throws if no match has been found for the given game id
+     */
+    static getGameById(gameId) {
+        const game = this._games[gameId];
+        if (!game) {
+            throw new Error(`Game with id=${gameId} not found`);
+        }
+
+        return game;
+    }
+
+
+    ////////////////////////////////////////////////////////////////////////////
 
 
     /**
@@ -100,7 +144,7 @@ class GamesManager {
         }
 
         this._games[gameId] = new Game(gameId, waitingRoom.players, waitingRoom.mode);
-        delete this._waitingRooms[gameId];
+        this.closeWaitingRoom(gameId);
 
         for (const player of waitingRoom.players) {
             try {
@@ -154,40 +198,56 @@ class GamesManager {
         return gameId;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-
     /**
-     * @param {GameID} gameId
+     * Close the waiting room with the given id
      *
-     * @returns {WaitingRoom}
-     * @throws if no match has been found for the given waiting room game id
+     * @param {GameID} gameId
      */
-    static getWaitingRoomById(gameId) {
-        const waitingRoom = this._waitingRooms[gameId];
-        if (!waitingRoom) {
-            throw new Error(`Waiting room with id=${gameId} not found`);
-        }
-
-        return waitingRoom;
+    static closeWaitingRoom(gameId) {
+        delete this._waitingRooms[gameId];
     }
 
 
-    /**
-     * @param {GameID} gameId
-     *
-     * @returns {Game}
-     * @throws if no match has been found for the given game id
-     */
-    static getGameById(gameId) {
-        const game = this._games[gameId];
-        if (!game) {
-            throw new Error(`Game with id=${gameId} not found`);
+    ////////////////////////////////////////////////////////////////////////////
+
+
+    static hasScheduledForfeiture(gameId, playerId = undefined) {
+        const hasAForfeitureForGame = Boolean(this._scheduler.gamesForfeiture[gameId]);
+
+        if (!playerId) {
+            return hasAForfeitureForGame;
         }
 
-        return game;
+        return hasAForfeitureForGame && Boolean(this._scheduler.gamesForfeiture[gameId][playerId]);
     }
 
+    static scheduleForfeiture(gameId, playerId, delayInMs) {
+        if (!this._scheduler.gamesForfeiture[gameId]) {
+            this._scheduler.gamesForfeiture[gameId] = {};
+        }
+
+        this._scheduler.gamesForfeiture[gameId][playerId] = setTimeout(() => {
+            const game = this.getGameById(gameId);
+            const player = game.getPlayerById(playerId);
+
+            game.onPlayerForfeit(player);
+
+            delete this._scheduler.gamesForfeiture[gameId][playerId];
+        }, delayInMs);
+    }
+
+    static cancelForfeiture(gameId, playerId) {
+        if (!this.hasScheduledForfeiture(gameId, playerId)) {
+            return;
+        }
+
+        clearTimeout(this._scheduler.gamesForfeiture[gameId][playerId]);
+        delete this._scheduler.gamesForfeiture[gameId][playerId];
+    }
+
+
     ////////////////////////////////////////////////////////////////////////////
+
 
     // TODO : Make a better game cleanup :
 
