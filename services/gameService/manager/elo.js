@@ -3,7 +3,7 @@
  *
  * @prop {number} oldELO
  * @prop {number} delta
- * @prop {number} newELO
+ * @prop {number} newElo
  * @prop {number|undefined} streakBonus
  */
 const ELOUpdate = undefined;
@@ -60,13 +60,13 @@ function computeEloWithWinStreak(
         [winnerId]: {
             oldELO: winnerCurrELO,
             delta: winnerDelta,
-            newELO: winnerCurrELO + winnerDelta,
+            newElo: winnerCurrELO + winnerDelta,
             streakBonus: bonus,
         },
         [loserId]: {
             oldELO: loserCurrELO,
             delta: loserDelta,
-            newELO: loserCurrELO + loserDelta,
+            newElo: loserCurrELO + loserDelta,
         },
     };
 }
@@ -77,12 +77,12 @@ function computeEloOnDraw(player1Id, player1ELO, player2Id, player2ELO) {
         [player1Id]: {
             oldELO: player1ELO,
             delta: 0,
-            newELO: player1ELO,
+            newElo: player1ELO,
         },
         [player2Id]: {
             oldELO: player2ELO,
             delta: 0,
-            newELO: player2ELO,
+            newElo: player2ELO,
         },
     };
 }
