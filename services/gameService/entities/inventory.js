@@ -16,6 +16,10 @@ class Inventory {
 
         /** @private @type {Piece[]} */
         this._pieces = [];
+
+        this._locked1 = 0; // Disponibles au prochain tour
+        this._locked2 = 0; // Capturées à ce tour-ci
+
         for(let i=0; i<Inventory.INITIAL_SIZE; i++) {
             this.pushPyramid();
         }
@@ -66,6 +70,20 @@ class Inventory {
 
     clear(){
         this._pieces = [];
+    }
+
+    pushLockedPyramid() {
+        this._locked2++;
+    }
+
+    unlockPendingPyramids() {
+
+        for (let i = 0; i < this._locked1; i++) {
+            this.pushPyramid();
+        }
+
+        this._locked1 = this._locked2;
+        this._locked2 = 0;
     }
 }
 
