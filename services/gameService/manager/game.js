@@ -137,7 +137,7 @@ class Game {
     }
 
     /** @type {GameID} */
-    get id() {
+    get gameId() {
         return this._gameId;
     }
 
@@ -164,6 +164,20 @@ class Game {
     /** @type {Player | null} */
     get winner() {
         return this._winner;
+    }
+
+    /**
+     * @param {PlayerID} playerId
+     *
+     * @returns {Player}
+     * @throws if no player with the given id has been found
+     */
+    getPlayerById(playerId) {
+        const player = this._players.find(p => p.playerId === playerId);
+        if (!player) {
+            throw new Error(`No player has id=${playerId}`);
+        }
+        return player;
     }
 
     /**
@@ -305,8 +319,7 @@ class Game {
                 }
             } else {
                 if (piece.type === "Pyramid") {
-                    const opponent  = this.players.find(player => player.playerId !== piece.owner);
-
+                    const opponent = this.players.find(player => player.playerId !== piece.owner);
                     if (opponent) {
                         this._playerInventories[opponent.playerId].pushPyramid();
                     }
@@ -353,6 +366,25 @@ class Game {
         return result;
     }
 
+    /**
+     * @param {Player} player The player who forfeited the game
+     */
+    onPlayerForfeit(player) {
+        if (this.mode === GameMode.LOCAL_MULTIPLAYER) {
+            this._state = GameState.DRAW;
+            this._winner = null;
+        } else {
+            const opponent = this.players.find(otherPlayer => otherPlayer.playerId !== player.playerId);
+            this._state = GameState.GAME_OVER;
+            this._winner = opponent;
+        }
+
+        // DEBUG::
+        console.log(`Player of id '${player.playerId}' forfeited the game of id: '${this._gameId}'`);
+
+        this.onGameOver();
+        return;
+    }
 
     /**
      * @private

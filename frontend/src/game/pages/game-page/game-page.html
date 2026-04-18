@@ -12,7 +12,7 @@
 <body>
     <header>
         <div id="header-btns">
-            <!-- home button --> <button id="home-btn" onclick="window.location.href='/home/pages/home-page/home-page.html'"></button>
+            <!-- home button --> <button id="home-btn"></button>
             <!-- info button --> <button id="info-btn" onclick="alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`)"></button>
         </div>
 
@@ -32,6 +32,7 @@
         <game-rotation-indicator id="player2-rotation-indicator"></game-rotation-indicator>
     </div>
 
+    <game-forfeit-modal></game-forfeit-modal>
     <game-over-modal></game-over-modal>
 
     <chat-box></chat-box>

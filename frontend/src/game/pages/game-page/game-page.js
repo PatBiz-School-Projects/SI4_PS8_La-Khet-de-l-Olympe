@@ -3,6 +3,7 @@ import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 import {
     GameActionTimer,
     GameBoard,
+    GameForfeitModal,
     GameOverModal,
     GamePlayerInventory,
     GameRotationIndicator,
@@ -44,6 +45,8 @@ const player2Inventory = document.querySelector("#player2-inventory");
 const player1RotationIndicator = document.querySelector("#player1-rotation-indicator");
 /** @type { GameRotationIndicator } */
 const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
+/** @type { GameForfeitModal } */
+const forfeitModal = document.querySelector("game-forfeit-modal");
 /** @type { GameOverModal } */
 const gameOverModal = document.querySelector("game-over-modal");
 /** @type { ChatBox } */
@@ -202,11 +205,13 @@ const stateMachine = new GamePageStateMachine();
 
 
 //
-// Reloads Support
+// Reload Support
 //
 
 
 onload = async _ => {
+    history.pushState(null, '', location.href);
+
     await setupVariables();
 
     const activePlayer = await askWhoIsPlaying();
@@ -259,6 +264,70 @@ onload = async _ => {
         chatBox.remove();
         gameOverModal.deactivateChallenge();
     }
+}
+
+
+//
+// Forfeit Support
+//
+
+
+/** The action to execute once the user forfeited the game */
+let pendingForfeitAction = null;
+
+forfeitModal.addEventListener("forfeit-game", () => {
+    fetch(`/api/games/${GAME_ID}/forfeit`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({/* nothing */})
+    });
+
+    if (pendingForfeitAction) {
+        onbeforeunload = null; // Disable beforeunload BEFORE navigating to prevent it from firing.
+        pendingForfeitAction();
+    }
+});
+
+// There is 3 forfeiting scenarios :
+// 1. The user clicked on the home button
+// 2. The user closed the page
+// 3. The user popped a state from the history (i.e clicked the arrow to go back to the previous page)
+//
+// The 1st scenario is quite trivial :
+const homeBtn = document.querySelector("#home-btn");
+homeBtn.onclick = _ => {
+    if (isGameOver) {
+        return;
+    }
+
+    pendingForfeitAction = () => {
+        window.location.href = "/home/pages/home-page/home-page.html";
+    };
+    forfeitModal.show();
+}
+// However, the 2nd & 3rd scenarios aren't as friendly bcs of how the browsers manage the "beforeunload" event.
+// Indeed, during a "beforeunload" event modifactions to the DOM aren't permitted.
+// Meaning that the forfeit modal cannot be shown.
+//
+// Thus for both the 2nd & 3rd scenarios, we have to fallback the forfeit timeout scheduled automatically by the backend
+// whenever a socket connection break.
+//
+// The 2nd scenario triggers only the "beforeunload" event :
+onbeforeunload = event => {
+    if (isGameOver) {
+        return;
+    }
+
+    // In case the navigator is older than 2011 🙏
+    confirm("Voulez-vous abandonner la partie ?");
+
+    event.preventDefault();
+}
+// The 3rd scenario triggers the "beforeunload" event then the "popstate" event :
+onpopstate = state => {
+    // `onbeforeunload` already ran before it
+
+    window.location.href = "/home/pages/home-page/home-page.html";
 }
 
 

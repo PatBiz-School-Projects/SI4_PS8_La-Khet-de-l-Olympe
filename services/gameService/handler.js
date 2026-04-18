@@ -307,6 +307,19 @@ exports.HTTPHandler = {
         }
     },
 
+    forfeit: async (req, res) => {
+        const { userToken } = parseCookies(req.headers.cookie);
+        const userId = extractUserId(userToken);
+
+        const { gameId } = req.routeParams;
+        const game = GamesManager.getGameById(gameId);
+
+        const player = game.players.find(player => player.userId === userId);
+        game.onPlayerForfeit(player);
+
+        sendJson(res, 200, { ok:true, success: true });
+    },
+
     getPieceAt: async (req, res) => {
         const { gameId } = req.routeParams;
         const game = GamesManager.getGameById(gameId);
@@ -495,10 +508,30 @@ exports.SocketIOHandler = {
             .filter(player => player.userId === userId)
             .forEach(player => {
                 player.socket = socket;
+
+                if (GamesManager.hasScheduledForfeiture(gameId, player.playerId)) {
+                    GamesManager.cancelForfeiture(gameId, player.playerId);
+                }
             });
     },
 
     // Add more if needed ...
 
-    onDisconnection: async (io, socket, msgPayload) => {},
+    onDisconnection: async (io, socket, msgPayload) => {
+        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const userId = extractUserId(userToken);
+
+        const { gameId } = socket.handshake.query;
+        const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
+
+        if (inWaitingRoom) {
+            GamesManager.closeWaitingRoom(gameId);
+            return;
+        }
+
+        const game = GamesManager.getGameById(gameId);
+        const playerId = game.players.find(player => player.userId === userId).playerId;
+
+        GamesManager.scheduleForfeiture(gameId, playerId, 30_000);
+    },
 };
