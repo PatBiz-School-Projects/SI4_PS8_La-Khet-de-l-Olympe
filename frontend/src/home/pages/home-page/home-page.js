@@ -6,7 +6,13 @@ import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
 import { ensureValidAccessToken, clearAuthTokens, authenticatedFetch } from "/utils/auth.js";
 import { getPictureUrl } from "/utils/picture.js";
-import { createChallengeSocket, listIncomingChallenges, sendChallenge } from "/utils/challenge.js";
+import {
+    acceptChallenge,
+    createChallengeSocket,
+    declineChallenge,
+    listIncomingChallenges,
+    sendChallenge
+} from "/utils/challenge.js";
 
 
 /**
@@ -596,11 +602,13 @@ async function toggleChatBox(isLoggedIn) {
  * Notifications
  */
 let challengeSocket;
+let challengePollingId;
 let friendRequestsPollingId;
-
 const FRIEND_REQUESTS_REFRESH_MS = 10000;
+const CHALLENGES_REFRESH_MS = 10000;
 const NOTIFICATION_AUTO_CLOSE_MS = 12000;
 const CONSUMED_HOME_NOTIFICATIONS_KEY = "home.notifications.consumed";
+const profileNameCache = new Map();
 
 function readConsumedNotifications() {
     try {
@@ -685,8 +693,6 @@ function showHomeNotification({ key, title, text, actions=[] }) {
     }
 
     notification.append(closeButton, titleElement, textElement, actionsWrapper);
-
-    notification.append(closeButton, titleElement, textElement);
     homeNotifications.prepend(notification);
     updateChatBoxOffset();
 
@@ -761,12 +767,99 @@ async function refreshFriendRequestNotifications() {
     }
 }
 
+async function getUsernameFromUserId(userId) {
+    if (!userId) {
+        return "Un joueur";
+    }
+
+    if (profileNameCache.has(userId)) {
+        return profileNameCache.get(userId);
+    }
+
+    const response = await authenticatedFetch(`/api/users/${encodeURIComponent(userId)}/minimal-profile`, {
+        method: "GET",
+        headers: {"Content-Type": "application/json"},
+    });
+
+    if (!response || !response.ok) {
+        return "Un joueur";
+    }
+
+    const payload = await response.json();
+    const username = payload?.username || "Un joueur";
+    profileNameCache.set(userId, username);
+    return username;
+}
+
+async function showIncomingChallengeNotification(challenge) {
+    const challengerName = await getUsernameFromUserId(challenge.challengerUserId);
+    const notificationKey = `challenge-incoming:${challenge.id}`;
+
+    showHomeNotification({
+        key: notificationKey,
+        title: "Défi reçu",
+        text: `${challengerName} vous a défié.`,
+        actions: [
+            {
+                label: "Refuser",
+                className: "danger",
+                onClick: async () => {
+                    const result = await declineChallenge(challenge.id);
+                    if (!result.ok) {
+                        throw new Error(result.payload?.error || "UNABLE_TO_DECLINE_CHALLENGE");
+                    }
+                }
+            },
+            {
+                label: "Accepter",
+                onClick: async () => {
+                    const result = await acceptChallenge(challenge.id);
+                    if (!result.ok) {
+                        throw new Error(result.payload?.error || "UNABLE_TO_ACCEPT_CHALLENGE");
+                    }
+                }
+            }
+        ]
+    });
+}
+
+async function refreshChallengeNotifications() {
+    const result = await listIncomingChallenges();
+    if (!result.ok) {
+        return;
+    }
+
+    for (const challenge of result.payload?.challenges || []) {
+        await showIncomingChallengeNotification(challenge);
+    }
+}
+
 async function initHomeNotifications() {
     await refreshFriendRequestNotifications();
+    await refreshChallengeNotifications();
+
+    challengeSocket?.disconnect();
+    challengeSocket = createChallengeSocket();
+    challengeSocket.on("challenge:incoming", ({ challenge }) => {
+        if (!challenge) {
+            return;
+        }
+        showIncomingChallengeNotification(challenge).catch((error) => {
+            console.error("Unable to show challenge notification", error);
+        });
+    });
 
     if (friendRequestsPollingId) {
         clearInterval(friendRequestsPollingId);
     }
+    if (challengePollingId) {
+        clearInterval(challengePollingId);
+    }
+    challengePollingId = setInterval(() => {
+        refreshChallengeNotifications().catch((error) => {
+            console.error("Unable to refresh challenge notifications", error);
+        });
+    }, CHALLENGES_REFRESH_MS);
     friendRequestsPollingId = setInterval(() => {
         refreshFriendRequestNotifications().catch((error) => {
             console.error("Unable to refresh friend request notifications", error);
@@ -777,6 +870,9 @@ async function initHomeNotifications() {
 window.addEventListener("beforeunload", () => {
     if (friendRequestsPollingId) {
         clearInterval(friendRequestsPollingId);
+    }
+    if (challengePollingId) {
+        clearInterval(challengePollingId);
     }
     challengeSocket?.disconnect();
 });
