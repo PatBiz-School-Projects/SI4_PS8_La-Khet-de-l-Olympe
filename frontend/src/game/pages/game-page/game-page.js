@@ -391,7 +391,7 @@ gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
 
 gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {
 
-    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
+    if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER ) {
         return;
     }
 
@@ -449,6 +449,7 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
         // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(result.grid);
     }
+    gameSocket.emit("animation-complete");
 }));
 
 gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratingUpdate}) => {
@@ -628,6 +629,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
         await player1Inventory.actualise();
         await player2Inventory.actualise();
     }
+    gameSocket.emit("animation-complete");
 });
 
 stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
@@ -728,6 +730,8 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
         await player1Inventory.actualise();
         await player2Inventory.actualise();
     }
+
+    gameSocket.emit("animation-complete");
 });
 
 stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, piece2, pos2}) => {
@@ -784,6 +788,8 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
         await player1Inventory.actualise();
         await player2Inventory.actualise();
     }
+
+    gameSocket.emit("animation-complete");
 });
 
 

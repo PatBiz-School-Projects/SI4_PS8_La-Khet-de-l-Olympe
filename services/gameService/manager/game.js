@@ -282,17 +282,14 @@ class Game {
             this._state = GameState.DRAW;
         }
 
-        setTimeout(()=> {
+        this._currActivePlayer.socket.emit("start-turn", {
+            playerId: this._currActivePlayer.playerId
+        });
 
-            this._currActivePlayer.socket.emit("start-turn", {
-                playerId: this._currActivePlayer.playerId
-            });
+        if(!this._currActivePlayer.playerId.startsWith("ai#")){
+            this.actionTimer.start();
+        }
 
-            if(!this._currActivePlayer.playerId.startsWith("ai#")){
-                this.actionTimer.start();
-            }
-
-        }, 500);
 
 
     }
@@ -357,7 +354,35 @@ class Game {
             result,
         });
 
-        this.nextTurn();
+        const currentTurnCount = this._turnCount;
+
+        let spectatorSocket = this._currActivePlayer.socket;
+
+        if (this._currActivePlayer.playerId.startsWith("ai#") || this._currActivePlayer.constructor.name === "Bot") {
+            spectatorSocket = currInactivePlayer.socket;
+        }
+
+        if(spectatorSocket){
+
+            spectatorSocket.once("animation-complete", () => {
+
+                if (this._turnCount === currentTurnCount) {
+                    this.nextTurn();
+                }
+            });
+
+            setTimeout(() => {
+                if (this._turnCount === currentTurnCount) {
+                    console.log("[Serveur] Forçage du tour (timeout animation)");
+                    this.nextTurn();
+                }
+            }, 5000);
+        }
+        else{
+            this.nextTurn();
+        }
+
+
 
         if (this.isFinished()) {
             this.onGameOver();
