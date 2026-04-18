@@ -400,7 +400,7 @@ export class BoardRenderer {
      * @param {Cell[][]} grid
      */
     async drawBoard(grid) {
-        await this.clearBoard()
+        await this.clearBoard();
 
         for (let x = 0; x < this.boardLen; x++) {
             for (let y = 0; y < this.boardLen; y++) {
