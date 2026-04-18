@@ -73,11 +73,6 @@ class Game {
             [players[1].playerId]: new Inventory(players[1].playerId, "red"),
         };
 
-        /** @private @type {Record<PlayerID, number>} */
-        this._playersSwapCooldowns = {
-            [players[0].playerId]: 0,
-            [players[1].playerId]: 0,
-        };
 
         /** @private @type {number} */
         this._turnCount = 1;
@@ -98,6 +93,11 @@ class Game {
         if (!this._currActivePlayer.playerId.startsWith("ai#")) {
             this.actionTimer.start();
         }
+
+        this._playersSwapCooldowns = {
+            [players[0].playerId]: { "Sphinx": 0, "Pharaoh": 0 },
+            [players[1].playerId]: { "Sphinx": 0, "Pharaoh": 0 },
+        };
 
         this.ACTIONS = {
             move: ({playerId, piece, from, to}) => {
@@ -127,8 +127,7 @@ class Game {
                 // DEBUG::
                 console.log("Switching piece: ", piece1, "at:", pos1, "with piece:", piece2, "at: ", pos2);
 
-                const SWAP_COOLDOWN = 4;
-                this._playersSwapCooldowns[playerId] = SWAP_COOLDOWN;
+                this._playersSwapCooldowns[playerId][piece2.type] = 4;
 
                 this.board.switchPieces(Piece.fromDTO(piece1), pos1, Piece.fromDTO(piece2), pos2);
                 return this.board.toDTO();
@@ -256,10 +255,11 @@ class Game {
     /**
      * @param {Player} player
      *
+     * @param targetType
      * @returns {boolean}
      */
-    playerCanSwap(player) {
-        return this.isRunning() && this._playersSwapCooldowns[player.playerId] <= 0;
+    playerCanSwap(player,targetType) {
+        return this.isRunning() && this._playersSwapCooldowns[player.playerId][targetType] <= 0;
     }
 
 
@@ -271,12 +271,14 @@ class Game {
 
         this._currActivePlayer.socket.emit("end-turn", {});
 
+        const activeId = this._currActivePlayer.playerId;
+        if (this._playersSwapCooldowns[activeId]["Sphinx"] > 0) this._playersSwapCooldowns[activeId]["Sphinx"]--;
+        if (this._playersSwapCooldowns[activeId]["Pharaoh"] > 0) this._playersSwapCooldowns[activeId]["Pharaoh"]--;
+
         this._turnCount++;
         this._currActivePlayer = this._players[(this._turnCount-1)%2];
 
-        for (const player of this._players) {
-            this._playersSwapCooldowns[player.playerId]--;
-        }
+        this._playerInventories[this._currActivePlayer.playerId].unlockPendingPyramids();
 
         if (this._turnCount > Game.TURN_LIMIT) {
             this._state = GameState.DRAW;
@@ -318,7 +320,7 @@ class Game {
                 if (piece.type === "Pyramid") {
                     const opponent = this.players.find(player => player.playerId !== piece.owner);
                     if (opponent) {
-                        this._playerInventories[opponent.playerId].pushPyramid();
+                        this._playerInventories[opponent.playerId].pushLockedPyramid();
                     }
                 }
                 this.board.removePiece({x:piece.x, y:piece.y});

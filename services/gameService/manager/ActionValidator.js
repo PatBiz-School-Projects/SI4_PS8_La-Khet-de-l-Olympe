@@ -193,15 +193,18 @@ class ActionValidator {
             throw new ActionValidationError(`Missing 'pos2' argument`);
         }
 
+        piece1 = Piece.fromDTO(piece1);
+        piece2 = Piece.fromDTO(piece2);
+
         const player = PlayersManager.getPlayerById(playerId);
         if (!this.game.playerCanPlay(player)) {
             throw new ActionValidationError(`The player cannot play`);
         }
-        if (!this.game.playerCanSwap(player)) {
-            throw new ActionValidationError(`The player cannot swap`);
+        if (!this.game.playerCanSwap(player,piece2.type)) {
+            throw new ActionValidationError(`The player's swap with ${piece2.type} is on cooldown`);
         }
 
-        piece1 = Piece.fromDTO(piece1);
+
         if (!piece1.equals(this.board.getPieceAt(pos1))) {
             throw new ActionValidationError(`The 1st given piece differs from the piece at its position`);
         }
@@ -212,7 +215,7 @@ class ActionValidator {
             throw new ActionValidationError(`The 1st piece to swap isn't a scarab`);
         }
 
-        piece2 = Piece.fromDTO(piece2);
+
         if (!piece2.equals(this.board.getPieceAt(pos2))) {
             throw new ActionValidationError(`The 2nd given piece differs from the piece at its position`);
         }

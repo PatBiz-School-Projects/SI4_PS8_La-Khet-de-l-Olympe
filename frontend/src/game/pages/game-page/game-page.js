@@ -363,6 +363,9 @@ gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
     }
 
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = true;
+
+    await player1Inventory.actualise();
+    await player2Inventory.actualise();
 }));
 
 gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
@@ -448,6 +451,9 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
         await board.showLaserBeam(result.laserPath);
         // REVIEW : It's better for the backend to send an event when a piece is destroyed
         await board.syncGrid(result.grid);
+
+        await player1Inventory.actualise();
+        await player2Inventory.actualise();
     }
     gameSocket.emit("animation-complete");
 }));
