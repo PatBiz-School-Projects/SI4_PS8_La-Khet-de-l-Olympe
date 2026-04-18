@@ -7,7 +7,7 @@
     --text-dim:  #8a7d5a;
 
     position: fixed;
-    bottom: 24px;
+    bottom: calc(24px + var(--chatbox-offset, 0px));
     right: 32px;
     z-index: 200;
     display: block;

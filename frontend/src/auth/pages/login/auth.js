@@ -66,6 +66,9 @@ async function handleSubmit(event) {
         }
 
         setStatus(payload.detail , 'ok');
+        if (endpoint === '/api/auth/signup') {
+            window.location.href = '/auth/pages/login/login.html';
+        }
     } catch (error) {
         setStatus('Erreur réseau. Réessayez plus tard.', 'error');
     } finally {
