@@ -28,7 +28,7 @@
 From the project root:
 
 ```bash
-docker compose up --build
+docker compose --env-file ./secrets.env up --build
 ```
 
 Gateway entrypoint: `http://localhost:8000`.
