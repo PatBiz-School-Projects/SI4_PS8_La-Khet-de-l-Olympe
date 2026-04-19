@@ -147,6 +147,7 @@ The platform is split into focused services:
 
 - Some flows go through multiple services (e.g., challenge → game room → chat room), increasing risks of network errors.
 - Cookie-based context (`gameId`) is practical but limits simultaneous games per user session.
+- More importantly, some choices were made purely because they were technically easier.
 
 ### HTTP vs WebSocket strategy
 
@@ -160,7 +161,7 @@ Used for:
 - Challenge creation/list/accept/decline/cancel.
 - Chat history retrieval.
 
-HTTP is initiated mostly by the **front-end client** through the gateway, and by services for internal orchestration when needed.
+HTTP is initiated by the **front-end client** through the gateway, and by services for internal orchestration.
 
 #### WebSocket (real-time events)
 
@@ -169,6 +170,7 @@ Used for:
 - **Game service**: real-time match events (turn transitions, opponent actions, start/end dynamics).
 - **Chat service**: instant message broadcasting in chat rooms.
 - **Challenge service**: real-time challenge notifications to targeted users.
+- **Notifications**: when the user goes to the home page, he can receive friends requests or challenges if they were issued by someone.
 
 Connection initiation:
 
@@ -181,5 +183,58 @@ Why this choice is relevant:
 - HTTP remains simpler for CRUD-like and transactional operations.
 
 ---
+
+# Front-end Architecture (served by files service)
+
+## Pages and navigation strategy
+
+The front-end is organized as a multi-view SPA-like structure (different route-based pages, shared runtime/components).
+
+Main pages implemented:
+
+- **Authentication pages**
+    - Login page
+    - Signup page
+    - Forgot password page
+- **Home page**
+    - The landing page for any user. He will have access to certain buttons or not depending on if he's connected or not.
+- **Profile pages**
+    - Personal profile page (owner view with editable/personal actions)
+    - Public profile page (other player view)
+- **Waiting room page**
+    - Intermediate page before online multiplayer starts.
+- **Game page**
+    - Hosts the live game board and in-game interactions.
+
+Some features are intentionally integrated as contextual UI instead of dedicated pages:
+
+- End-game feedback is displayed through a game-over modal.
+- Forfeit confirmation is displayed through a forfeit modal.
+- Chat is embedded as reusable components depending on context.
+
+## Components used 
+
+
+- **Game domain components**
+    - `game-board`: visual board and click/interaction layer
+    - `game-player-inventory`: player piece inventory rendering
+    - `game-action-timer`: turn timer visualization
+    - `game-turn-indicator`: current turn feedback
+    - `game-rotation-indicator`: directional/rotation support UI
+    - `game-over-modal` and `game-forfeit-modal`: end/exit workflows
+- **Shared components**
+    - `app-modal`: generic modal primitive reused by feature-specific modals
+- **Chat components**
+    - `chat-box`: real-time conversation UI container
+
+Components are responsible for rendering a specific part of the UI, handling local interactions (clicks, animations, etc.), and sending user intents back to the page controllers instead of managing the overall application flow. And of course we used components whenever we needed something to be reusable.
+
+## Components that could have been extracted
+
+A few elements are still page-coupled and could be extracted into standalone shared components :
+
+- Repeated profile info blocks and statistic cards.
+- Friend/challenge list rows used in profile page and in the friends tab.
+- Navigation/header buttons.
 
 
