@@ -107,7 +107,7 @@ node services/chats/index.js
 
 - Access requires authentication cookies (`userId`, `userToken`).
 - Each chat is restricted to authorized users only.
-- Playing a multiplayer, checking personal profile are also restricted to authorized users
+- Playing multiplayer games and accessing personal profiles are strictly restricted to authenticated users.
 
 ## Progression, Achievements, Ranking
 
@@ -170,7 +170,7 @@ Used for:
 - **Game service**: real-time match events (turn transitions, opponent actions, start/end dynamics).
 - **Chat service**: instant message broadcasting in chat rooms.
 - **Challenge service**: real-time challenge notifications to targeted users.
-- **Notifications**: when the user goes to the home page, he can receive friends requests or challenges if they were issued by someone.
+- **Notifications**: users receive real-time friend requests or challenges upon visiting the home page.
 
 Connection initiation:
 
