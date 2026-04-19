@@ -450,8 +450,8 @@ class Game {
                     [player2.playerId]: eloComputation[player2.playerId],
                 },
                 statsUpdates: {
-                    [player1.playerId]: {drew: true, newELO: eloComputation[player1.playerId].newELO},
-                    [player2.playerId]: {drew: true, newELO: eloComputation[player2.playerId].newELO},
+                    [player1.playerId]: {drew: true, newElo: eloComputation[player1.playerId].newElo},
+                    [player2.playerId]: {drew: true, newElo: eloComputation[player2.playerId].newElo},
                 },
             };
         }
@@ -489,8 +489,8 @@ class Game {
                 [loser.playerId]: eloComputation[loser.playerId],
             },
             statsUpdates: {
-                [winner.playerId]: {won: true, newELO: eloComputation[winner.playerId].newELO},
-                [loser.playerId]: {lost: true, newELO: eloComputation[loser.playerId].newELO},
+                [winner.playerId]: {won: true, newElo: eloComputation[winner.playerId].newElo},
+                [loser.playerId]: {lost: true, newElo: eloComputation[loser.playerId].newElo},
             },
         };
     }

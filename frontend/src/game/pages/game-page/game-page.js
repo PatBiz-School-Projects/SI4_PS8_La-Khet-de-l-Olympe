@@ -458,17 +458,24 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
     gameSocket.emit("animation-complete");
 }));
 
-gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratingUpdate}) => {
+gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, rating, ratingUpdate}) => {
     // DEBUG::
-    console.log("Received 'game-over' event, with state:" + state + " , winner of id:" + winnerId + "& rating update being:" + ratingUpdate);
+    console.log("Received 'game-over' event, with state:" + state + " , winner of id:" + winnerId + "& rating being:", rating);
 
-    const formatRatingUpdate = (ratingUpdate) => {
-        if (!ratingUpdate) {
+    const formatRatingUpdate = (ratingPayload) => {
+        if (GAME_MODE !== GameMode.MULTIPLAYER || !ratingPayload) {
             return "";
         }
 
-        const signedDelta = ratingUpdate.delta >= 0 ? `+${ratingUpdate.delta}` : `${ratingUpdate.delta}`;
-        return `ELO ${signedDelta} · nouveau score ${ratingUpdate.newRating}.`;
+        const delta = ratingPayload.delta;
+        const newRating = ratingPayload.newElo;
+
+        if (typeof delta !== "number" || typeof newRating !== "number") {
+            return "";
+        }
+
+        const signedDelta = delta >= 0 ? `+${delta}` : `${delta}`;
+        return `ELO ${signedDelta} · nouveau score ${newRating}.`;
     }
 
     let baseMessage;
@@ -488,7 +495,8 @@ gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratin
 
     isGameOver = true;
     gameOverModal.show();
-    gameOverModal.detail = `${baseMessage} ${formatRatingUpdate(ratingUpdate)}`;
+    const ratingMessage = formatRatingUpdate(rating ?? ratingUpdate);
+    gameOverModal.detail = ratingMessage ? `${baseMessage} ${ratingMessage}` : baseMessage;
 }));
 
 gameSocket.on("action-timer-sync", async ({remainingTime}) => {
