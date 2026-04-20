@@ -1,7 +1,7 @@
 const http = require('http');
 const https = require('https');
 const httpProxy = require('http-proxy');
-
+const addCors = require('cors');
 const {
     GAME_SERVICE_URL,
     FILE_SERVICE_URL,
@@ -25,7 +25,9 @@ async function handleHTTPRequest(req, res) {
     // First, let's check the URL to see if it's a REST request or a file request.
     // We will remove all cases of "../" in the url for security purposes.
     const filePath = getPathSegments(req.url);
-
+    if(IS_PROD) {
+        addCors(res);
+    }
     try {
         // If the URL starts by /api, then it's a REST request (you can change that if you want).
         if (filePath[1] === "api") {
