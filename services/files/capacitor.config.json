@@ -1,8 +1,5 @@
 {
   "appId": "com.pns.khet",
   "appName": "Khet de l'Olympe",
-  "webDir": "../../frontend/src",
-    "server": {
-        "androidScheme": "http"
-    }
+  "webDir": "../../frontend"
 }
