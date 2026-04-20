@@ -1,7 +1,6 @@
 import {authenticatedapiFetch, ensureValidAccessToken} from "/utils/auth.js"
 
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
-import { apiFetch} from "/utils/wrapFetch.js";
 async function performChallengeRequest(path, options = {}) {
     const token = await ensureValidAccessToken();
     if (!token) {

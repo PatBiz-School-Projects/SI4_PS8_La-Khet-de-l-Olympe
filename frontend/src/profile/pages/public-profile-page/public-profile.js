@@ -1,5 +1,6 @@
 import { authenticatedapiFetch, ensureValidAccessToken } from '/utils/auth.js';
 import {getPictureUrl} from '/utils/picture.js';
+import {apiFetch} from "/utils/wrapFetch.js";
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');

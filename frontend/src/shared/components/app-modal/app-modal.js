@@ -1,4 +1,4 @@
-import {apiFetch} from '/'
+import {apiFetch} from '/utils/wrapFetch.js'
 export class AppModal extends HTMLElement {
     constructor() {
         super();

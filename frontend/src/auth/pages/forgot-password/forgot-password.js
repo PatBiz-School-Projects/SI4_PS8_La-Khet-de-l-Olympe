@@ -1,3 +1,4 @@
+import {apiFetch} from '/utils/wrapFetch.js'
 const form = document.getElementById('forgot-form');
 const statusEl = document.querySelector('[data-status]');
 const loadQuestionButton = document.getElementById('load-question');
