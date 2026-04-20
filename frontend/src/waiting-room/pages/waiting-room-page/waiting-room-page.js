@@ -1,5 +1,5 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
-
+import { apiFetch} from "/utils/wrapFetch.js";
 
 const GAME_ID = localStorage.getItem("gameId");
 
@@ -16,7 +16,7 @@ const socket = io({
 onload = async _ => {
     let hasStarted;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/has-started`);
+        const response = await apiFetch(`/api/games/${GAME_ID}/has-started`);
         if (!response.ok) {
             throw (await response.json()).error;
         }

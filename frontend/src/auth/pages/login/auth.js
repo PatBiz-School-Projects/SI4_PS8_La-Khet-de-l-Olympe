@@ -1,7 +1,7 @@
 import { setAuthTokens } from '/utils/auth.js';
 const form = document.querySelector('form');
 const statusEl = document.querySelector('[data-status]');
-
+import { apiFetch} from "/utils/wrapFetch.js";
 function setStatus(message, type) {
     statusEl.textContent = message;
     statusEl.classList.remove('ok', 'error');
@@ -40,7 +40,7 @@ async function handleSubmit(event) {
             body.question = questionInput.value.trim();
             body.answer = answerInput.value.trim();
         }
-        const response = await fetch(endpoint, {
+        const response = await apiFetch(endpoint, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

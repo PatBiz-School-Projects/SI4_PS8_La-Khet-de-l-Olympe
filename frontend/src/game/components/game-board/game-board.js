@@ -2,7 +2,7 @@ import { BoardRenderer } from "./BoardRenderer.js";
 import { Cell } from "/game/logic/board/Cell.js";
 import { Coord } from "/game/logic/board/Coord.js"
 import { Piece } from "/game/logic/board/Piece.js";
-
+import { apiFetch} from "/utils/wrapFetch.js";
 
 const GAME_ID = localStorage.getItem("gameId");
 
@@ -28,8 +28,8 @@ export class GameBoard extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/game/components/game-board/game-board.html"),
-                fetch("/game/components/game-board/game-board.css"),
+                apiFetch("/game/components/game-board/game-board.html"),
+                apiFetch("/game/components/game-board/game-board.css"),
             ]);
 
             const html = await htmlResponse.text();
@@ -68,7 +68,7 @@ export class GameBoard extends HTMLElement {
      * @private
      */
     async _initializeBoard() {
-        const boardResponse = await fetch(`/api/games/${GAME_ID}/board`);
+        const boardResponse = await apiFetch(`/api/games/${GAME_ID}/board`);
         const { grid } = await boardResponse.json();
 
         for (let i=0; i<grid.length; i++) {

@@ -1,3 +1,4 @@
+import { apiFetch} from "/utils/wrapFetch.js";
 export class GameTurnIndicator extends HTMLElement {
     constructor() {
         super();
@@ -14,8 +15,8 @@ export class GameTurnIndicator extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/game/components/game-turn-indicator/game-turn-indicator.html"),
-                fetch("/game/components/game-turn-indicator/game-turn-indicator.css"),
+                apiFetch("/game/components/game-turn-indicator/game-turn-indicator.html"),
+                apiFetch("/game/components/game-turn-indicator/game-turn-indicator.css"),
             ]);
 
             const html = await htmlResponse.text();

@@ -1,5 +1,5 @@
 import { getCookie, removeCookie, setCookie } from '/utils/cookie.js';
-
+import { apiFetch} from "/utils/wrapFetch.js";
 const ACCESS_TOKEN_COOKIE = 'userToken';
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
 
@@ -31,7 +31,7 @@ export async function verifyToken(token) {
     }
 
     try {
-        const response = await fetch('/api/auth/check', {
+        const response = await apiFetch('/api/auth/check', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ export async function renewToken(refreshToken) {
     }
 
     try {
-        const response = await fetch('/api/auth/renew', {
+        const response = await apiFetch('/api/auth/renew', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -85,7 +85,7 @@ export async function ensureValidAccessToken() {
     return await renewToken(refreshToken);
 }
 
-export async function authenticatedFetch(url, options = {}) {
+export async function authenticatedapiFetch(url, options = {}) {
     const token = await ensureValidAccessToken();
     if (!token) {
         return null;
@@ -96,7 +96,7 @@ export async function authenticatedFetch(url, options = {}) {
         Authorization: `Bearer ${token}`
     };
 
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
         ...options,
         headers
     });
@@ -110,7 +110,7 @@ export async function authenticatedFetch(url, options = {}) {
         return response;
     }
 
-    return await fetch(url, {
+    return await apiFetch(url, {
         ...options,
         headers: {
             ...(options.headers || {}),

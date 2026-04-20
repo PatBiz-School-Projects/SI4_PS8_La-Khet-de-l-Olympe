@@ -22,6 +22,7 @@ import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 import { ChatBox } from "/chat/components/index.js";
 
 import { EventQueue } from "/utils/event.js";
+import { apiFetch} from "/utils/wrapFetch.js";
 // REVIEW : It's a feature instead of an utils
 import { sendChallenge } from "/utils/challenge.js"
 
@@ -61,10 +62,10 @@ const chatBox = document.querySelector("chat-box");
 /**
  * @returns {Promise<GameMode>}
  */
-async function fetchGameMode() {
+async function apiFetchGameMode() {
     let mode;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/mode`);
+        const response = await apiFetch(`/api/games/${GAME_ID}/mode`);
         if (!response.ok) {
             throw (await response.json()).error;
         }
@@ -79,10 +80,10 @@ async function fetchGameMode() {
 /**
  * @returns {Promise<PlayerDTO[]>}
  */
-async function fetchPlayers() {
+async function apiFetchPlayers() {
     let players;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/players`);
+        const response = await apiFetch(`/api/games/${GAME_ID}/players`);
         if (!response.ok) {
             throw (await response.json()).error;
         }
@@ -97,10 +98,10 @@ async function fetchPlayers() {
 /**
  * @returns {Promise<PlayerDTO>}
  */
-async function fetchClientPlayer() {
+async function apiFetchClientPlayer() {
     let player;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/players/client`);
+        const response = await apiFetch(`/api/games/${GAME_ID}/players/client`);
         if (!response.ok) {
             throw (await response.json()).error;
         }
@@ -118,7 +119,7 @@ async function fetchClientPlayer() {
 async function askWhoIsPlaying() {
     let player;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/players/active`);
+        const response = await apiFetch(`/api/games/${GAME_ID}/players/active`);
         if (!response.ok) {
             throw (await response.json()).error;
         }
@@ -163,15 +164,15 @@ let PLAYERS_INVENTORY_BY_ID;
 let PLAYERS_ROTATION_INDICATOR_BY_ID;
 
 async function setupVariables() {
-    GAME_MODE = await fetchGameMode();
+    GAME_MODE = await apiFetchGameMode();
 
-    PLAYERS = await fetchPlayers();
+    PLAYERS = await apiFetchPlayers();
 
     PLAYERS_ID = PLAYERS.map(player => player.playerId);
 
     PLAYERS_BY_ID = Object.fromEntries(PLAYERS.map(player => [player.playerId, player]));
 
-    CLIENT_PLAYER = await fetchClientPlayer();
+    CLIENT_PLAYER = await apiFetchClientPlayer();
 
     PLAYERS_COLOR_BY_ID = { [PLAYERS_ID[0]]: "blue", [PLAYERS_ID[1]]: "red" };
 
@@ -276,7 +277,7 @@ onload = async _ => {
 let pendingForfeitAction = null;
 
 forfeitModal.addEventListener("forfeit-game", () => {
-    fetch(`/api/games/${GAME_ID}/forfeit`, {
+    apiFetch(`/api/games/${GAME_ID}/forfeit`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({/* nothing */})
@@ -546,7 +547,7 @@ stateMachine.subscribe([UIActionType.VISUALISE_LEGAL_ACTION], async ({piece, pos
                 await activeRotation.showPiece(piece, null, 'inventory');
             }
         } else {
-            const response = await fetch(`/api/games/${GAME_ID}/possible-actions?x=${pos.x}&y=${pos.y}`);
+            const response = await apiFetch(`/api/games/${GAME_ID}/possible-actions?x=${pos.x}&y=${pos.y}`);
             const legalMoves = await response.json();
             await board.showVisualisationMoves(legalMoves);
 
@@ -581,7 +582,7 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
 
     let actionResult;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/action`, {
+        const response = await apiFetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -633,7 +634,7 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
 
     let actionResult;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/action`, {
+        const response = await apiFetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -679,7 +680,7 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
 
     let actionResult;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/action`, {
+        const response = await apiFetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
@@ -727,7 +728,7 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
 
     let actionResult;
     try {
-        const response = await fetch(`/api/games/${GAME_ID}/action`, {
+        const response = await apiFetch(`/api/games/${GAME_ID}/action`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({

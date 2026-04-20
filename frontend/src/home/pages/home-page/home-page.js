@@ -15,6 +15,7 @@ import {
     sendChallenge
 } from "/utils/challenge.js";
 
+import { apiFetch} from "/utils/wrapFetch.js";
 
 /**
  * Navigation helpers
@@ -103,7 +104,7 @@ async function loadLeaderboard(limit = 10) {
     leaderboardList.innerHTML = "";
 
     try {
-        const response = await fetch(`/api/users/leaderboard?limit=${encodeURIComponent(limit)}`, {
+        const response = await apiFetch(`/api/users/leaderboard?limit=${encodeURIComponent(limit)}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         });
@@ -210,7 +211,7 @@ async function loadFriendsPanel() {
         setFriendsStatus("Session expirée. Veuillez vous reconnecter.", true);
         return;
     }
-    const connectedResponse = await fetch("/api/users/connected", {
+    const connectedResponse = await apiFetch("/api/users/connected", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -385,7 +386,7 @@ async function login() {
 async function logout() {
     try {
         const token = await ensureValidAccessToken();
-        await fetch("/api/auth/logout", {
+        await apiFetch("/api/auth/logout", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -414,7 +415,7 @@ logoutBtn.onclick = async () => logout();
  * Game join logic
  */
 async function newPlayer() {
-    const res = await fetch("/api/games/new-player", {
+    const res = await apiFetch("/api/games/new-player", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({/* nothing */}),
@@ -445,7 +446,7 @@ btnHard.onclick = async () => {
 async function startSoloGame(difficulty) {
     const playerId = await newPlayer();
 
-    const res = await fetch("/api/games/start-solo-game", {
+    const res = await apiFetch("/api/games/start-solo-game", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId, difficulty }),
@@ -464,7 +465,7 @@ async function startLocalMultiplayerGame() {
     const playerId1 = await newPlayer();
     const playerId2 = await newPlayer();
 
-    const res = await fetch("/api/games/start-local-multiplayer-game", {
+    const res = await apiFetch("/api/games/start-local-multiplayer-game", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId1, playerId2 }),
@@ -482,7 +483,7 @@ async function startLocalMultiplayerGame() {
 async function joinMultiplayerGame() {
     const playerId = await newPlayer();
 
-    const res = await fetch("/api/games/join-multiplayer-game", {
+    const res = await apiFetch("/api/games/join-multiplayer-game", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ playerId }),

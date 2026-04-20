@@ -1,3 +1,4 @@
+import { apiFetch} from "/utils/wrapFetch.js";
 export class GameActionTimer extends HTMLElement {
     constructor() {
         super();
@@ -18,8 +19,8 @@ export class GameActionTimer extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/game/components/game-action-timer/game-action-timer.html"),
-                fetch("/game/components/game-action-timer/game-action-timer.css"),
+                apiFetch("/game/components/game-action-timer/game-action-timer.html"),
+                apiFetch("/game/components/game-action-timer/game-action-timer.css"),
             ]);
 
             const html = await htmlResponse.text();

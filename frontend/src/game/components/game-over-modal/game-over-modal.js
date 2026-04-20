@@ -1,5 +1,5 @@
 import { AppModal } from "/shared/components/app-modal/app-modal.js";
-
+import { apiFetch} from "/utils/wrapFetch.js";
 
 export class GameOverModal extends HTMLElement {
     constructor() {
@@ -18,8 +18,8 @@ export class GameOverModal extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/game/components/game-over-modal/game-over-modal.html"),
-                fetch("/game/components/game-over-modal/game-over-modal.css"),
+                apiFetch("/game/components/game-over-modal/game-over-modal.html"),
+                apiFetch("/game/components/game-over-modal/game-over-modal.css"),
             ]);
 
             const html = await htmlResponse.text();

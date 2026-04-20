@@ -2,7 +2,7 @@ import { Piece } from "/game/logic/board/Piece.js";
 
 import { InventoryRenderer } from "./InventoryRenderer.js";
 import { GamePageActionType } from "/game/pages/game-page/GamePageStateMachine/GamePageAction.js";
-
+import { apiFetch} from "/utils/wrapFetch.js";
 
 const GAME_ID = localStorage.getItem("gameId");
 
@@ -36,8 +36,8 @@ export class GamePlayerInventory extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/game/components/game-player-inventory/game-player-inventory.html"),
-                fetch("/game/components/game-player-inventory/game-player-inventory.css"),
+                apiFetch("/game/components/game-player-inventory/game-player-inventory.html"),
+                apiFetch("/game/components/game-player-inventory/game-player-inventory.css"),
             ]);
 
             const html = await htmlResponse.text();
@@ -118,7 +118,7 @@ export class GamePlayerInventory extends HTMLElement {
     }
 
     async actualise() {
-        const inventoryResponse = await fetch(`/api/games/${GAME_ID}/inventories/${this._owner}`);
+        const inventoryResponse = await apiFetch(`/api/games/${GAME_ID}/inventories/${this._owner}`);
         const { inventory } = await inventoryResponse.json();
 
         for (let i=0; i<GamePlayerInventory.MAX_SIZE; i++) {
