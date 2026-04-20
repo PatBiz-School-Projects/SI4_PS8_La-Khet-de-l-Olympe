@@ -21,13 +21,10 @@ const ROUTER = (new Router()
     .add("/internal/api/chats/new-chat?chatId={}", { // To create a chat with a given id
         PUT: HTTPHandler.newChat,
     })
-    .add("/internal/api/chats/:chatId/", {
+    .add("/internal/api/chats/:chatId", {
         DELETE: HTTPHandler.deleteChat,
     })
-    .add("/internal/api/chats/global-chat/add-user", {
-        POST: HTTPHandler.addUserInGlobalChat,
-    })
-    .add("/internal/api/chats/:chatId/add-user/", {
+    .add("/internal/api/chats/:chatId/add-user", {
         POST: HTTPHandler.addUserInChat,
     })
 
@@ -41,7 +38,7 @@ const ROUTER = (new Router()
     .add("/api/chats/:chatId/messages?start={}", {
         GET: authenticated(HTTPMiddleware_UserAccess(HTTPHandler.getChatMessages))
     })
-    .add("/api/chats/:chatId/users/", {
+    .add("/api/chats/:chatId/users", {
         GET: authenticated(HTTPMiddleware_UserAccess(HTTPHandler.getUsersInChat)),
     })
 );

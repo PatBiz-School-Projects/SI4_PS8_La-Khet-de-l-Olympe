@@ -539,12 +539,9 @@ async function toggleChatBox(isLoggedIn) {
     if (isLoggedIn) {
         const chatSocket = io("/global-chat", {
             path: "/api/chats/socket.io",
-            query: {
-                chatId: "0", // TODO : Manage it in the server
-            },
         });
 
-        chatBox.chatId = "0";
+        chatBox.chatId = "global-chat";
         await chatBox.actualise();
 
         chatSocket.on("new-message", ({message}) => {

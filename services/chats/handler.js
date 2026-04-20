@@ -60,45 +60,6 @@ exports.HTTPHandler = {
         sendJson(res, 200, {ok: true, success: true});
     },
 
-    addUserInGlobalChat: async (req, res) => {
-        const globalChat = ChatsManager.getChatById(ChatsManager.GLOBAL_CHAT_ID);
-
-        let { userId } = await readJsonBody(req);
-        if (!userId) {
-            const err = "Missing 'userId' in request's body";
-            console.error(err)
-            sendJson(res, 400, {ok: false, error: err});
-            return;
-        }
-
-        let user;
-        {
-            let userMinimalProfile;
-            try {
-                const response = await fetch(`${USER_SERVICE_URL}/api/users/${userId}/minimal-profile`);
-                if (!response.ok) {
-                    throw new Error((await response.json()).error);
-                }
-
-                userMinimalProfile = await response.json();
-            } catch (err) {
-                console.error(err);
-                sendJson(res, 400, {ok: false, error: err.message});
-                return;
-            }
-
-            user = { userId, ...userMinimalProfile };
-        }
-
-        globalChat.addUser(user);
-        ChatsRepository.addUser(ChatsManager.GLOBAL_CHAT_ID, user);
-        if (!await ChatUsersRepository.findById(userId)) {
-            ChatUsersRepository.create(user);
-        }
-
-        sendJson(res, 200, {ok: true, success: true});
-    },
-
     addUserInChat: async (req, res) => {
         const { chatId } = req.routeParams;
 
@@ -207,6 +168,10 @@ exports.HTTPHandler = {
 exports.SocketIOMiddleware = (socket, next) => {
     const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
     const userId = extractUserId(userToken);
+
+    if (socket.nsp.name === "/global-chat") {
+        socket.handshake.query.chatId = ChatsManager.GLOBAL_CHAT_ID;
+    }
 
     const { chatId } = socket.handshake.query;
     try {

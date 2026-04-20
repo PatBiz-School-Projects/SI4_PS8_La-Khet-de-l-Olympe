@@ -13,7 +13,7 @@ class ChatsManager {
     constructor() { throw new Error(`${this.constructor.name} is not instantiable`); }
 
     /** @readonly @type {ChatID} */
-    static GLOBAL_CHAT_ID = "0";
+    static GLOBAL_CHAT_ID = "global-chat";
 
     /** @private @type {Record<ChatID, Chat>} */
     static _chats = {};
