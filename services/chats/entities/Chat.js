@@ -1,4 +1,6 @@
-const { BroadcastOperator } = require("socket.io");
+const { BroadcastOperator, Namespace } = require("socket.io");
+
+const network = require("../network");
 
 const { ChatUser, ChatUserID, ChatUserDTO } = require("./ChatUser");
 const { ChatMessage, ChatMessageDTO } = require("./ChatMessage");
@@ -31,8 +33,8 @@ class Chat {
         /** @private @type {Record<ChatUserID, ChatUser>} */
         this._users = users;
 
-        /** @private @type {BroadcastOperator | null} */
-        this._broadcast = null;
+        /** @private @type {Namespace} */
+        this._nsp;
     }
 
     /** @type {ChatID} */
@@ -58,15 +60,13 @@ class Chat {
         return { ...this._users };
     }
 
+    setNamespace(nsp) {
+        this._nsp = nsp;
+    }
+
     /** @type {BroadcastOperator} */
     get broadcast() {
-        if (this._broadcast === null) {
-            throw new Error("No broadcast operator available");
-        }
-        return this._broadcast;
-    }
-    set broadcast(broadcast) {
-        this._broadcast = broadcast;
+        return this._nsp?.to(this._chatId);
     }
 
     /**
@@ -126,6 +126,17 @@ class Chat {
         console.log(`[ Chat ]: Adding a user in the chat of id '${this._chatId}'`);
 
         this._users[userDTO.userId] = ChatUser.fromDTO(userDTO);
+    }
+
+    /**
+     * @param {ChatUserID} userId
+     * @param {unknown} update
+     */
+    updateUser(userId, update) {
+        // DEBUG::
+        console.log(`[ Chat ]: Updating user of id '${userId}' in the chat '${this._chatId}'`);
+
+        this._users[userId].update(update);
     }
 }
 

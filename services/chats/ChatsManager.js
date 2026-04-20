@@ -1,11 +1,12 @@
 const { randomUUID } = require("node:crypto");
 
-const { Server } = require("socket.io");
+const network = require("./network");
 
 const { Chat, ChatID, ChatDTO } = require("./entities/Chat");
 
 const { ChatsRepository } = require("./repositories/ChatsRepository");
 const { ChatUsersRepository } = require("./repositories/ChatUsersRepository");
+
 
 
 class ChatsManager {
@@ -17,9 +18,6 @@ class ChatsManager {
 
     /** @private @type {Record<ChatID, Chat>} */
     static _chats = {};
-
-    /** @private @type {Server} */
-    static _io = null;
 
     static {
         // AIIFE to instantiate the global chat
@@ -33,15 +31,6 @@ class ChatsManager {
         return { ...this._chats };
     }
 
-    static get io() {
-        if (this._io === null) {
-            throw new Error("No socket.io server available");
-        }
-        return this._io;
-    }
-    static set io(io) {
-        this._io = io;
-    }
 
     static async newChat(chatId = undefined) {
         if (chatId in this._chats) {
@@ -56,8 +45,6 @@ class ChatsManager {
             }
         }
 
-        let chat;
-
         const chatEntry = await ChatsRepository.findById(chatId);
         if (!chatEntry) {
             await ChatsRepository.create({
@@ -66,21 +53,19 @@ class ChatsManager {
                 users: [],
             });
 
-            chat = await Chat.fromDTO({
+            this._chats[chatId] = await Chat.fromDTO({
                 chatId,
                 messages: [],
                 users: {},
             });
         } else {
-            chat = await Chat.fromDTO({
+            this._chats[chatId] = await Chat.fromDTO({
                 chatId,
                 messages: chatEntry.messages,
                 users: await Promise.all(chatEntry.users.map(userId => ChatUsersRepository.findById(userId))),
             });
         }
 
-        chat.broadcast = this.io.to(chatId);
-        this._chats[chatId] = chat;
         return chatId;
     }
 

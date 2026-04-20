@@ -186,7 +186,6 @@ services:
       DB_NAME:              *auth-db
       DB_URL:               *mongo-url
       USER_SERVICE_URL:     *users-url
-      CHAT_SERVICE_URL:     *chats-url
       AUTH_SERVICE_URL:     *auth-url
     networks:
       - internal

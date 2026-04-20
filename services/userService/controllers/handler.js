@@ -1,6 +1,8 @@
 const { readJsonBody, sendJson } = require("../helpers/parser");
 const { extractToken, extractUserId } = require("../helpers/token");
 
+const network = require("./network");
+
 const connectedUsersService = require("../managers/connectedUsersService");
 const usersRepository = require("../repositories/userRepository");
 const friendshipManager = require("../managers/friendshipManager");
@@ -8,34 +10,48 @@ const achievementsManager = require("../managers/achievementsManager");
 
 
 exports.createUser = async (req, res) => {
-    try {
-        const body = await readJsonBody(req);
-        const { authId, username } = body;
-
-        if (!authId || !username) {
-            sendJson(res, 400, { ok: false, error: "MISSING_FIELDS" });
-            return;
-        }
-
-        const existing = await usersRepository.findUserByAuthId(authId);
-
-        if (existing) {
-            sendJson(res, 409, { ok: false, error: "ALREADY_EXISTS" });
-            return;
-        }
-
-        const result = await usersRepository.createUser(authId,username);
-
-        return sendJson(res, 201, {
-            ok: true,
-            id: result.insertedId,
-        });
-    } catch (error) {
-        return sendJson(res, 500, {
-            ok: false,
-            error: String(error?.message ?? error),
-        });
+    const { authId: userId, username } = await readJsonBody(req);
+    if (!userId || !username) {
+        const errMsg = "Missing fields in request body to create user";
+        console.error(errMsg);
+        sendJson(res, 400, { ok: false, error: errMsg });
+        return;
     }
+
+    const alreadyExists = Boolean(await usersRepository.findUserByAuthId(userId));
+    if (alreadyExists) {
+        const errMsg = "User already exists";
+        console.error(errMsg);
+        sendJson(res, 409, { ok: false, error: errMsg });
+        return;
+    }
+
+    try {
+        await usersRepository.createUser(userId, username);
+    } catch (err) {
+        console.error("Internal error occurred while creating new user:", err);
+        sendJson(res, 500, { ok: false, error: err.message });
+        return;
+    }
+
+    const createdUser = await usersRepository.findUserByAuthId(userId);
+
+    network.bus.publish("created-new-user", {
+        userId,
+        username: createdUser.username,
+        profilePicture: createdUser.profilePicture,
+        elo: createdUser.elo,
+        totalGames: createdUser.totalGames,
+        totalWins: createdUser.totalWins,
+        totalLosses: createdUser.totalLosses,
+        totalDraws: createdUser.totalDraws,
+        achievements: createdUser.achievements,
+    });
+
+    sendJson(res, 201, {
+        ok: true,
+        id: userId,
+    });
 }
 
 exports.getConnectedUsers = async (req, res) => {
@@ -177,16 +193,11 @@ exports.getPublicProfile = async (req, res) => {
 
 exports.getUserMinimalProfile = async (req, res) => {
     const { userId } = req.routeParams;
-
-    let user;
-    try {
-        user = await usersRepository.findUserByAuthId(userId);
-        if (!user) {
-            throw new Error(`No user found with id: '${userId}'`);
-        }
-    } catch (err) {
-        console.error(err);
-        sendJson(res, 404, {ok: false, error: err.message});
+    const user = await usersRepository.findUserByAuthId(userId);
+    if (!user) {
+        const errMsg = `No user of id '${userId}' found`;
+        console.error(errMsg);
+        sendJson(res, 404, {ok: false, error: errMsg});
         return;
     }
 
@@ -253,16 +264,11 @@ exports.getLeaderboard = async (req, res) => {
 
 exports.getUserStats = async (req, res) => {
     const { userId } = req.routeParams;
-
-    let user;
-    try {
-        user = await usersRepository.findUserByAuthId(userId);
-        if (!user) {
-            throw new Error(`No user found with id: '${userId}'`);
-        }
-    } catch (err) {
-        console.error(err);
-        sendJson(res, 404, {ok: false, error: err.message});
+    const user = await usersRepository.findUserByAuthId(userId);
+    if (!user) {
+        const errMsg = `No user of id '${userId}' found`;
+        console.error(errMsg);
+        sendJson(res, 404, {ok: false, error: errMsg});
         return;
     }
 
@@ -279,16 +285,11 @@ exports.getUserStats = async (req, res) => {
 
 exports.getUserLiveStats = async (req, res) => {
     const { userId } = req.routeParams;
-
-    let user;
-    try {
-        user = await usersRepository.findUserByAuthId(userId);
-        if (!user) {
-            throw new Error(`No user found with id: '${userId}'`);
-        }
-    } catch (err) {
-        console.error(err);
-        sendJson(res, 404, {ok: false, error: err.message});
+    const user = await usersRepository.findUserByAuthId(userId);
+    if (!user) {
+        const errMsg = `No user of id '${userId}' found`;
+        console.error(errMsg);
+        sendJson(res, 404, {ok: false, error: errMsg});
         return;
     }
 
@@ -299,57 +300,59 @@ exports.getUserLiveStats = async (req, res) => {
     });
 }
 
-exports.updateUserProfilePicture = async (req,res) =>{
-    try{
-
-        const userId =  await checkExistingUser(req,res);
-        if(!userId) return;
-        const body = await readJsonBody(req);
-        const { profilePicture } = body;
-
-        if (!profilePicture) {
-            return sendJson(res, 400, { ok: false, error: "Profile Picture is missing." });
-        }
-
-        await usersRepository.updateProfilePicture(userId,profilePicture);
-
-        sendJson(res, 200, {ok: true, success: true});
-
-    }catch (err){
-        console.error(err);
-        sendJson(res, 500, { ok: false, error: "Update Profile Picture Impossible." });
-    }
-
-
-}
-
-checkExistingUser = async (req, res) => {
+exports.updateUserProfilePicture = async (req, res) => {
     const { userId } = req.routeParams;
-    let user;
-    try{
-        user = await usersRepository.findUserByAuthId(userId);
 
-        if (!user) {
-            sendJson(res, 404, { ok: false, error: `No user found with id: '${userId}'` });
-            return null;
-        }
-
-        return userId
-
-    }catch (err){
-        console.error(err);
-        sendJson(res, 404, {ok: false, error: err.message});
+    const user = await usersRepository.findUserByAuthId(userId);
+    if (!user) {
+        const errMsg = `No user of id '${userId}' found`;
+        console.error(errMsg);
+        sendJson(res, 404, {ok: false, error: errMsg});
+        return;
     }
+
+    const { profilePicture } = await readJsonBody(req);
+    if (!profilePicture) {
+        const errMsg = "Malformed request body: Missing 'profilePicture' attribute";
+        console.error(errMsg);
+        sendJson(res, 400, { ok: false, error: errMsg });
+        return;
+    }
+
+    let updatedUser;
+    try {
+        updatedUser = await usersRepository.updateProfilePicture(userId,profilePicture);
+    } catch (err) {
+        const errorMsg = `Internal Error: Failed to update user's profile picture bcs: ${err.message}`;
+        console.error(errorMsg);
+        sendJson(res, 500, { ok: false, error: errorMsg });
+        return;
+    }
+
+    sendJson(res, 200, {ok: true, success: true});
+
+    network.bus.publish("updated-user-profile", {
+        userId,
+        update: {
+            username: updatedUser.username,
+            profilePicture: updatedUser.profilePicture,
+        },
+    });
 }
 
 exports.updateUserStats = async (req, res) => {
-    const userId = await checkExistingUser(req,res);
-    if(!userId) return;
+    const { userId } = req.routeParams;
+    const user = await usersRepository.findUserByAuthId(userId);
+    if (!user) {
+        const errMsg = `No user of id '${userId}' found`;
+        console.error(errMsg);
+        sendJson(res, 404, {ok: false, error: errMsg});
+        return;
+    }
 
     const update = await readJsonBody(req);
 
     const updatedUser = await usersRepository.updateUserStats(userId, update);
-
     if (!updatedUser) {
         return sendJson(res, 500, { ok: false, error: "Failed to update stats" });
     }
@@ -364,12 +367,12 @@ exports.updateUserStats = async (req, res) => {
 }
 
 async function updateUserAchievements(user) {
-
     const newAchievements = achievementsManager.checkNewAchievements(user);
 
     if (newAchievements.length > 0) {
         const newAchievementIds = newAchievements.map(a => a.id);
         await usersRepository.addAchievements(user.id, newAchievementIds);
     }
+
     return newAchievements;
 }

@@ -6,8 +6,9 @@ const {
     HTTPHandler,
     SocketIOMiddleware,
     SocketIOHandler,
-} = require("./handler.js");
-const { ChatsManager } = require("./ChatsManager.js");
+    EventsHandler,
+} = require("./handler");
+const network = require("./network");
 
 
 const ROUTER = (new Router()
@@ -80,5 +81,14 @@ exports.manageSocket = async (io) => {
         })
     });
 
-    ChatsManager.io = io;
+    network.io = io;
+}
+
+
+exports.manageEvents = async (bus) => {
+    bus.subscribe("users");
+
+    bus.on("created-new-user", EventsHandler.onNewUser);
+
+    bus.on("updated-user-profile", EventsHandler.onUserProfileUpdated);
 }

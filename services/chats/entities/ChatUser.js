@@ -97,6 +97,11 @@ class ChatUser {
     disconnect() {
         delete this._socket;
     }
+
+    update(update) {
+        this._username = update.username ?? this._username;
+        this._profilePicture = update.profilePicture ?? this._profilePicture;
+    }
 }
 
 

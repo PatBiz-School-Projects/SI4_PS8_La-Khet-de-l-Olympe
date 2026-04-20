@@ -106,6 +106,13 @@ exports.HTTPHandler = {
         }
 
         sendJson(res, 200, {ok: true, success: true});
+
+        // Broadcast the new user to the chat's users (if possible/needed)
+        if (chat.broadcast) {
+            // If the chat doesn't have a broadcast operator it means that no user is connected to it.
+            // Thus it's useless to even try to broadcast something.
+            chat.broadcast.emit("new-user", { user });
+        }
     },
 
     getChatMessages: async (req, res) => {
@@ -200,6 +207,8 @@ exports.SocketIOHandler = {
         const chat = ChatsManager.getChatById(chatId);
         chat.users[userId].connect(socket);
 
+        chat.setNamespace(io);
+
         socket.join(chatId);
     },
 
@@ -228,5 +237,51 @@ exports.SocketIOHandler = {
         chat.users[userId].disconnect();
 
         socket.leave(chatId);
+    },
+};
+
+
+//
+// Event Broker
+//
+
+
+exports.EventsHandler = {
+    onNewUser: async (event) => {
+        const user = {
+            userId: event.payload.userId,
+            username: event.payload.username,
+            profilePicture: event.payload.profilePicture,
+        };
+
+        // Must add new user to the global chat
+
+        const globalChat = ChatsManager.getChatById(ChatsManager.GLOBAL_CHAT_ID);
+        globalChat.addUser(user);
+        ChatsRepository.addUser(ChatsManager.GLOBAL_CHAT_ID, user);
+        ChatUsersRepository.create(user);
+
+        // Broadcast the new user to the chat's users (if possible/needed)
+        if (globalChat.broadcast) {
+            // If the chat doesn't have a broadcast operator it means that no user is connected to it.
+            // Thus it's useless to even try to broadcast something.
+            globalChat.broadcast.emit("new-user", { user });
+        }
+    },
+
+    onUserProfileUpdated: async (event) => {
+        const { userId, update } = event.payload;
+
+        ChatUsersRepository.update(userId, update);
+
+        for (const [chatId, chat] of Object.entries(ChatsManager.chats)) {
+            if (!chat.userIsAllowed(userId)) {
+                continue;
+            }
+
+            chat.updateUser(userId, update);
+
+            chat.broadcast.emit("update-user", { ...event.payload });
+        }
     },
 };
