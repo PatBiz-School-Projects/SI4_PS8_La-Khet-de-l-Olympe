@@ -5,6 +5,8 @@ const fs = require('fs');
 // path is used only for its parse method, which creates an object containing useful information about the path.
 const path = require('path');
 
+const IS_PROD = process.env.IS_PROD;
+
 // We will limit the search of files in the front folder (../../front from here).
 // Note that fs methods consider the current folder to be the one where the app is run, that's why we don't need the "../.." before front.
 const baseFrontPath = '/front';
@@ -41,6 +43,30 @@ function manageRequest(request, response) {
     let extension = path.parse(pathName).ext;
     // Uncomment the line below if you want to check in the console what url.parse() and path.parse() create.
     //console.log(parsedUrl, pathName, path.parse(pathName));
+
+    if (pathName ===  "./env.js") {
+        if (IS_PROD) {
+            fs.readFile("./front/env.prod.js", function(error, data){
+                if (error) {
+                    console.log(`Error getting the file: ${pathName}: ${error}`);
+                    send404(pathName, response);
+                } else {
+                    response.setHeader('Content-type', mimeTypes[extension] || mimeTypes['default'] );
+                    response.end(data);
+                }
+            });
+        } else {
+            fs.readFile("./front/env.dev.js", function(error, data){
+                if (error) {
+                    console.log(`Error getting the file: ${pathName}: ${error}`);
+                    send404(pathName, response);
+                } else {
+                    response.setHeader('Content-type', mimeTypes[extension] || mimeTypes['default'] );
+                    response.end(data);
+                }
+            });
+        }
+    }
 
     // Let's check if the file exists.
     fs.exists(pathName, async function (exist) {

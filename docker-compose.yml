@@ -71,6 +71,7 @@ services:
       context: ./services/files
       network: host
     environment:
+      IS_PROD: ${IS_PROD}
       PORT: *files-port
     volumes:
       - ./frontend/src:/app/front
