@@ -1,6 +1,5 @@
 const http = require('http');
 const port = process.env.PORT;
-export const url = process.env.API_URL;
 
 const fileQuery = require('./logic.js');
 
