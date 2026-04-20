@@ -44,29 +44,19 @@ function manageRequest(request, response) {
     // Uncomment the line below if you want to check in the console what url.parse() and path.parse() create.
     //console.log(parsedUrl, pathName, path.parse(pathName));
 
-    if (pathName ===  "./env.js") {
-        if (IS_PROD) {
-            fs.readFile("./front/env.prod.js", function(error, data){
-                if (error) {
-                    console.log(`Error getting the file: ${pathName}: ${error}`);
-                    send404(pathName, response);
-                } else {
-                    response.setHeader('Content-type', mimeTypes[extension] || mimeTypes['default'] );
-                    response.end(data);
-                }
-            });
-        } else {
-            fs.readFile("./front/env.dev.js", function(error, data){
-                if (error) {
-                    console.log(`Error getting the file: ${pathName}: ${error}`);
-                    send404(pathName, response);
-                } else {
-                    response.setHeader('Content-type', mimeTypes[extension] || mimeTypes['default'] );
-                    response.end(data);
-                }
-            });
-        }
-    }
+    /*if (pathName === "./env.js") {
+        const envFile = IS_PROD ? "./front/env.prod.js" : "./front/env.dev.js";
+        console.log(request);
+        fs.readFile(envFile, function(error, data) {
+            if (error) {
+                send404(pathName, response);
+            } else {
+                response.setHeader('Content-type', mimeTypes['.js']);
+                response.end(data);
+            }
+        });
+        return;
+    }*/
 
     // Let's check if the file exists.
     fs.exists(pathName, async function (exist) {
