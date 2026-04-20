@@ -23,6 +23,8 @@ import { ChatBox } from "/chat/components/index.js";
 
 import { EventQueue } from "/utils/event.js";
 import { apiFetch} from "/utils/wrapFetch.js";
+import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
+const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "https://khet-olympe.ps8.pns.academy";
 // REVIEW : It's a feature instead of an utils
 import { sendChallenge } from "/utils/challenge.js"
 
@@ -190,13 +192,13 @@ let isGameOver = false;
 
 
 const chatSocket = io("/game-chat", {
-    path: "/api/chats/socket.io",
+    path: apiHost+"/api/chats/socket.io",
     query: {
         chatId: GAME_ID,
     },
 });
 const gameSocket = io({
-    path: "/api/games/socket.io",
+    path: apiHost+"/api/games/socket.io",
     query: {
         gameId: GAME_ID,
     },
