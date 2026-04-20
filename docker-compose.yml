@@ -72,6 +72,7 @@ services:
       network: host
     environment:
       PORT: *files-port
+      API_URL: ${API_URL}
     volumes:
       - ./frontend/src:/app/front
       - ./frontend/assets:/app/front/assets
