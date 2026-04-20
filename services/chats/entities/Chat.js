@@ -1,3 +1,5 @@
+const { BroadcastOperator } = require("socket.io");
+
 const { ChatUser, ChatUserID, ChatUserDTO } = require("./ChatUser");
 const { ChatMessage, ChatMessageDTO } = require("./ChatMessage");
 
@@ -28,6 +30,9 @@ class Chat {
 
         /** @private @type {Record<ChatUserID, ChatUser>} */
         this._users = users;
+
+        /** @private @type {BroadcastOperator | null} */
+        this._broadcast = null;
     }
 
     /** @type {ChatID} */
@@ -51,6 +56,17 @@ class Chat {
      */
     get users() {
         return { ...this._users };
+    }
+
+    /** @type {BroadcastOperator} */
+    get broadcast() {
+        if (this._broadcast === null) {
+            throw new Error("No broadcast operator available");
+        }
+        return this._broadcast;
+    }
+    set broadcast(broadcast) {
+        this._broadcast = broadcast;
     }
 
     /**

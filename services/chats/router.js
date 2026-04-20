@@ -7,6 +7,7 @@ const {
     SocketIOMiddleware,
     SocketIOHandler,
 } = require("./handler.js");
+const { ChatsManager } = require("./ChatsManager.js");
 
 
 const ROUTER = (new Router()
@@ -81,4 +82,6 @@ exports.manageSocket = async (io) => {
             SocketIOHandler.onDisconnection(socket.nsp, socket, msgPayload);
         })
     });
+
+    ChatsManager.io = io;
 }

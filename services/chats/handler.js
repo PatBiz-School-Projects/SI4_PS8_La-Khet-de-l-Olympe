@@ -223,7 +223,7 @@ exports.SocketIOMiddleware = (socket, next) => {
     }
 
     return next();
-}
+};
 
 
 exports.SocketIOHandler = {
@@ -249,7 +249,7 @@ exports.SocketIOHandler = {
         ChatsRepository.addMessage(chatId, message);
 
         // Broadcast the new message to the chat's users
-        io.to(chatId).emit("new-message", { message });
+        chat.broadcast.emit("new-message", { message });
     },
 
     // Add more if needed ...
