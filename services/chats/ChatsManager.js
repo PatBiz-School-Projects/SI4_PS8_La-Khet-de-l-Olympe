@@ -1,6 +1,9 @@
-const { Chat, ChatID } = require("./entities/Chat");
-
 const { randomUUID } = require("node:crypto");
+
+const { Chat, ChatID, ChatDTO } = require("./entities/Chat");
+
+const { ChatsRepository } = require("./repositories/ChatsRepository");
+const { ChatUsersRepository } = require("./repositories/ChatUsersRepository");
 
 
 class ChatsManager {
@@ -14,19 +17,52 @@ class ChatsManager {
     static _chats = {};
 
     static {
-        this.newChat(this.GLOBAL_CHAT_ID);
+        // AIIFE to instantiate the global chat
+        (async () => {
+            await this.newChat(this.GLOBAL_CHAT_ID);
+        })()
     }
 
-    static newChat(chatId = undefined) {
-        if (!chatId) {
-            chatId = randomUUID();
-        }
+    /** @type {Record<ChatID, Chat>} */
+    static get chats() {
+        return { ...this._chats };
+    }
 
+    static async newChat(chatId = undefined) {
         if (chatId in this._chats) {
             throw new Error(`Chat w/ id: '${chatId}' already exists`);
         }
 
-        this._chats[chatId] = new Chat(chatId);
+        if (!chatId) {
+            chatId = randomUUID();
+            // To make sure that the chat id is truly unique
+            while (await ChatsRepository.findById(chatId)) {
+                chatId = randomUUID();
+            }
+        }
+
+        const chatEntry = await ChatsRepository.findById(chatId);
+        if (!chatEntry) {
+            await ChatsRepository.create({
+                chatId,
+                messages: [],
+                users: [],
+            });
+
+            this._chats[chatId] = await Chat.fromDTO({
+                chatId,
+                messages: [],
+                users: {},
+            });
+            return chatId;
+        }
+
+        this._chats[chatId] = await Chat.fromDTO({
+            chatId,
+            messages: chatEntry.messages,
+            users: await Promise.all(chatEntry.users.map(userId => ChatUsersRepository.findById(userId))),
+        });
+        return chatId;
     }
 
     /**

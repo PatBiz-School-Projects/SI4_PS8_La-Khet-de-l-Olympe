@@ -1,6 +1,5 @@
-const { ChatsRepository } = require("../repositories/ChatsRepository");
-
-const { ChatUserID, ChatUser, ChatUserDTO } = require("./ChatUser");
+const { ChatUser, ChatUserID, ChatUserDTO } = require("./ChatUser");
+const { ChatMessage, ChatMessageDTO } = require("./ChatMessage");
 
 
 /**
@@ -10,44 +9,25 @@ const ChatID = undefined;
 
 
 /**
- * @typedef {Object} ChatMessageDTO
+ * @typedef {Object} ChatDTO
  *
- * @prop {ChatUserDTO} author
- * @prop {string} content
- * @prop {number} uploadTimestamp
+ * @prop {ChatID} chatId
+ * @prop {ChatMessageDTO[]} messages
+ * @prop {Record<ChatUserID, ChatUserDTO>} users
  */
-const ChatMessageDTO = undefined;
+const ChatDTO = undefined;
 
 
 class Chat {
-    constructor(chatId) {
+    constructor(chatId, messages, users) {
         /** @private @type {ChatID} */
         this._chatId = chatId;
 
+        /** @private @type {ChatMessage[]} */
+        this._messages = messages;
+
         /** @private @type {Record<ChatUserID, ChatUser>} */
-        this._users = {};
-
-        /** @private @type {ChatMessageDTO[]} */
-        this._messages = [];
-
-        ChatsRepository.onceReady(repo => {
-            repo.findById(chatId)
-                .then(chatEntry => {
-                    if (!chatEntry) {
-                        repo.create(chatId);
-                        return;
-                    }
-
-                    for (const user of chatEntry.users) {
-                        this._users[user.userId] = ChatUser.fromDTO(user);
-                    }
-
-                    this._messages = [...this._messages, ...chatEntry.messages];
-                })
-                .catch(err => {
-                    console.error(`Unexpected error while instantiating chat of id '${chatId}':`, err);
-                });
-        });
+        this._users = users;
     }
 
     /** @type {ChatID} */
@@ -58,7 +38,7 @@ class Chat {
     /**
      * List of all messages in the chat from the latest to the oldest.
      *
-     * @type {ChatMessageDTO[]}
+     * @type {ChatMessage[]}
      */
     get messages() {
         return [ ...this._messages ];
@@ -67,10 +47,40 @@ class Chat {
     /**
      * Mapping by id of all the users in the chat (connected or not).
      *
-     * @type {Record<ChatUserID, ChatUser>[]}
+     * @type {Record<ChatUserID, ChatUser>}
      */
     get users() {
         return { ...this._users };
+    }
+
+    /**
+     * @param {ChatDTO} chatDTO
+     *
+     * @returns {Chat}
+     */
+    static fromDTO(chatDTO) {
+        return new Chat(
+            chatDTO.chatId,
+            chatDTO.messages.map(ChatMessage.fromDTO),
+            Object.values(chatDTO.users).reduce((res, user) => {
+                res[user.userId] = ChatUser.fromDTO(user);
+                return res
+            }, {}),
+        )
+    }
+
+    /**
+     * @returns {ChatDTO}
+     */
+    toDTO() {
+        return {
+            chatId: this._chatId,
+            messages: this._messages.map(message => message.toDTO()),
+            users: Object.values(this._users).reduce((res, user) => {
+                res[user.userId] = user.toDTO();
+                return res
+            }, {}),
+        }
     }
 
     /**
@@ -83,26 +93,25 @@ class Chat {
     }
 
     /**
-     * @param {ChatMessageDTO} message
+     * @param {ChatMessageDTO} messageDTO
      */
-    addMessage(message) {
+    addMessage(messageDTO) {
+        // DEBUG::
         console.log(`[ Chat ]: Adding a message in the chat of id '${this._chatId}'`);
 
-        this._messages = [message, ...this._messages];
-
-        ChatsRepository.saveMessage(this._chatId, message);
+        this._messages = [ChatMessage.fromDTO(messageDTO), ...this._messages];
     }
 
     /**
-     * @param {ChatUserDTO} user
+     * @param {ChatUserDTO} userDTO
      */
-    addUser(user) {
+    addUser(userDTO) {
+        // DEBUG::
         console.log(`[ Chat ]: Adding a user in the chat of id '${this._chatId}'`);
 
-        this._users[user.userId] = ChatUser.fromDTO(user);
-
-        ChatsRepository.saveUser(this._chatId, user);
+        this._users[userDTO.userId] = ChatUser.fromDTO(userDTO);
     }
 }
 
-module.exports = { Chat, ChatID, ChatMessageDTO, ChatUserDTO };
+
+module.exports = { Chat, ChatID, ChatDTO };

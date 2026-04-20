@@ -1,6 +1,10 @@
-const { MongoClient, Db: MongoDb, Collection: MongoCollection } = require("mongodb");
+const { Collection: MongoCollection } = require("mongodb");
 
-const { ChatID, ChatMessageDTO, ChatUserDTO } = require("../entities/Chat");
+const { Repository } = require("../helpers/repository");
+
+const { ChatID, ChatDTO } = require("../entities/Chat");
+const { ChatMessageDTO } = require("../entities/ChatMessage");
+const { ChatUserID, ChatUserDTO } = require("../entities/ChatUser");
 
 const { DB_URL, DB_NAME } = process.env;
 
@@ -10,55 +14,49 @@ const { DB_URL, DB_NAME } = process.env;
  *
  * @prop {ChatID} _id
  * @prop {ChatID} chatId
- * @prop {ChatUserDTO[]} users
  * @prop {ChatMessageDTO[]} messages
+ * @prop {ChatUserID[]} users
  */
 
 
 class ChatsRepository {
-    /** @private @type {ChatsRepository} */
-    static _INST;
-
-    /** @private @type {boolean} */
-    static _isReady = false;
-
-    /** @private @type {Promise<boolean>} */
-    static _readiness = (async () => {
-        const client = new MongoClient(DB_URL);
-        await client.connect();
-
-        const db = client.db(DB_NAME);
-        const collection = db.collection(DB_NAME);
-
-        this._INST = new ChatsRepository(client, db, collection);
-        this._isReady = true;
-
-        return true;
-    })();
-
     /** @private */
-    constructor(client, db, collection) {
-        /** @private @type {MongoClient} */
-        this._client = client;
+    constructor() { throw new Error(`${this.constructor.name} is not instantiable`); }
 
-        /** @private @type {MongoDb} */
-        this._db = db;
+    static _REPO = new Repository("chats", {
+        db: DB_NAME,
+        url: DB_URL,
+    });
 
-        /** @private @type {MongoCollection} */
-        this._collection = collection
+    /** @private @type {Promise<void>} */
+    static get _connection() {
+        return this._REPO.connection;
+    }
+
+    /** @private  @type { MongoCollection } */
+    static get _collection() {
+        return this._REPO.collection;
     }
 
 
     ////////////////////////////////////////////////////////////////////////////
     ////////////////////////////////////////////////////////////////////////////
 
+
     /**
      * @param {ChatID} chatId
      */
-    create(chatId) {
-        return this._collection.insertOne({
+    static async create({chatId, messages=[], users=[]}) {
+        // DEBUG::
+        console.log(`[ ChatsRepository ]: Creating new chat of id '${chatId}'`);
+
+        await this._connection;
+
+        return await this._collection.insertOne({
             _id: chatId,
-            messages: [],
+            chatId,
+            messages,
+            users,
             createdAt: new Date(),
         });
     }
@@ -68,7 +66,9 @@ class ChatsRepository {
      *
      * @returns {Promise<ChatEntry>}
      */
-    async findById(chatId) {
+    static async findById(chatId) {
+        await this._connection;
+
         return await this._collection.findOne({ _id: chatId });
     }
 
@@ -76,84 +76,30 @@ class ChatsRepository {
      * @param {ChatID} chatId
      * @param {ChatMessageDTO} message
      */
-    saveMessage(chatId, message) {
-        console.log(`[ ChatRepository ]: Saving a message for the chat of id '${chatId}'`);
+    static async addMessage(chatId, message) {
+        // DEBUG::
+        console.log(`[ ChatsRepository ]: Adding a message to the chat of id '${chatId}'`);
 
-        return this._collection.updateOne({ _id: chatId }, {
+        await this._connection;
+
+        return await this._collection.updateOne({ _id: chatId }, {
             $push: { messages: message },
         });
     }
 
     /**
      * @param {ChatID} chatId
-     * @param {ChatUserDTO} message
+     * @param {ChatUserDTO} user
      */
-    saveUser(chatId, user) {
-        console.log(`[ ChatRepository ]: Saving a user for the chat of id '${chatId}'`);
+    static async addUser(chatId, user) {
+        // DEBUG::
+        console.log(`[ ChatsRepository ]: Adding a user to the chat of id '${chatId}'`);
 
-        return this._collection.updateOne({ _id: chatId }, {
-            $push: { users: user },
+        await this._connection;
+
+        return await this._collection.updateOne({ _id: chatId }, {
+            $push: { users: user.userId },
         });
-    }
-
-
-    ////////////////////////////////////////////////////////////////////////////
-    ////////////////////////////////////////////////////////////////////////////
-
-
-    /**
-     * @param {() => void|Promise<void>} cb
-     *
-     * @returns {Promise<void>}
-     */
-    static async onceReady(cb) {
-        if (await this._readiness) {
-            await cb(this._INST);
-        } else {
-            throw new Error(`${this.constructor.name} was never ready`);
-        }
-    }
-
-    static assertReadiness() {
-        if (!this._isReady) {
-            throw new Error(`${this.constructor.name} is not ready`)
-        }
-    }
-
-    /**
-     * @param {ChatID} chatId
-     */
-    static create(chatId) {
-        this.assertReadiness();
-        return this._INST.create(chatId);
-    }
-
-    /**
-     * @param {ChatID} chatId
-     *
-     * @returns {Promise<ChatEntry>}
-     */
-    static async findById(chatId) {
-        this.assertReadiness();
-        return this._INST.findById(chatId);
-    }
-
-    /**
-     * @param {ChatID} chatId
-     * @param {ChatMessageDTO} message
-     */
-    static saveMessage(chatId, message) {
-        this.assertReadiness();
-        return this._INST.saveMessage(chatId, message);
-    }
-
-    /**
-     * @param {ChatID} chatId
-     * @param {ChatUserDTO} message
-     */
-    static saveUser(chatId, user) {
-        this.assertReadiness();
-        return this._INST.saveUser(chatId, user);
     }
 }
 

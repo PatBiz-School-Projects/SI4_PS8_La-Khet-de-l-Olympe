@@ -1,9 +1,11 @@
 const { Socket } = require('socket.io');
 
+
 /**
  * @typedef {string} ChatUserID
  */
 const ChatUserID = undefined;
+
 
 /**
  * @typedef {Object} ChatUserDTO
@@ -98,8 +100,4 @@ class ChatUser {
 }
 
 
-module.exports = {
-    ChatUserID,
-    ChatUser,
-    ChatUserDTO,
-};
+module.exports = { ChatUser, ChatUserID, ChatUserDTO };

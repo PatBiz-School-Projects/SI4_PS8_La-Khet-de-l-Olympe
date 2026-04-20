@@ -3,6 +3,9 @@ const { extractUserId } = require("./helpers/token");
 
 const { ChatsManager } = require("./ChatsManager");
 
+const { ChatsRepository } = require("./repositories/ChatsRepository");
+const { ChatUsersRepository } = require("./repositories/ChatUsersRepository");
+
 const { USER_SERVICE_URL } = process.env;
 
 
@@ -36,9 +39,9 @@ exports.HTTPHandler = {
         let { chatId } = req.queryParams;
         try {
             if (chatId) {
-                ChatsManager.newChat(chatId);
+                await ChatsManager.newChat(chatId);
             } else {
-                chatId = ChatsManager.newChat();
+                chatId = await ChatsManager.newChat();
             }
         } catch (err) {
             console.error(err);
@@ -88,6 +91,11 @@ exports.HTTPHandler = {
         }
 
         globalChat.addUser(user);
+        ChatsRepository.addUser(ChatsManager.GLOBAL_CHAT_ID, user);
+        if (!await ChatUsersRepository.findById(userId)) {
+            ChatUsersRepository.create(user);
+        }
+
         sendJson(res, 200, {ok: true, success: true});
     },
 
@@ -131,6 +139,11 @@ exports.HTTPHandler = {
         }
 
         chat.addUser(user);
+        ChatsRepository.addUser(chatId, user);
+        if (!await ChatUsersRepository.findById(userId)) {
+            ChatUsersRepository.create(user);
+        }
+
         sendJson(res, 200, {ok: true, success: true});
     },
 
@@ -154,10 +167,13 @@ exports.HTTPHandler = {
             return;
         }
 
-        const messages = chat.messages.slice(start, end);
-        // DEBUG::
-        console.log(`Sending ${messages.length} older messages`);
+        const messages = chat.messages.slice(start, end)
+            .map(message => message.toDTO());
+
         sendJson(res, 200, {ok: true, messages});
+
+        // DEBUG::
+        console.log(`Sent ${messages.length} older messages`);
     },
 
     getUsersInChat: async (req, res) => {
@@ -176,6 +192,9 @@ exports.HTTPHandler = {
             .map(user => user.toDTO());
 
         sendJson(res, 200, { ok: true, users });
+
+        // DEBUG::
+        console.log(`Sent ${users.length} users`);
     },
 };
 
@@ -227,6 +246,7 @@ exports.SocketIOHandler = {
 
         const chat = ChatsManager.getChatById(chatId);
         chat.addMessage(message);
+        ChatsRepository.addMessage(chatId, message);
 
         // Broadcast the new message to the chat's users
         io.to(chatId).emit("new-message", { message });
