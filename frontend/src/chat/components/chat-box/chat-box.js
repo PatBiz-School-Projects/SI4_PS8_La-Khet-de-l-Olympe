@@ -15,7 +15,7 @@ export const ChatUser = undefined;
  * @typedef {Object} ChatMessage
  *
  * @prop {number} index
- * @prop {ChatUser} author
+ * @prop {string} author
  * @prop {string} content
  * @prop {number} uploadTimestamp
  */
@@ -27,11 +27,14 @@ export class ChatBox extends HTMLElement {
         super();
         this.attachShadow({ mode: 'open' });
 
+        /** @private @type {string | undefined} */
+        this._chatId;
+
         /** @private @type {ChatMessage[]} */
         this._messages = [];
 
-        /** @private @type {string | undefined} */
-        this._chatId;
+        /** @private @type {Record<string, ChatUser>} */
+        this._users = {};
 
         /** @private @type {boolean} */
         this._isFolded = true;
@@ -77,8 +80,7 @@ export class ChatBox extends HTMLElement {
      * @private
      *
      * Set an `IntersectionObserver` on the sentinel (at the top of the chat box)
-     * to trigger f
-                    etch of older messages when the user get to the top of the message list
+     * to trigger fetch of older messages when the user get to the top of the message list
      */
     _initSentinelObserver() {
         const sentinel = this.shadowRoot.getElementById('load-sentinel');
@@ -191,7 +193,29 @@ export class ChatBox extends HTMLElement {
             this._toggleLoadingAnimation(true);
         }
 
-        this._appendMessages(await this._fetchMessages());
+        // Remove all Message Element
+        const container = this.shadowRoot.getElementById('messages-container');
+        if (container) {
+            container.replaceChildren();
+        }
+
+        this._users = await this._fetchUsers();
+
+        let messages;
+        if (this._messages.length === 0) {
+            messages = await this._fetchMessages();
+        } else {
+            messages = this._messages;
+            this._messages = [];
+        }
+
+        this._appendMessages(messages);
+
+        console.log("MESSAGES:");
+        console.log(this._messages);
+
+        console.log("USERS:");
+        console.log(this._users);
 
         if (!this.isFolded()) {
             this._toggleLoadingAnimation(false);
@@ -221,8 +245,7 @@ export class ChatBox extends HTMLElement {
             emptinessIndicator.hidden = (this._messages.length !== 0);
         }
 
-        // Scroll vers le bas après la fin de la transition CSS (≈ 420 ms)
-        setTimeout(() => this._scrollToBottom(), 440);
+        setTimeout(() => this._scrollToBottom(), 420);
     }
 
     async onNewMessage(message) {
@@ -234,6 +257,16 @@ export class ChatBox extends HTMLElement {
                 emptinessIndicator.hidden = true;
             }
         }
+    }
+
+    async onNewUser(user) {
+        this.users[user.userId] = user;
+    }
+
+    async onUserUpdate(userId, update) {
+        this._users[userId] = {...this._users[userId], ...update};
+
+        await this.actualise();
     }
 
 
@@ -274,6 +307,24 @@ export class ChatBox extends HTMLElement {
 
         const { messages } = await response.json();
         return messages;
+    }
+
+    /**
+     * @private
+     *
+     * @returns {Promise<Chat[]>}
+     */
+    async _fetchUsers() {
+        const response = await fetch(`/api/chats/${this.chatId}/users`);
+        if (!response.ok) {
+            throw new Error((await response.json()).error);
+        }
+
+        const { users } = await response.json();
+        return users.reduce((res, user) => {
+            res[user.userId] = user;
+            return res;
+        }, {});
     }
 
     /**
@@ -323,8 +374,12 @@ export class ChatBox extends HTMLElement {
             message.uploadTimestamp
         ).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
-        const username = message.author?.username ?? "Inconnu";
-        const profilePic = message.author?.profilePicture ?? "none.svg";
+        const author = this._users[message.author];
+        //  ̀author` can be undefined if the message is received before the user is added.
+        // But it's very unlikely.
+
+        const username = author.username; // ?? "Inconnu";
+        const profilePic = author.profilePicture; // ?? "none.svg";
 
         div.innerHTML = `
             <img

@@ -528,33 +528,6 @@ player2RotationIndicator.addEventListener("game-rotation", event => {
 });
 
 
-chatSocket.on("new-message", ({message}) => {
-    // DEBUG::
-    console.log(`Sending message on in-game chat from "${message.author.username}":\n${message.content}`);
-
-    chatBox.onNewMessage(message);
-});
-
-chatBox.addEventListener("send-message", event => {
-    const content = event.detail.content;
-
-    // DEBUG::
-    console.log(`Sending message to in-game chat:\n${content}`);
-
-    const newMessage = {
-        author: {
-            userId: CLIENT_PLAYER.userId,
-            username: CLIENT_PLAYER.profile.username,
-            profilePicture: CLIENT_PLAYER.profile.profilePicture
-        },
-        content,
-        uploadTimestamp: Date.now(),
-    }
-
-    chatSocket.emit("new-message", { message: newMessage });
-});
-
-
 //
 // Reacting to `UIAction`
 //
@@ -848,4 +821,46 @@ gameOverModal.addEventListener("challenge-opponent", async _ => {
     //
     // setGameOverStatus('Défi envoyé avec succès.');
     // gameOverChallengeButton.textContent = 'Défi envoyé';
+});
+
+
+//
+// In-Game Chat
+//
+
+
+chatSocket.on("new-message", async ({message}) => {
+    // DEBUG::
+    console.log(`Received message on in-game chat from "${message.author}":\n${message.content}`);
+
+    await chatBox.onNewMessage(message);
+});
+
+chatSocket.on("new-user", async ({user}) => {
+    // DEBUG::
+    console.log(`New user joined of id '${user.userId}' joined global chat`);
+
+    await chatBox.onNewUser(user);
+})
+
+chatSocket.on("update-user", async ({userId, update}) => {
+    // DEBUG::
+    console.log(`User of id '${userId}' has been updated`);
+
+    await chatBox.onUserUpdate(userId, update);
+});
+
+chatBox.addEventListener("send-message", event => {
+    const content = event.detail.content;
+
+    // DEBUG::
+    console.log(`Sending message to in-game chat:\n${content}`);
+
+    const newMessage = {
+        author: CLIENT_PLAYER.userId,
+        content,
+        uploadTimestamp: Date.now(),
+    }
+
+    chatSocket.emit("new-message", { message: newMessage });
 });

@@ -544,11 +544,25 @@ async function toggleChatBox(isLoggedIn) {
         chatBox.chatId = "global-chat";
         await chatBox.actualise();
 
-        chatSocket.on("new-message", ({message}) => {
+        chatSocket.on("new-message", async ({message}) => {
             // DEBUG::
-            console.log(`Sending message on in-game chat from "${message.author.username}":\n${message.content}`);
+            console.log(`Received message on global chat from "${message.author}":\n${message.content}`);
 
-            chatBox.onNewMessage(message);
+            await chatBox.onNewMessage(message);
+        });
+
+        chatSocket.on("new-user", async ({user}) => {
+            // DEBUG::
+            console.log(`New user joined of id '${user.userId}' joined global chat`);
+
+            await chatBox.onNewUser(user);
+        })
+
+        chatSocket.on("update-user", async ({userId, update}) => {
+            // DEBUG::
+            console.log(`User of id '${userId}' has been updated`);
+
+            await chatBox.onUserUpdate(userId, update);
         });
 
         chatBox.addEventListener("send-message", async event => {
@@ -557,25 +571,8 @@ async function toggleChatBox(isLoggedIn) {
             // DEBUG::
             console.log(`Sending message to in-game chat:\n${content}`);
 
-            let user;
-            try {
-                const response = await fetch(`/api/users/${USER_ID}/minimal-profile`);
-
-                if (!response.ok) {
-                    throw new Error(response.error);
-                }
-
-                user = await response.json();
-            } catch (err) {
-                console.error("Error in home page:", err);
-            }
-
             const newMessage = {
-                author: {
-                    userId: USER_ID,
-                    username: user.username,
-                    profilePicture: user.profilePicture
-                },
+                author: USER_ID,
                 content,
                 uploadTimestamp: Date.now(),
             }
