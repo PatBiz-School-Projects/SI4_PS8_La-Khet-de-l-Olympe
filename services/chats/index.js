@@ -17,7 +17,10 @@ network.server = server;
 
 const io = new Server(server, {
     path: "/api/chats/socket.io",
-    cors: false,
+    cors: {
+        origin: '*',
+        methods: ['GET', 'POST','PUT', 'DELETE', 'OPTIONS','HEAD'],
+    },
 });
 router.manageSocket(io);
 network.io = io;

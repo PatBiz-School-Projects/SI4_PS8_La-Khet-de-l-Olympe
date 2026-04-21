@@ -8,7 +8,7 @@ function initChallengeSocket(httpServer) {
         path: '/api/challenge-service/socket.io',
         cors: {
             origin: '*',
-            methods: ['GET', 'POST'],
+            methods: ['GET', 'POST','PUT', 'DELETE', 'OPTIONS','HEAD'],
         },
     });
 
