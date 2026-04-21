@@ -8,6 +8,7 @@ import {
     GamePlayerInventory,
     GameRotationIndicator,
     GameTurnIndicator,
+    GameMobilePyramidCounter
 } from "/game/components/index.js";
 
 import { Piece } from "/game/logic/board/Piece.js";
@@ -50,6 +51,8 @@ const player2Inventory = document.querySelector("#player2-inventory");
 const player1RotationIndicator = document.querySelector("#player1-rotation-indicator");
 /** @type { GameRotationIndicator } */
 const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
+const player1MobileCounter = document.querySelector("#player1-mobile-counter");
+const player2MobileCounter = document.querySelector("#player2-mobile-counter");
 /** @type { GameForfeitModal } */
 const forfeitModal = document.querySelector("game-forfeit-modal");
 /** @type { GameOverModal } */
@@ -183,6 +186,12 @@ async function setupVariables() {
     PLAYERS_INVENTORY_BY_ID = { [PLAYERS_ID[0]]: player1Inventory, [PLAYERS_ID[1]]: player2Inventory };
 
     PLAYERS_ROTATION_INDICATOR_BY_ID = { [PLAYERS_ID[0]]: player1RotationIndicator, [PLAYERS_ID[1]]: player2RotationIndicator };
+
+    player1MobileCounter.owner = PLAYERS_ID[0];
+    player1MobileCounter.color = PLAYERS_COLOR_BY_ID[PLAYERS_ID[0]];
+
+    player2MobileCounter.owner = PLAYERS_ID[1];
+    player2MobileCounter.color = PLAYERS_COLOR_BY_ID[PLAYERS_ID[1]];
 }
 
 let isGameOver = false;
@@ -246,10 +255,12 @@ onload = async _ => {
     // Initialising players' inventory
     for (const playerId of PLAYERS_ID) {
         const playerInventory = PLAYERS_INVENTORY_BY_ID[playerId];
+        const playerRotationIndicator = PLAYERS_ROTATION_INDICATOR_BY_ID[playerId]
 
         playerInventory.owner = playerId;
         playerInventory.color = PLAYERS_COLOR_BY_ID[playerId];
         playerInventory.active = (playerId === activePlayer.playerId);
+        playerRotationIndicator.style.display = (playerId === activePlayer.playerId) ? '' : 'none';
         await playerInventory.actualise();
     }
 
@@ -638,6 +649,8 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
     gameSocket.emit("animation-complete");
 });
@@ -693,6 +706,8 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
 });
 
@@ -739,6 +754,8 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
 
     gameSocket.emit("animation-complete");
@@ -797,6 +814,9 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
 
     gameSocket.emit("animation-complete");

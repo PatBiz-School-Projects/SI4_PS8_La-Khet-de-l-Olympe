@@ -5,3 +5,4 @@ export { GameOverModal } from "./game-over-modal/game-over-modal.js";
 export { GamePlayerInventory } from "./game-player-inventory/game-player-inventory.js";
 export { GameRotationIndicator } from "./game-rotation-indicator/game-rotation-indicator.js";
 export { GameTurnIndicator } from "./game-turn-indicator/game-turn-indicator.js";
+export {GameMobilePyramidCounter} from'./game-mobile-pyramid-counter/game-mobile-pyramid-counter.js'
