@@ -29,7 +29,7 @@ async function handleHTTPRequest(req, res) {
     if (req.method === 'OPTIONS') {
         res.setHeader('Access-Control-Allow-Origin', requestOrigin);
         res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, refreshToken');
         res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.statusCode = 204;
         res.end();
