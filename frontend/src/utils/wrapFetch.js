@@ -1,8 +1,10 @@
-import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
-import {getCookie} from '/utils/cookie.js';
+import { getCookie } from '/utils/cookie.js';
+
+import { API_HOST } from '/env.js';
+
 const ACCESS_TOKEN_COOKIE = 'userToken';
 const REFRESH_TOKEN_COOKIE = 'refreshToken';
-const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "https://khet-olympe.ps8.pns.academy";
+
 
 export async function apiFetch(url, options = {}) {
     const headers = new Headers(options.headers || {});
@@ -17,10 +19,9 @@ export async function apiFetch(url, options = {}) {
         }
     }
 
-    return await fetch(apiHost + url, {
+    return await fetch(API_HOST + url, {
         ...options,
         credentials: options.credentials ?? 'include',
         headers,
     });
 }
-

@@ -15,9 +15,10 @@ import {
     sendChallenge
 } from "/utils/challenge.js";
 
-import { apiFetch} from "/utils/wrapFetch.js";
-import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
-const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "https://khet-olympe.ps8.pns.academy";
+import { apiFetch } from "/utils/wrapFetch.js";
+
+import { API_HOST } from "/env.js";
+
 
 /**
  * Navigation helpers
@@ -552,7 +553,7 @@ async function toggleAuthenticatedView(isLoggedIn) {
 async function toggleChatBox(isLoggedIn) {
     // Initialising chat box
     if (isLoggedIn) {
-        const chatSocket = io(apiHost+"/global-chat", {
+        const chatSocket = io(API_HOST+"/global-chat", {
             path: "/api/chats/socket.io",
         });
 

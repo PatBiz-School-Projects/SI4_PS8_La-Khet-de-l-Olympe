@@ -1,5 +1,6 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
+import { AppMobileNavbar } from "/shared/components/index.js";
 import {
     GameActionTimer,
     GameBoard,
@@ -9,6 +10,7 @@ import {
     GameRotationIndicator,
     GameTurnIndicator,
 } from "/game/components/index.js";
+import { ChatBox } from "/chat/components/index.js";
 
 import { Piece } from "/game/logic/board/Piece.js";
 import { GameActionType } from "/game/logic/GameAction.js";
@@ -19,16 +21,13 @@ import { UIActionType } from "./GamePageStateMachine/UIAction.js";
 import { GamePageClickHandler } from "./GamePageClickHandler.js";
 import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 
-import { ChatBox } from "/chat/components/index.js";
-
-import {AppMobileNavbar } from "/shared/components/index.js";
-
 import { EventQueue } from "/utils/event.js";
-import { apiFetch} from "/utils/wrapFetch.js";
-import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
-const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "https://khet-olympe.ps8.pns.academy";
-// REVIEW : It's a feature instead of an utils
+import { apiFetch } from "/utils/wrapFetch.js";
+
+// REVIEW : It's a feature instead of a util
 import { sendChallenge } from "/utils/challenge.js"
+
+import { API_HOST } from "/env.js";
 
 
 //
@@ -193,13 +192,13 @@ let isGameOver = false;
 //
 
 
-const chatSocket = io(apiHost+"/game-chat", {
+const chatSocket = io(API_HOST+"/game-chat", {
     path: "/api/chats/socket.io",
     query: {
         chatId: GAME_ID,
     },
 });
-const gameSocket = io(apiHost,{
+const gameSocket = io(API_HOST,{
     path: "/api/games/socket.io",
     query: {
         gameId: GAME_ID,
