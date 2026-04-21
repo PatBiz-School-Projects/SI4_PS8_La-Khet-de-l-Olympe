@@ -58,6 +58,25 @@ async function renewToken(refreshToken) {
 }
 
 
+/**
+ * Attempts to generate a guest access token.
+ * @returns {Promise<string|null>} The new guest access token, or null on failure.
+ */
+async function generateGuestToken() {
+    const response = await fetch(`${AUTH_SERVICE_URL}/api/auth/guest`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+    });
+
+    if (!response.ok) {
+        return null;
+    }
+
+    const payload = await response.json();
+    return payload?.guestToken || null;
+}
+
+
 //
 // Middlewares
 //
@@ -124,3 +143,37 @@ exports.authenticated = (handlerCb) => async (req, res) => {
         throw new Error(`Unexpected error during authentication check: ${err}`)
     }
 };
+
+/**
+ * Dispatches the incoming request to the given guest & authenticated handler based on the presence of an access token.
+ */
+exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb) => async (req, res) => {
+    const { userToken: accessToken } = parseCookies(req.headers.cookie);
+
+    if (accessToken) {
+        await authenticatedHandlerCb(req, res);
+        return;
+    }
+
+    const { guestToken } = parseCookies(req.headers.cookie);
+    if (!guestToken) {
+        const newGuestToken = await generateGuestToken();
+        if (!newGuestToken) {
+            throw new Error("Failed to generate guest access token");
+        }
+
+        const IS_PROD = process.env.IS_PROD === "true";
+        const cookieOptions = [
+            `guestToken=${newGuestToken}`,
+            "Path=/",
+            "HttpOnly",
+            IS_PROD ? "Secure" : "",
+            "SameSite=Strict"
+        ].filter(Boolean).join("; ");
+
+        res.setHeader("Set-Cookie", cookieOptions);
+        req.headers.cookie = `${req.headers.cookie}; guestToken=${newGuestToken}`;
+    }
+
+    await guestHandlerCb(req, res);
+}

@@ -75,6 +75,17 @@ exports.HTTPHandler = {
     // Outside a game
     //
 
+    newGuestPlayer: async (req, res) => {
+        const { guestToken } = parseCookies(req.headers.cookie);
+        const guestUserId = extractUserId(guestToken);
+
+        const player = PlayersManager.newPlayer(guestUserId, {
+            username: "guest",
+            profilePicture: "none.svg"
+        });
+        sendJson(res, 200, { ok: true, playerId: player.playerId });
+    },
+
     newPlayer: async (req, res) => {
         const { userToken } = parseCookies(req.headers.cookie);
         const userId = extractUserId(userToken);
@@ -308,8 +319,9 @@ exports.HTTPHandler = {
     },
 
     forfeit: async (req, res) => {
-        const { userToken } = parseCookies(req.headers.cookie);
-        const userId = extractUserId(userToken);
+        const { userToken, guestToken } = parseCookies(req.headers.cookie);
+        const accessToken = userToken || guestToken;
+        const userId = extractUserId(accessToken);
 
         const { gameId } = req.routeParams;
         const game = GamesManager.getGameById(gameId);
@@ -408,8 +420,9 @@ exports.HTTPHandler = {
     },
 
     getClientPlayer: async (req, res) => {
-        const { userToken } = parseCookies(req.headers.cookie);
-        const userId = extractUserId(userToken);
+        const { userToken, guestToken } = parseCookies(req.headers.cookie);
+        const accessToken = userToken || guestToken;
+        const userId = extractUserId(accessToken);
 
         const { gameId } = req.routeParams;
         const game = GamesManager.getGameById(gameId);
@@ -493,8 +506,9 @@ exports.SocketIOHandler = {
     //
 
     onConnection: async (io, socket, msgPayload) => {
-        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
-        const userId = extractUserId(userToken);
+        const { userToken, guestToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const accessToken = userToken || guestToken;
+        const userId = extractUserId(accessToken);
 
         const { gameId } = socket.handshake.query;
         const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");
@@ -518,8 +532,9 @@ exports.SocketIOHandler = {
     // Add more if needed ...
 
     onDisconnection: async (io, socket, msgPayload) => {
-        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
-        const userId = extractUserId(userToken);
+        const { userToken, guestToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const accessToken = userToken || guestToken;
+        const userId = extractUserId(accessToken);
 
         const { gameId } = socket.handshake.query;
         const inWaitingRoom = (socket.handshake.query?.inWaitingRoom === "true");

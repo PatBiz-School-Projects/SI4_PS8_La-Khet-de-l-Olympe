@@ -5,6 +5,9 @@ const { HTTPHandler } = require('./handler.js');
 
 
 const ROUTER = (new Router()
+    .add("/api/auth/guest", {
+        POST: public(HTTPHandler.generateGuestToken),
+    })
     .add("/api/auth/login", {
         POST: public(HTTPHandler.login),
     })
