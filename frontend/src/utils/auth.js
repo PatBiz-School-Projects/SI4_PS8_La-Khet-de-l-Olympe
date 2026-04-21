@@ -85,7 +85,7 @@ export async function ensureValidAccessToken() {
     return await renewToken(refreshToken);
 }
 
-export async function authenticatedapiFetch(url, options = {}) {
+export async function authenticatedFetch(url, options = {}) {
     const token = await ensureValidAccessToken();
     if (!token) {
         return null;
