@@ -1,4 +1,5 @@
 import {isMobile} from "/utils/platform.js";
+import {apiFetch} from "/utils/wrapFetch.js";
 
 export class AppMobileNavbar extends HTMLElement {
     constructor() {
@@ -6,7 +7,7 @@ export class AppMobileNavbar extends HTMLElement {
     }
     async connectedCallback() {
 
-        if(isMobile()){
+        if(!isMobile()){
             this.style.display = 'none';
             return;
         }
@@ -15,8 +16,8 @@ export class AppMobileNavbar extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/shared/components/app-mobile-navbar/app-mobile-navbar.html"),
-                fetch("/shared/components/app-mobile-navbar/app-mobile-navbar.css"),
+                apiFetch("/shared/components/app-mobile-navbar/app-mobile-navbar.html"),
+                apiFetch("/shared/components/app-mobile-navbar/app-mobile-navbar.css"),
             ]);
 
             const html = await htmlResponse.text();
