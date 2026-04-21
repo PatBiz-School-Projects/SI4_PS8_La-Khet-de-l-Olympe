@@ -110,7 +110,7 @@ exports.authenticated = (handlerCb) => async (req, res) => {
             "Path=/",
             "HttpOnly",
             IS_PROD ? "Secure" : "",
-            "SameSite=Strict"
+            "SameSite=None"
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
