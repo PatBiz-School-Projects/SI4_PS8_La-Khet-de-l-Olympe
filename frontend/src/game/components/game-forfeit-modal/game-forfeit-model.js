@@ -1,5 +1,5 @@
 import { AppModal } from "/shared/components/app-modal/app-modal.js";
-
+import { apiFetch} from "/utils/wrapFetch.js";
 
 export class GameForfeitModal extends HTMLElement {
     constructor() {
@@ -18,8 +18,8 @@ export class GameForfeitModal extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/game/components/game-forfeit-modal/game-forfeit-modal.html"),
-                fetch("/game/components/game-forfeit-modal/game-forfeit-modal.css"),
+                apiFetch("/game/components/game-forfeit-modal/game-forfeit-modal.html"),
+                apiFetch("/game/components/game-forfeit-modal/game-forfeit-modal.css"),
             ]);
 
             const html = await htmlResponse.text();

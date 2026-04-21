@@ -1,5 +1,5 @@
 import { escapeHtml } from "/utils/security.js";
-
+import { apiFetch} from "/utils/wrapFetch.js";
 
 /**
  * @typedef {Object} ChatUser
@@ -133,8 +133,8 @@ export class ChatBox extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/chat/components/chat-box/chat-box.html"),
-                fetch("/chat/components/chat-box/chat-box.css"),
+                apiFetch("/chat/components/chat-box/chat-box.html"),
+                apiFetch("/chat/components/chat-box/chat-box.css"),
             ]);
 
             const html = await htmlResponse.text();
@@ -315,7 +315,7 @@ export class ChatBox extends HTMLElement {
      * @returns {Promise<Chat[]>}
      */
     async _fetchUsers() {
-        const response = await fetch(`/api/chats/${this.chatId}/users`);
+        const response = await apiFetch(`/api/chats/${this.chatId}/users`);
         if (!response.ok) {
             throw new Error((await response.json()).error);
         }

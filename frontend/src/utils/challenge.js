@@ -1,7 +1,7 @@
-import {authenticatedFetch, ensureValidAccessToken} from "/utils/auth.js"
-
+import {authenticatedapiFetch, ensureValidAccessToken} from "/utils/auth.js"
+import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
+const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "https://khet-olympe.ps8.pns.academy";
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
-
 async function performChallengeRequest(path, options = {}) {
     const token = await ensureValidAccessToken();
     if (!token) {
@@ -13,7 +13,7 @@ async function performChallengeRequest(path, options = {}) {
     }
 
     try {
-        const response = await authenticatedFetch(path, options);
+        const response = await authenticatedapiFetch(path, options);
 
         if (!response) {
             return {
@@ -87,6 +87,6 @@ export async function cancelChallenge(challengeId) {
 
 export function createChallengeSocket() {
     return io({
-        path: '/api/challenge-service/socket.io',
+        path: apiHost+'/api/challenge-service/socket.io',
     });
 }

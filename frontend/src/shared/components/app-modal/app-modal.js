@@ -1,3 +1,4 @@
+import {apiFetch} from '/utils/wrapFetch.js'
 export class AppModal extends HTMLElement {
     constructor() {
         super();
@@ -15,8 +16,8 @@ export class AppModal extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/shared/components/app-modal/app-modal.html"),
-                fetch("/shared/components/app-modal/app-modal.css"),
+                apiFetch("/shared/components/app-modal/app-modal.html"),
+                apiFetch("/shared/components/app-modal/app-modal.css"),
             ]);
 
             const html = await htmlResponse.text();

@@ -81,8 +81,10 @@ exports.public = (handlerCb) => async (req, res) => {
  *    - Renewal fails    => respond 401, halt the request.
  */
 exports.authenticated = (handlerCb) => async (req, res) => {
-    const { userToken: accessToken, refreshToken } = parseCookies(req.headers.cookie);
+    const { userToken: cookieAccessToken, refreshToken: cookieRefreshToken } = parseCookies(req.headers.cookie);
 
+    const accessToken  = req.headers.authorization?.replace('Bearer ', '') || cookieAccessToken;
+    const refreshToken = req.headers['refreshtoken'] || cookieRefreshToken;
     try {
         // Step 1: Validate the current access token
         if (await verifyToken(accessToken)) {
@@ -110,7 +112,7 @@ exports.authenticated = (handlerCb) => async (req, res) => {
             "Path=/",
             "HttpOnly",
             IS_PROD ? "Secure" : "",
-            "SameSite=Strict"
+            "SameSite=None"
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);

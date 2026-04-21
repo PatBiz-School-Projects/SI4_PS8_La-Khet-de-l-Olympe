@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Khet de l\'Olympe</string>
-    <string name="title_activity_main">Khet de l\'Olympe</string>
-    <string name="package_name">com.pns.khet</string>
-    <string name="custom_url_scheme">com.pns.khet</string>
-</resources>

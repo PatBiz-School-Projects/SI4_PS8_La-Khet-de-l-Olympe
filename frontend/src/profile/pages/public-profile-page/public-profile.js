@@ -1,5 +1,6 @@
-import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
+import { authenticatedapiFetch, ensureValidAccessToken } from '/utils/auth.js';
 import {getPictureUrl} from '/utils/picture.js';
+import {apiFetch} from "/utils/wrapFetch.js";
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
@@ -22,7 +23,7 @@ async function sendFriendRequest(userId) {
     addFriendButton.disabled = true;
 
     try {
-        const response = await authenticatedFetch('/api/users/friends/request', {
+        const response = await authenticatedapiFetch('/api/users/friends/request', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -61,7 +62,7 @@ async function loadPublicProfile() {
     }
 
     try {
-        const response = await fetch(`/api/users/${encodeURIComponent(userId)}/public-profile`, {
+        const response = await apiFetch(`/api/users/${encodeURIComponent(userId)}/public-profile`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json'

@@ -1,3 +1,4 @@
+import {apiFetch} from '/utils/wrapFetch.js'
 const form = document.getElementById('forgot-form');
 const statusEl = document.querySelector('[data-status]');
 const loadQuestionButton = document.getElementById('load-question');
@@ -23,7 +24,7 @@ loadQuestionButton.addEventListener('click', async () => {
     loadQuestionButton.style.display = 'none';
 
     try {
-        const response = await fetch('/api/auth/forgot-password/question', {
+        const response = await apiFetch('/api/auth/forgot-password/question', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -64,7 +65,7 @@ form.addEventListener('submit', async (event) => {
     submitButton.textContent = 'Réinitialisation...';
 
     try {
-        const response = await fetch('/api/auth/forgot-password', {
+        const response = await apiFetch('/api/auth/forgot-password', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

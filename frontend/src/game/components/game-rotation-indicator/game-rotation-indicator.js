@@ -3,7 +3,7 @@ import { RotationRenderer } from "./RotationRenderer.js";
 import { Piece } from "/game/logic/board/Piece.js";
 
 import { GamePageActionType } from "/game/pages/game-page/GamePageStateMachine/GamePageAction.js";
-
+import { apiFetch} from "/utils/wrapFetch.js";
 
 export class GameRotationIndicator extends HTMLElement {
     constructor() {
@@ -21,8 +21,8 @@ export class GameRotationIndicator extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                fetch("/game/components/game-rotation-indicator/game-rotation-indicator.html"),
-                fetch("/game/components/game-rotation-indicator/game-rotation-indicator.css"),
+                apiFetch("/game/components/game-rotation-indicator/game-rotation-indicator.html"),
+                apiFetch("/game/components/game-rotation-indicator/game-rotation-indicator.css"),
             ]);
 
             const html = await htmlResponse.text();
