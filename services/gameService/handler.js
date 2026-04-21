@@ -527,6 +527,10 @@ exports.SocketIOHandler = {
                     GamesManager.cancelForfeiture(gameId, player.playerId);
                 }
             });
+
+        if (GamesManager.hasScheduledCleanup(gameId)) {
+            GamesManager.cancelCleanup(gameId);
+        }
     },
 
     // Add more if needed ...
@@ -545,8 +549,17 @@ exports.SocketIOHandler = {
         }
 
         const game = GamesManager.getGameById(gameId);
-        const playerId = game.players.find(player => player.userId === userId).playerId;
+        const player = game.players.find(player => player.userId === userId);
+        delete player.socket;
 
-        GamesManager.scheduleForfeiture(gameId, playerId, 30_000);
+        if (!game.isFinished()) {
+            const playerId = player.playerId;
+            GamesManager.scheduleForfeiture(gameId, playerId, 30_000);
+        }
+
+        const allPlayerAreDisconnected = game.players.every(player => !player.socket || player.constructor.name === "Bot");
+        if (game.isFinished() && allPlayerAreDisconnected) {
+            GamesManager.scheduleCleanup(gameId, 60_000);
+        }
     },
 };
