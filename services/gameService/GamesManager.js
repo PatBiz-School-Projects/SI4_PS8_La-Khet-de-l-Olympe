@@ -66,7 +66,8 @@ class GamesManager {
         /** @type {Record<GameID, Record<PlayerID, Timeout>>} */
         gamesForfeiture: {},
 
-        // Probably more later ...
+        /** @type {Record<GameID, Timeout>} */
+        gamesCleanup: {},
     }
 
 
@@ -290,28 +291,47 @@ class GamesManager {
                 }
             }
         }
+    }
 
-        // TODO : Delete game only when both player have left the game (be cautious of involuntary disconnection)
-        // delete this._games[gameId];
+    static hasScheduledCleanup(gameId) {
+        return Boolean(this._scheduler.gamesCleanup[gameId]);
+    }
 
+    static scheduleCleanup(gameId, delayInMs) {
+        this._scheduler.gamesCleanup[gameId] = setTimeout(async () => {
+            const game = this.getGameById(gameId);
 
-        // TODO : Delete game chat only when both player have left the game (be cautious of involuntary disconnection)
-        const CHAT_SERVICE_URL = process.env.CHAT_SERVICE_URL;
-        fetch(`${CHAT_SERVICE_URL}/internal/api/chats/${gameId}`, {
-            method: "DELETE",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({/* nothing */}),
-        })
-            .then(
-                ans => (
-                    (ans.ok)
-                    ? console.log(`Successfully closed chat of game '${gameId}'`)
-                    : ans.json().then(({error: err}) => console.error(`Failed to close chat of game '${gameId}' bcs:`, err))
-                )
-            )
-            .catch(
-                err => console.error(`Unexpected error occured while closing chat of game '${gameId}':`, err)
-            );
+            const CHAT_SERVICE_URL = process.env.CHAT_SERVICE_URL;
+            try {
+                const response = await fetch(`${CHAT_SERVICE_URL}/internal/api/chats/${gameId}`, {
+                    method: "DELETE",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({/* nothing */}),
+                });
+
+                if (!response.ok) {
+                    console.error(`Failed to close chat of game '${gameId}' bcs:`, err);
+                }
+            } catch (err) {
+                console.error(`Unexpected error occured while closing chat of game '${gameId}':`, err)
+            }
+
+            console.log(`Successfully closed chat of game '${gameId}'`);
+
+            delete this._games[gameId];
+            delete this._scheduler.gamesCleanup[gameId];
+
+            console.log(`Closed game '${gameId}'`);
+        }, delayInMs);
+    }
+
+    static cancelCleanup(gameId) {
+        if (!this.hasScheduledCleanup(gameId)) {
+            return;
+        }
+
+        clearTimeout(this._scheduler.gamesCleanup[gameId]);
+        delete this._scheduler.gamesCleanup[gameId];
     }
 }
 
