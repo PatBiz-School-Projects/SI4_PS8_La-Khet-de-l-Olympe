@@ -22,7 +22,7 @@ import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 
 import { ChatBox } from "/chat/components/index.js";
 
-import {AppMobileNavbar } from "/shared/components/index.js";
+import {AppMobileNavbar} from "/shared/components/index.js";
 
 import { EventQueue } from "/utils/event.js";
 import { apiFetch} from "/utils/wrapFetch.js";
@@ -551,6 +551,13 @@ player1Inventory.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
 player2Inventory.addEventListener("inventory-click", event => {
+    stateMachine.on(event.detail);
+});
+
+player1MobileCounter.addEventListener("inventory-click", event => {
+    stateMachine.on(event.detail);
+});
+player2MobileCounter.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
 

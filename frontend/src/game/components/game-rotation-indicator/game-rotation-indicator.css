@@ -15,6 +15,7 @@
 .button-rotation{
     flex: 1;
     height: 100%;
+    width: 100%;
     cursor: pointer;
     background: transparent;
     border:none;
@@ -27,13 +28,29 @@
 
 .button-rotation img {
     height: 60%;
+    max-width: 100%;
     filter: drop-shadow(0 0 5px var(--gold-dim));
 }
 #piece-canvas{
     flex: 1;
     height: 100%;
+    width: 100%;
     background: radial-gradient(circle, rgba(201, 168, 76, 0.1) 0%, transparent 70%);
     border-left: 1px solid rgba(122, 96, 40, 0.3);
     border-right: 1px solid rgba(122, 96, 40, 0.3);
 
+}
+
+@media (max-width: 768px) {
+    #rotate-indicator {
+        flex-direction: column;
+
+    }
+
+    #piece-canvas {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid rgba(122, 96, 40, 0.3);
+        border-bottom: 1px solid rgba(122, 96, 40, 0.3);
+    }
 }

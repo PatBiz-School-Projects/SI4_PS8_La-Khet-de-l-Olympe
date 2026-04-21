@@ -1,4 +1,3 @@
-import {isMobile} from "/utils/platform.js";
 import {apiFetch} from "/utils/wrapFetch.js";
 
 export class AppMobileNavbar extends HTMLElement {
@@ -7,10 +6,7 @@ export class AppMobileNavbar extends HTMLElement {
     }
     async connectedCallback() {
 
-        if(!isMobile()){
-            this.style.display = 'none';
-            return;
-        }
+
 
         try {
             // Load the component's HTML template & CSS style
@@ -36,6 +32,7 @@ export class AppMobileNavbar extends HTMLElement {
     }
     adaptNavbar(pageType) {
         const navContainer = this.querySelector('#app-mobile-navbar');
+        if (!navContainer) return;
 
         if (pageType === 'game') {
             //à voir pour quit et info
@@ -53,8 +50,6 @@ export class AppMobileNavbar extends HTMLElement {
                     <span class="text">Info</span>
                 </button>
             `;
-            navContainer.style.backgroundColor = "#1a1a1a";
-            navContainer.style.color = "white";
         }
         else if (pageType === 'home') {
 
