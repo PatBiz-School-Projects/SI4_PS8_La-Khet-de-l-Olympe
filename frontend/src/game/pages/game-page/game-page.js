@@ -1,6 +1,5 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-import { AppMobileNavbar } from "/shared/components/index.js";
 import {
     GameActionTimer,
     GameBoard,
@@ -550,6 +549,13 @@ player1Inventory.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
 player2Inventory.addEventListener("inventory-click", event => {
+    stateMachine.on(event.detail);
+});
+
+player1MobileCounter.addEventListener("inventory-click", event => {
+    stateMachine.on(event.detail);
+});
+player2MobileCounter.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
 

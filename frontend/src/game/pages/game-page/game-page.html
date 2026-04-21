@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Game Page</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Fauna+One&display=swap" rel="stylesheet">
 
@@ -28,16 +29,16 @@
 
     <div class="game-container">
         <game-rotation-indicator id="player1-rotation-indicator"></game-rotation-indicator>
-        <game-player-inventory id="player1-inventory"></game-player-inventory>
+        <game-player-inventory id="player1-inventory" class="desktop-only"></game-player-inventory>
         <game-board></game-board>
-        <game-player-inventory id="player2-inventory"></game-player-inventory>
+        <game-player-inventory id="player2-inventory" class="desktop-only"></game-player-inventory>
         <game-rotation-indicator id="player2-rotation-indicator"></game-rotation-indicator>
     </div>
 
     <div class="mobile-action-bar">
         <game-mobile-pyramid-counter id="player1-mobile-counter"></game-mobile-pyramid-counter>
         <div class="mobile-rotation-spacer"></div>
-        <game-pyramid-counter id="player2-mobile-counter"></game-pyramid-counter>
+        <game-mobile-pyramid-counter id="player2-mobile-counter"></game-mobile-pyramid-counter>
     </div>
 
     <game-forfeit-modal></game-forfeit-modal>
