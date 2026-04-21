@@ -540,8 +540,8 @@ async function toggleAuthenticatedView(isLoggedIn) {
 async function toggleChatBox(isLoggedIn) {
     // Initialising chat box
     if (isLoggedIn) {
-        const chatSocket = io("/global-chat", {
-            path: apiHost+"/api/chats/socket.io",
+        const chatSocket = io(apiHost+"/global-chat", {
+            path: "/api/chats/socket.io",
         });
 
         chatBox.chatId = "global-chat";

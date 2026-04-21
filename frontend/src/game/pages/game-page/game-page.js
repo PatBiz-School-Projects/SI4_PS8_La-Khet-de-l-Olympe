@@ -191,14 +191,14 @@ let isGameOver = false;
 //
 
 
-const chatSocket = io("/game-chat", {
-    path: apiHost+"/api/chats/socket.io",
+const chatSocket = io(apiHost+"/game-chat", {
+    path: "/api/chats/socket.io",
     query: {
         chatId: GAME_ID,
     },
 });
-const gameSocket = io({
-    path: apiHost+"/api/games/socket.io",
+const gameSocket = io(apiHost,{
+    path: "/api/games/socket.io",
     query: {
         gameId: GAME_ID,
     },

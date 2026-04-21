@@ -5,8 +5,8 @@ const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "ht
 const GAME_ID = localStorage.getItem("gameId");
 
 
-const socket = io({
-    path: apiHost+"/api/games/socket.io",
+const socket = io(apiHost,{
+    path: "/api/games/socket.io",
     query: {
         gameId: GAME_ID,
         inWaitingRoom: true,
