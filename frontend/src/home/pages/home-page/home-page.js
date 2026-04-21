@@ -1,7 +1,7 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
 import { ChatBox } from "/chat/components/index.js";
-import { AppModal } from "/shared/components/index.js";
+import { AppModal,AppMobileNavbar } from "/shared/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
@@ -305,29 +305,41 @@ async function runUserSearch(rawQuery) {
 }
 
 function setActiveMenu(section) {
-    menuItems.forEach((item) => item.classList.toggle("is-active", item.dataset.section === section));
+    //menuItems.forEach((item) => item.classList.toggle("is-active", item.dataset.section === section));
+
+    const allNavButtons = document.querySelectorAll("[data-section]");
+
+    allNavButtons.forEach((item) => {
+        item.classList.toggle("is-active", item.dataset.section === section);
+        item.classList.toggle("active", item.dataset.section === section);
+    });
 }
 
-menuItems.forEach((item) => {
-    item.addEventListener("click", async () => {
-        setActiveMenu(item.dataset.section);
-        showMainPanel(item.dataset.section);
+document.addEventListener("click", async (event) => {
 
-        if (item.dataset.section === "leaderboard") {
-            await loadLeaderboard(10);
-            return;
+    const button = event.target.closest("[data-section]");
+    if(button) {
+            const section = button.dataset.section;
+
+            setActiveMenu(section);
+            showMainPanel(section);
+
+            if (section === "leaderboard") {
+                await loadLeaderboard(10);
+                return;
+            }
+            if (section === "friends") {
+                await loadFriendsPanel();
+                console.log("friends")
+                return;
+            }
+            if (section === "search") {
+                searchPanel.classList.toggle('visible');
+                searchPanel.scrollIntoView({behavior: "smooth", block: "start"});
+                searchInput.focus();
+            }
         }
-        if (item.dataset.section === "friends") {
-            await loadFriendsPanel();
-            console.log("friends")
-            return;
-        }
-        if (item.dataset.section === "search") {
-            searchPanel.classList.toggle('visible');
-            searchPanel.scrollIntoView({behavior: "smooth", block: "start"});
-            searchInput.focus();
-        }
-    });
+
 });
 
 clickableCards.forEach(card => {

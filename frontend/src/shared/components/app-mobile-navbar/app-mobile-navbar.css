@@ -1,0 +1,79 @@
+
+
+#app-mobile-navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(175deg, rgba(18, 14, 12, 0.96), rgba(10, 10, 15, 0.98));
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(212, 177, 106, 0.22);
+    box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.6);
+
+    display: flex;
+    justify-content: space-around;
+    padding: 12px 0 18px 0;
+    z-index: 1000;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    color: var(--text-muted, #8a7d5a);
+    font-family: 'Cinzel', serif;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+
+    /* Animations fluides */
+    transition: all 0.3s ease;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.nav-item .icon {
+    font-size: 1.4rem;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    opacity: 0.6;
+}
+
+
+.nav-item.is-active,
+.nav-item.active {
+    color: var(--gold, #c9a84c);
+    text-shadow: 0 0 12px rgba(201, 168, 76, 0.4);
+}
+
+.nav-item.is-active .icon,
+.nav-item.active .icon {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.15);
+    filter: drop-shadow(0 4px 8px rgba(201, 168, 76, 0.3));
+}
+
+
+.nav-item::after {
+    content: '';
+    width: 4px;
+    height: 4px;
+    background-color: var(--gold, #c9a84c);
+    border-radius: 50%;
+    margin-top: 2px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px var(--gold, #c9a84c);
+}
+
+.nav-item.is-active::after,
+.nav-item.active::after {
+    opacity: 1;
+    transform: scale(1);
+}

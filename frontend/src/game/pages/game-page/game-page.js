@@ -21,6 +21,8 @@ import { GameMode, PlayerID, PlayerDTO } from "./types.js";
 
 import { ChatBox } from "/chat/components/index.js";
 
+import {AppMobileNavbar } from "/shared/components/index.js";
+
 import { EventQueue } from "/utils/event.js";
 import { apiFetch} from "/utils/wrapFetch.js";
 import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
@@ -510,6 +512,24 @@ gameSocket.on("action-timer-sync", async ({remainingTime}) => {
 onclick = (event) => {
     if (isGameOver) {
         return;
+    }
+    const navButton = event.target.closest('[data-section]');
+
+    if (navButton) {
+        const section = navButton.dataset.section;
+
+        if (section === 'quit') {
+            document.querySelector('game-forfeit-modal').show();
+            return;
+        }
+        if (section === 'info') {
+            alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`);
+            return;
+        }
+        if (section === 'chat') {
+            console.log("Ouvrir le chat...");
+            return;
+        }
     }
 
     stateMachine.on(clickHandler.computePageAction(event));
