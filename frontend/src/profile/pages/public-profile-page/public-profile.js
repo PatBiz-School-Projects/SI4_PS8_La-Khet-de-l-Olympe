@@ -1,4 +1,4 @@
-import { authenticatedapiFetch, ensureValidAccessToken } from '/utils/auth.js';
+import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
 import {getPictureUrl} from '/utils/picture.js';
 import {apiFetch} from "/utils/wrapFetch.js";
 
@@ -23,7 +23,7 @@ async function sendFriendRequest(userId) {
     addFriendButton.disabled = true;
 
     try {
-        const response = await authenticatedapiFetch('/api/users/friends/request', {
+        const response = await authenticatedFetch('/api/users/friends/request', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

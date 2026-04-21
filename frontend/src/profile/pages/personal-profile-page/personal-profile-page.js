@@ -1,4 +1,4 @@
-import { authenticatedapiFetch, ensureValidAccessToken,getUserIdFromToken } from '/utils/auth.js';
+import { authenticatedFetch, ensureValidAccessToken,getUserIdFromToken } from '/utils/auth.js';
 import { setCookie} from "/utils/cookie.js";
 import {
     sendChallenge,
@@ -63,7 +63,7 @@ async function handleAvatarSelection(event) {
 
 async function syncProfilePicture(userId,pictureUrl) {
     try{
-        const response = await authenticatedapiFetch(`/api/users/${userId}/profilePicture`, {
+        const response = await authenticatedFetch(`/api/users/${userId}/profilePicture`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({profilePicture: pictureUrl })
@@ -269,7 +269,7 @@ function renderFriends(friends, token) {
                 label: 'Retirer',
                 className: 'danger',
                 onClick: async (friendId) => {
-                    const response = await authenticatedapiFetch('/api/users/friends', {
+                    const response = await authenticatedFetch('/api/users/friends', {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ friendId })
@@ -346,7 +346,7 @@ function renderRequests(requests, token) {
             {
                 label: 'Accepter',
                 onClick: async (requestUserId) => {
-                    const response = await authenticatedapiFetch('/api/users/friends/accept', {
+                    const response = await authenticatedFetch('/api/users/friends/accept', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ requestUserId })
@@ -370,7 +370,7 @@ function renderRequests(requests, token) {
                 label: 'Refuser',
                 className: 'danger',
                 onClick: async (userId) => {
-                    const response = await authenticatedapiFetch('/api/users/friends/request', {
+                    const response = await authenticatedFetch('/api/users/friends/request', {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId })
@@ -398,11 +398,11 @@ function renderRequests(requests, token) {
 async function loadFriendData(token) {
     try {
         const [friendsResponse, requestsResponse] = await Promise.all([
-            authenticatedapiFetch('/api/users/friends', {
+            authenticatedFetch('/api/users/friends', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            authenticatedapiFetch('/api/users/friends/requests', {
+            authenticatedFetch('/api/users/friends/requests', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -439,7 +439,7 @@ async function loadAchievements(achievementsIds) {
 
     try {
 
-        const response = await authenticatedapiFetch('/api/users/achievements/catalogue', { method: 'GET',headers: { 'Content-Type': 'application/json' } });
+        const response = await authenticatedFetch('/api/users/achievements/catalogue', { method: 'GET',headers: { 'Content-Type': 'application/json' } });
         const data = await response.json();
         const catalogue = data.catalogue || [];
 
@@ -478,7 +478,7 @@ async function loadHistory(token) {
     const userId = getUserIdFromToken(token);
 
     try {
-        const response = await authenticatedapiFetch(`/api/games/history/${userId}`, {
+        const response = await authenticatedFetch(`/api/games/history/${userId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -541,7 +541,7 @@ async function loadProfile() {
     }
 
     try {
-        const response = await authenticatedapiFetch(`/api/users/${getUserIdFromToken(token)}/profile`, {
+        const response = await authenticatedFetch(`/api/users/${getUserIdFromToken(token)}/profile`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
