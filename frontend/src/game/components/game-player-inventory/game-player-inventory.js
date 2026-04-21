@@ -186,5 +186,9 @@ export class GamePlayerInventory extends HTMLElement {
             composed: true
         }));
     }
+
+    getNbOfPyramid(){
+        return this._inventory.filter(e => e).length;
+    }
 }
 customElements.define('game-player-inventory', GamePlayerInventory);
