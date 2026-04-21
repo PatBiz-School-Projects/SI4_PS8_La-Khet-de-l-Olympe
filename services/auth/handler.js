@@ -1,5 +1,6 @@
 const hash = require("js-sha256");
 const jwt = require("jsonwebtoken");
+const { randomUUID } = require("node:crypto");
 
 const { readJsonBody, sendJson } = require("./helpers/parser");
 const { extractToken } = require("./helpers/token");
@@ -34,6 +35,13 @@ function createRefreshToken(user) {
 
 
 exports.HTTPHandler = {
+    generateGuestToken: async (req, res) => {
+        const guest = {_id: randomUUID(), username: "guest"}
+        const guestToken = createAccessToken(guest);
+
+        return sendJson(res, 200, { ok: true, guestToken });
+    },
+
     login: async (req, res) => {
         try {
             const body = await readJsonBody(req);

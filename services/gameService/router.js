@@ -1,5 +1,5 @@
 const { Router } = require("./helpers/router");
-const { authenticated } = require("./helpers/middlewares");
+const { public, authenticated, dispatch_GuestORAuthenticated } = require("./helpers/middlewares");
 
 const {
     HTTPMiddleware_OutsideGame,
@@ -17,13 +17,22 @@ const ROUTER = (new Router()
     //
 
     .add("/api/games/new-player", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.newPlayer)),
+        POST: dispatch_GuestORAuthenticated(
+            public(HTTPMiddleware_OutsideGame(HTTPHandler.newGuestPlayer)),
+            authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.newPlayer)),
+        ),
     })
     .add("/api/games/start-solo-game", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.startSoloGame)),
+        POST: dispatch_GuestORAuthenticated(
+            public(HTTPMiddleware_OutsideGame(HTTPHandler.startSoloGame)),
+            authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.startSoloGame)),
+        ),
     })
     .add("/api/games/start-local-multiplayer-game", {
-        POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.startLocalMultiplayerGame)),
+        POST: dispatch_GuestORAuthenticated(
+            public(HTTPMiddleware_OutsideGame(HTTPHandler.startLocalMultiplayerGame)),
+            authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.startLocalMultiplayerGame)),
+        )
     })
     .add("/api/games/join-multiplayer-game", {
         POST: authenticated(HTTPMiddleware_OutsideGame(HTTPHandler.joinMultiplayerGame)),
@@ -45,7 +54,7 @@ const ROUTER = (new Router()
     //
 
     .add("/api/games/:gameId/has-started", {
-        GET: authenticated(HTTPMiddleware_InsideWaitingRoom(HTTPHandler.hasGameStarted)),
+        GET: HTTPMiddleware_InsideWaitingRoom(HTTPHandler.hasGameStarted),
     })
 
     //
@@ -53,40 +62,40 @@ const ROUTER = (new Router()
     //
 
     .add("/api/games/:gameId/action", {
-        POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.action)),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.action),
     })
     .add("/api/games/:gameId/forfeit", {
-        POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.forfeit)),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.forfeit),
     })
     .add("/api/games/:gameId/board", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getBoard)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getBoard),
     })
     .add("/api/games/:gameId/board/piece?x={}&y={}", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getPieceAt)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPieceAt),
     })
     .add("/api/games/:gameId/inventories", {
-        POST: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getInventories)),
+        POST: HTTPMiddleware_InsideGame(HTTPHandler.getInventories),
     })
     .add("/api/games/:gameId/inventories/:ownerId", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getInventoryOfPlayer)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getInventoryOfPlayer),
     })
     .add("/api/games/:gameId/mode", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getGameMode)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getGameMode),
     })
     .add("/api/games/:gameId/players", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getPlayers)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPlayers),
     })
     .add("/api/games/:gameId/players/active", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getActivePlayer)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getActivePlayer),
     })
     .add("/api/games/:gameId/players/client", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getClientPlayer)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getClientPlayer),
     })
     .add("/api/games/:gameId/players/:playerId", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getPlayerById)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPlayerById),
     })
     .add("/api/games/:gameId/possible-actions?x={}&y={}", {
-        GET: authenticated(HTTPMiddleware_InsideGame(HTTPHandler.getPossibleMoves)),
+        GET: HTTPMiddleware_InsideGame(HTTPHandler.getPossibleMoves),
     })
 );
 
