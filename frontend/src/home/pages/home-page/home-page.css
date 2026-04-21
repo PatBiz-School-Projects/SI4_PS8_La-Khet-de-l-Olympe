@@ -914,3 +914,15 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
         transform: translateY(0);
     }
 }
+
+
+/******************************************************************************
+ * MOBILE
+ ******************************************************************************/
+
+
+.mobile {
+    home-mobile-navbar {
+        display: block !important;
+    }
+}

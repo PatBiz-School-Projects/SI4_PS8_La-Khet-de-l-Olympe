@@ -1,7 +1,8 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
+import { AppModal } from "/shared/components/index.js";
+import { HomeMobileNavbar } from "/home/components/index.js";
 import { ChatBox } from "/chat/components/index.js";
-import { AppModal,AppMobileNavbar } from "/shared/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";

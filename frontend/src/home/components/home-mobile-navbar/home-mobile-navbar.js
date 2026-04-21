@@ -1,7 +1,9 @@
+import { AppMobileNavbar } from "/shared/components/app-mobile-navbar/app-mobile-navbar.js";
+
 import { apiFetch } from "/utils/wrapFetch.js";
 
 
-export class AppMobileNavbar extends HTMLElement {
+export class HomeMobileNavbar extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
@@ -15,8 +17,8 @@ export class AppMobileNavbar extends HTMLElement {
             // Load the component's HTML template & CSS style
 
             const [htmlResponse, cssResponse] = await Promise.all([
-                apiFetch("/shared/components/app-mobile-navbar/app-mobile-navbar.html"),
-                apiFetch("/shared/components/app-mobile-navbar/app-mobile-navbar.css"),
+                apiFetch("/home/components/home-mobile-navbar/home-mobile-navbar.html"),
+                apiFetch("/home/components/home-mobile-navbar/home-mobile-navbar.css"),
             ]);
 
             const html = await htmlResponse.text();
@@ -31,4 +33,4 @@ export class AppMobileNavbar extends HTMLElement {
         }
     }
 }
-customElements.define('app-mobile-navbar', AppMobileNavbar);
+customElements.define('home-mobile-navbar', HomeMobileNavbar);
