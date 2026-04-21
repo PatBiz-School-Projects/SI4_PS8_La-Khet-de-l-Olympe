@@ -13,7 +13,6 @@ const {
     REFRESH_TOKEN_EXPIRY,
 
     USER_SERVICE_URL,
-    CHAT_SERVICE_URL,
 } = process.env;
 
 
@@ -113,18 +112,12 @@ exports.HTTPHandler = {
                 userId: result.insertedId,
                 question: question,
                 answer: answer
-            })
+            });
 
             sendJson(res, 201, {
                 ok: true,
                 id: result.insertedId,
                 detail : "Compte créé avec succès"
-            });
-
-            await fetch(`${CHAT_SERVICE_URL}/internal/api/chats/global-chat/add-user`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ userId: result.insertedId }),
             });
         } catch (err) {
             console.error("Internal error while creating user account:", err);

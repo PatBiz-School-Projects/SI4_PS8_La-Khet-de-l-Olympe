@@ -23,10 +23,11 @@ async function getUsersCollection() {
     return db.collection('users');
 }
 
-async function createUser(authId,username) {
+async function createUser(userId, username) {
     const usersCollection = await getUsersCollection();
     return usersCollection.insertOne({
-        _id: authId,
+        _id: userId,
+        userId: userId,
         username,
         createdAt: new Date(),
         elo : 1000,
@@ -36,15 +37,17 @@ async function createUser(authId,username) {
         totalLosses:0,
         totalDraws:0,
         winStreak: 0,
-        achievements:[]
+        achievements:[],
     });
 }
 
-async function updateProfilePicture(userId,newProfilePicture){
-    const userCollection = await getUsersCollection();
-    userCollection.updateOne({_id: userId,},{
+async function updateProfilePicture(userId, newProfilePicture){
+    const usersCollection = await getUsersCollection();
+    usersCollection.updateOne({_id: userId,},{
         $set: {profilePicture: newProfilePicture}
     })
+    const result = await usersCollection.findOne({_id:userId});
+    return User.builder(result);
 }
 
 async function updateUserStats(userId, {newElo, won, lost, drew}) {
@@ -79,7 +82,7 @@ async function updateUserStats(userId, {newElo, won, lost, drew}) {
     return User.builder(result);
 }
 
-async function addAchievements(userId,newAchievementsIds) {
+async function addAchievements(userId, newAchievementsIds) {
     const usersCollection = await getUsersCollection();
     await usersCollection.updateOne({_id: userId,},
         { $addToSet: { achievements: { $each: newAchievementsIds }}
@@ -101,7 +104,6 @@ async function findTopUsersByElo(limit) {
         }
     ).sort({ elo: -1, username: 1 }).limit(limit).toArray();
 }
-
 
 
 module.exports = {

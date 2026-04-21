@@ -1,9 +1,11 @@
 const { Socket } = require('socket.io');
 
+
 /**
  * @typedef {string} ChatUserID
  */
 const ChatUserID = undefined;
+
 
 /**
  * @typedef {Object} ChatUserDTO
@@ -95,11 +97,12 @@ class ChatUser {
     disconnect() {
         delete this._socket;
     }
+
+    update(update) {
+        this._username = update.username ?? this._username;
+        this._profilePicture = update.profilePicture ?? this._profilePicture;
+    }
 }
 
 
-module.exports = {
-    ChatUserID,
-    ChatUser,
-    ChatUserDTO,
-};
+module.exports = { ChatUser, ChatUserID, ChatUserDTO };

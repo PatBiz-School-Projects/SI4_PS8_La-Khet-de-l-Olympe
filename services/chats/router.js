@@ -6,7 +6,9 @@ const {
     HTTPHandler,
     SocketIOMiddleware,
     SocketIOHandler,
-} = require("./handler.js");
+    EventsHandler,
+} = require("./handler");
+const network = require("./network");
 
 
 const ROUTER = (new Router()
@@ -20,13 +22,10 @@ const ROUTER = (new Router()
     .add("/internal/api/chats/new-chat?chatId={}", { // To create a chat with a given id
         PUT: HTTPHandler.newChat,
     })
-    .add("/internal/api/chats/:chatId/", {
+    .add("/internal/api/chats/:chatId", {
         DELETE: HTTPHandler.deleteChat,
     })
-    .add("/internal/api/chats/global-chat/add-user", {
-        POST: HTTPHandler.addUserInGlobalChat,
-    })
-    .add("/internal/api/chats/:chatId/add-user/", {
+    .add("/internal/api/chats/:chatId/add-user", {
         POST: HTTPHandler.addUserInChat,
     })
 
@@ -40,7 +39,7 @@ const ROUTER = (new Router()
     .add("/api/chats/:chatId/messages?start={}", {
         GET: authenticated(HTTPMiddleware_UserAccess(HTTPHandler.getChatMessages))
     })
-    .add("/api/chats/:chatId/users/", {
+    .add("/api/chats/:chatId/users", {
         GET: authenticated(HTTPMiddleware_UserAccess(HTTPHandler.getUsersInChat)),
     })
 );
@@ -81,4 +80,15 @@ exports.manageSocket = async (io) => {
             SocketIOHandler.onDisconnection(socket.nsp, socket, msgPayload);
         })
     });
+
+    network.io = io;
+}
+
+
+exports.manageEvents = async (bus) => {
+    bus.subscribe("users");
+
+    bus.on("created-new-user", EventsHandler.onNewUser);
+
+    bus.on("updated-user-profile", EventsHandler.onUserProfileUpdated);
 }
