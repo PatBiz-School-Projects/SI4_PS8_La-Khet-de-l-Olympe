@@ -115,4 +115,5 @@ secrets.env
 # Data folder (volume of mongodb)
 data/
 
-services/files/android/
+# Android app folder
+android/

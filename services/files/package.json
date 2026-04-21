@@ -8,12 +8,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "@capacitor/android": "^8.3.1",
-    "@capacitor/core": "^8.3.1"
-  },
-  "devDependencies": {
-    "@capacitor/cli": "^8.3.1"
-  }
+  "license": "ISC"
 }
