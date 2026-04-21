@@ -209,6 +209,25 @@ chat-box {
         margin: 0;
     }
 
+    .game-container {
+        padding-left: 0;
+        padding-right: 0;
+        gap: 0;
+    }
+
+    game-board {
+        /* - Largeur : On divise par 10 (la largeur du plateau Khet) au lieu de 16
+           - Hauteur : On soustrait ~160px pour laisser la place à ta barre mobile et ta navbar
+        */
+        --slot-size: min(
+            calc(98vw / 10),
+            calc((100vh - var(--header-h) - 160px) / 8)
+        );
+
+        margin: 0 auto;
+        transform: translateY(-20px); /* Remonte un peu le plateau pour l'éloigner de la zone de rotation */
+    }
+
     #header-btns,
     .desktop-only {
         display: none !important;

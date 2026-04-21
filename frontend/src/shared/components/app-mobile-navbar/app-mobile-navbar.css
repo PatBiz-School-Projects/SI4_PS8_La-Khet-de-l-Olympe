@@ -3,6 +3,16 @@
 }
 
 
+app-mobile-navbar {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    app-mobile-navbar {
+        display: block !important;
+    }
+}
+
 #app-mobile-navbar {
     position: fixed;
     bottom: 0;
