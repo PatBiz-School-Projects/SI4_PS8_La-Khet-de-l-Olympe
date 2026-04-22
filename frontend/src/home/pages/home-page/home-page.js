@@ -66,6 +66,8 @@ const searchComponent = new SearchComponent({
 const leaderboardComponent = new LeaderboardComponent({
     statusElement: document.getElementById("leaderboard-status"),
     listElement: document.getElementById("leaderboard-list"),
+    selfElement: document.getElementById("leaderboard-self"),
+    getCurrentUserId: () => USER_ID
 });
 
 const friendsComponent = new FriendsComponent({

@@ -2,9 +2,11 @@ import { apiFetch } from "/utils/wrapFetch.js";
 import { getPictureUrl } from "/utils/picture.js";
 
 export class LeaderboardComponent {
-    constructor({ statusElement, listElement }) {
+    constructor({ statusElement, listElement, selfElement, getCurrentUserId }) {
         this.statusElement = statusElement;
         this.listElement = listElement;
+        this.selfElement = selfElement;
+        this.getCurrentUserId = getCurrentUserId;
     }
 
     setStatus(message, isError = false) {
@@ -22,11 +24,6 @@ export class LeaderboardComponent {
             rank.className = "leaderboard-item__rank";
             rank.textContent = `#${index + 1}`;
 
-            const avatar = document.createElement("img");
-            avatar.className = "leaderboard-item__avatar";
-            avatar.src = getPictureUrl(user.profilePicture);
-            avatar.alt = `Avatar de ${user.username}`;
-
             const username = document.createElement("span");
             username.className = "leaderboard-item__username";
             username.textContent = user.username;
@@ -35,25 +32,59 @@ export class LeaderboardComponent {
             elo.className = "leaderboard-item__elo";
             elo.textContent = `${user.elo} ELO`;
 
-            item.append(rank, avatar, username, elo);
+            item.append(rank, username, elo);
             this.listElement.appendChild(item);
         });
     }
 
+    renderCurrentUserRank({ rank, elo }) {
+        if (!this.selfElement) {
+            return;
+        }
+
+        this.selfElement.hidden = false;
+        this.selfElement.innerHTML = `
+            <p class="leaderboard-self__label">Votre classement</p>
+            <div class="leaderboard-self__content">
+                <span class="leaderboard-item__rank">${rank ? `#${rank}` : "Hors top"}</span>
+                <span class="leaderboard-item__username">Vous</span>
+                <span class="leaderboard-item__elo">${elo ?? "—"} ELO</span>
+            </div>
+        `;
+    }
+
     async load(limit = 10) {
         this.listElement.innerHTML = "";
-
+        if (this.selfElement) {
+            this.selfElement.hidden = true;
+            this.selfElement.innerHTML = "";
+        }
         try {
-            const response = await apiFetch(`/api/users/leaderboard?limit=${encodeURIComponent(limit)}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            });
+            const currentUserId = this.getCurrentUserId();
+            const [response,liveStatsResponse] = await Promise.all([
+                apiFetch(`/api/users/leaderboard?limit=${encodeURIComponent(limit)}`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                }),
+                apiFetch(`/api/users/${encodeURIComponent(currentUserId)}/live-stats`, {
+                    method: "GET",
+                    headers: { "Content-Type": "application/json" },
+                })
+            ]);
             const payload = await response.json();
-
+            const liveResponse = await liveStatsResponse.json();
+            console.log(payload)
+            console.log(liveResponse)
             if (!response.ok) {
                 this.setStatus(payload.error || "Impossible de charger le leaderboard.", true);
                 return;
             }
+            const selfEntry = payload.find((entry) => entry.username === liveResponse.username);
+            const rank = selfEntry ? payload.indexOf(selfEntry) + 1 : null;
+
+            const elo = selfEntry.elo;
+            this.renderCurrentUserRank({ rank, elo });
+
             this.setStatus("");
             this.renderLeaderboard(payload);
         } catch (error) {
