@@ -7,6 +7,8 @@ export class GameMobileNavbar extends HTMLElement {
     constructor() {
         super();
         this.attachShadow({ mode: 'open' });
+
+        this._chatHidden = false;
     }
 
     /**
@@ -29,6 +31,10 @@ export class GameMobileNavbar extends HTMLElement {
                 ${html}
             `;
 
+            if (this._chatHidden) {
+                this._applyChatHidden();
+            }
+
             const navButtons = this.shadowRoot.querySelectorAll('[data-section]');
             navButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
@@ -44,6 +50,18 @@ export class GameMobileNavbar extends HTMLElement {
 
         } catch (err) {
             console.error("Error while loading the component:", err)
+        }
+    }
+
+    hideChat() {
+        this._chatHidden = true;
+        this._applyChatHidden();
+    }
+
+    _applyChatHidden() {
+        const chatBtn = this.shadowRoot?.querySelector('[data-section="chat"]');
+        if (chatBtn) {
+            chatBtn.style.display = 'none';
         }
     }
 }

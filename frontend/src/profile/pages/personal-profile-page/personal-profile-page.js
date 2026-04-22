@@ -487,7 +487,7 @@ async function loadHistory(token) {
         if (!response.ok) throw new Error("Erreur serveur");
 
         const payload = await response.json();
-        const games = payload.games || [];
+        let games = payload.games || [];
 
 
         if (games.length === 0) {
@@ -497,6 +497,16 @@ async function loadHistory(token) {
         }
 
         historyEmptyEl.style.display = 'none';
+
+        const isMobile = document.documentElement.classList.contains('mobile') || document.body.classList.contains('mobile');
+        const limit = isMobile ? 5 : 10;
+
+        const historyTitleEl = document.querySelector('#tab-history h2');
+        if (historyTitleEl) {
+            historyTitleEl.textContent = `Vos ${limit} dernières parties`;
+        }
+
+        games = games.slice(0, limit);
 
         games.forEach(game => {
             const li = document.createElement('li');
