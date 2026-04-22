@@ -294,6 +294,7 @@ exports.getUserLiveStats = async (req, res) => {
     }
 
     sendJson(res, 200, {
+        username: user.username,
         elo: user.elo,
         liveWinStreak: user.winStreak,
         // Add more if needed
