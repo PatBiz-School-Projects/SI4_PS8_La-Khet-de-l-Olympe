@@ -2,7 +2,7 @@ import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
 import { AppModal } from "/shared/components/index.js";
 import { HomeMobileNavbar,FriendsComponent,LeaderboardComponent,SearchComponent } from "/home/components/index.js";
-import { ChatBox } from "/chat/components/index.js";
+import { ChatBox,ChatMobileComponent} from "/chat/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
@@ -25,7 +25,6 @@ import { API_HOST,IS_MOBILE_WEBVIEW } from "/env.js";
  * Navigation helpers
  */
 const mobileNavbar = document.querySelector("home-mobile-navbar");
-const menuItems = document.querySelectorAll(".menu-item[data-section]");
 const clickableCards = document.querySelectorAll(".feature-card.is-clickable");
 const sidebarUsername = document.getElementById("sidebar-username");
 const sidebarStatus = document.getElementById("sidebar-status");
@@ -52,8 +51,7 @@ const homeNotifications = document.getElementById("home-notifications");
 const chatBox = desktopChatBox;
 
 let USER_ID;
-let searchDebounceId;
-const isMobileLayout = !IS_MOBILE_WEBVIEW;
+const isMobileLayout = IS_MOBILE_WEBVIEW;
 let mobileChatComponent = null;
 
 const searchComponent = new SearchComponent({
@@ -99,7 +97,6 @@ function showMainPanel(section) {
 }
 
 function setActiveMenu(section) {
-    //menuItems.forEach((item) => item.classList.toggle("is-active", item.dataset.section === section));
 
     const allNavButtons = document.querySelectorAll("[data-section]");
 
@@ -407,8 +404,8 @@ async function toggleChatBox(isLoggedIn) {
 }
 
 function applyResponsiveLayout() {
-    mobileHeader.hidden = !isMobileLayout || !USER_ID;
     document.body.classList.toggle("is-mobile-layout", isMobileLayout);
+    // Remove the mobileHeader line here — let toggleMobileView handle it
     showMainPanel("play");
 }
 
@@ -712,7 +709,7 @@ onload = async () => {
     searchComponent.bindInput();
     showMainPanel("play");
     const token = await ensureValidAccessToken();
-
+    await toggleMobileView(isMobileLayout,true);
     if (!token) {
         await toggleAuthenticatedView(false);
         await toggleChatBox(false);
@@ -730,7 +727,6 @@ onload = async () => {
     USER_ID = userId;
 
     await toggleAuthenticatedView(true);
-    await toggleMobileView(isMobileLayout,true);
     await toggleChatBox(true);
     await toggleMobileChat(true);
     await initHomeNotifications();
