@@ -16,6 +16,8 @@ export class GameMobilePyramidCounter extends HTMLElement {
         this.shadowRoot.addEventListener('click', () => {
             if (this._active && this._count > 0) {
 
+                event.stopPropagation();
+
                 const pyramidPiece = Piece.fromDTO({
                     type: "Pyramid",
                     owner: this.owner,
@@ -40,7 +42,7 @@ export class GameMobilePyramidCounter extends HTMLElement {
 
     set owner(val) { this._owner = val; }
     get owner() { return this._owner; }
-
+    get color() { return this._color; }
     set color(val) {
         this._color = val;
         this.render();

@@ -262,6 +262,12 @@ onload = async _ => {
         await playerInventory.actualise();
     }
 
+    player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+    player2MobileCounter.count = player2Inventory.getNbOfPyramid();
+
+    player1MobileCounter.active = (PLAYERS_ID[0] === activePlayer.playerId);
+    player2MobileCounter.active = (PLAYERS_ID[1] === activePlayer.playerId);
+
     // Initialising players' rotation indicator
     for (const playerId of PLAYERS_ID) {
         const playerRotationIndicator = PLAYERS_ROTATION_INDICATOR_BY_ID[playerId]
@@ -378,6 +384,9 @@ gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
 
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = true;
 
+    if (CLIENT_PLAYER.playerId === PLAYERS_ID[0]) player1MobileCounter.active = true;
+    if (CLIENT_PLAYER.playerId === PLAYERS_ID[1]) player2MobileCounter.active = true;
+
     await player1Inventory.actualise();
     await player2Inventory.actualise();
 }));
@@ -404,6 +413,8 @@ gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
     turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = false;
+    player1MobileCounter.active = false;
+    player2MobileCounter.active = false;
 }));
 
 gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {

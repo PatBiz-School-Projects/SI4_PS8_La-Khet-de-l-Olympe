@@ -49,3 +49,15 @@
 #pieces-canvas {
     z-index: 3;
 }
+
+@media (max-width: 760px) {
+    #board {
+        --x-padding: 2vw;
+        --y-padding: 25vh;
+        margin-left: auto;
+        margin-right: auto;
+        margin-top: 15vh;
+        padding: 0;
+    }
+
+}
