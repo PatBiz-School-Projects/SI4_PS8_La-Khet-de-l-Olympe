@@ -2,7 +2,7 @@ import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
 import { AppModal } from "/shared/components/index.js";
 import { HomeMobileNavbar,FriendsComponent,LeaderboardComponent,SearchComponent } from "/home/components/index.js";
-import { ChatBox,ChatMobileComponent} from "/chat/components/index.js";
+import { ChatBox,ChatMobileComponent } from "/chat/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
@@ -25,6 +25,7 @@ import { API_HOST,IS_MOBILE_WEBVIEW } from "/env.js";
  * Navigation helpers
  */
 const mobileNavbar = document.querySelector("home-mobile-navbar");
+const menuItems = document.querySelectorAll(".menu-item[data-section]");
 const clickableCards = document.querySelectorAll(".feature-card.is-clickable");
 const sidebarUsername = document.getElementById("sidebar-username");
 const sidebarStatus = document.getElementById("sidebar-status");
@@ -51,7 +52,8 @@ const homeNotifications = document.getElementById("home-notifications");
 const chatBox = desktopChatBox;
 
 let USER_ID;
-const isMobileLayout = IS_MOBILE_WEBVIEW;
+let searchDebounceId;
+const isMobileLayout = !IS_MOBILE_WEBVIEW;
 let mobileChatComponent = null;
 
 const searchComponent = new SearchComponent({
@@ -97,6 +99,7 @@ function showMainPanel(section) {
 }
 
 function setActiveMenu(section) {
+    //menuItems.forEach((item) => item.classList.toggle("is-active", item.dataset.section === section));
 
     const allNavButtons = document.querySelectorAll("[data-section]");
 
@@ -106,35 +109,45 @@ function setActiveMenu(section) {
     });
 }
 
+async function handleSectionSelection(section) {
+    setActiveMenu(section);
+    showMainPanel(section);
+
+    if (section === "leaderboard") {
+        await leaderboardComponent.load(10);
+        return;
+    }
+
+    if (section === "friends") {
+        await friendsComponent.load();
+        return;
+    }
+
+    if (section === "search") {
+        if (isMobileLayout) {
+            window.location.href = "/home/pages/mobile-search-page/mobile-search-page.html";
+            return;
+        }
+        searchPanel.classList.toggle('visible');
+        searchPanel.scrollIntoView({behavior: "smooth", block: "start"});
+        searchInput.focus();
+    }
+}
+
 document.addEventListener("click", async (event) => {
 
     const button = event.target.closest("[data-section]");
     if(button) {
-            const section = button.dataset.section;
+        await handleSectionSelection(button.dataset.section);
+    }
 
-            setActiveMenu(section);
-            showMainPanel(section);
+});
 
-            if (section === "leaderboard") {
-                await leaderboardComponent.load(10);
-                return;
-            }
-            if (section === "friends") {
-                await friendsComponent.load();
-                console.log("friends")
-                return;
-            }
-            if (section === "search") {
-                if (isMobileLayout) {
-                    window.location.href = "/home/pages/mobile-search-page/mobile-search-page.html";
-                    return;
-                }
-                searchPanel.classList.toggle('visible');
-                searchPanel.scrollIntoView({behavior: "smooth", block: "start"});
-                searchInput.focus();
-            }
-        }
-
+mobileNavbar?.addEventListener("mobile-nav-select", async (event) => {
+    const { section } = event.detail || {};
+    if (section) {
+        await handleSectionSelection(section);
+    }
 });
 
 clickableCards.forEach(card => {
@@ -404,6 +417,8 @@ async function toggleChatBox(isLoggedIn) {
 }
 
 function applyResponsiveLayout() {
+    mobileHeader.hidden = !isMobileLayout || !USER_ID;
+    document.body.classList.toggle("is-mobile-layout", isMobileLayout);
     showMainPanel("play");
 }
 
@@ -707,7 +722,7 @@ onload = async () => {
     searchComponent.bindInput();
     showMainPanel("play");
     const token = await ensureValidAccessToken();
-    await toggleMobileView(isMobileLayout,true);
+
     if (!token) {
         await toggleAuthenticatedView(false);
         await toggleChatBox(false);
@@ -725,6 +740,7 @@ onload = async () => {
     USER_ID = userId;
 
     await toggleAuthenticatedView(true);
+    await toggleMobileView(isMobileLayout,true);
     await toggleChatBox(true);
     await toggleMobileChat(true);
     await initHomeNotifications();
