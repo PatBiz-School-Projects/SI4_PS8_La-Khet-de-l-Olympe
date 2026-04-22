@@ -426,3 +426,151 @@ body {
     color: var(--muted);
     margin: 0;
 }
+
+
+/******************************************************************************
+ * VERSION MOBILE (.mobile)
+ ******************************************************************************/
+
+.mobile .profile-tabs { display: none !important; }
+.mobile .tab-content {
+    display: block !important;
+    margin-bottom: 16px;
+    animation: none !important;
+}
+
+
+.mobile .profile-page {
+    padding: 8px 8px;
+}
+
+
+.mobile .profile-card,
+.mobile .stats-card,
+.mobile .friends-card {
+    padding: 12px;
+    margin-top: 12px;
+    border: none;
+    background: rgba(21, 18, 29, 0.6);
+    border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+    border-radius: 0;
+}
+
+.mobile h2 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+    color: var(--gold);
+}
+
+
+.mobile .profile-card {
+    flex-direction: row;
+    gap: 12px;
+    padding-bottom: 16px;
+}
+
+.mobile .profile-picture {
+    width: 64px;
+    height: 64px;
+    border-width: 1px;
+}
+
+.mobile .profile-info h1 {
+    font-size: 1.3rem;
+    margin-bottom: 4px;
+}
+
+.mobile .profile-info p {
+    font-size: 0.9rem;
+}
+
+
+.mobile .stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.mobile .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 4px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    border-radius: 0;
+}
+.mobile .stat-item:last-child { border-bottom: none; }
+
+.mobile .stat-label {
+    font-size: 0.8rem;
+    text-transform: capitalize;
+    letter-spacing: 0;
+}
+
+.mobile .stat-value {
+    font-size: 1rem; /* On ne crie plus les chiffres */
+}
+
+/* 5. Historique et Amis : Lignes ultra plates */
+.mobile .history-list, .mobile .friend-list {
+    gap: 0; /* On colle les éléments */
+}
+
+.mobile .history-item, .mobile .friend-item {
+    padding: 10px 4px;
+    border: none;
+    border-radius: 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    background: transparent;
+}
+
+.mobile .friend-avatar {
+    width: 40px; /* Mini avatar */
+    height: 40px;
+}
+
+.mobile .history-players, .mobile .friend-name {
+    font-size: 0.9rem;
+}
+
+.mobile .history-meta, .mobile .history-result, .mobile .friend-meta {
+    font-size: 0.75rem;
+}
+
+/* Boutons d'action amis (plus petits) */
+.mobile .friend-button {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+}
+
+/* 6. Succès super denses */
+.mobile .achievements-grid {
+    grid-template-columns: repeat(auto-fill, minmax(75px, 1fr));
+    gap: 8px;
+}
+
+.mobile .achievement-card {
+    padding: 8px 4px;
+    border: none;
+    background: transparent;
+}
+
+.mobile .achievement-icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 6px;
+}
+
+.mobile .achievement-name {
+    font-size: 0.7rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.mobile .achievement-desc {
+    display: none;
+}

@@ -200,6 +200,10 @@ chat-box {
         display: block !important;
     }
 
+    chat-box{
+        display: none;
+    }
+
     .game-container {
         display: block;
         width: 100%;

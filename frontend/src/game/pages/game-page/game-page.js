@@ -312,6 +312,10 @@ onload = async _ => {
     } else {
         chatBox.remove();
         gameOverModal.deactivateChallenge();
+
+        if (mobileNavbar) {
+            mobileNavbar.hideChat();
+        }
     }
 }
 
