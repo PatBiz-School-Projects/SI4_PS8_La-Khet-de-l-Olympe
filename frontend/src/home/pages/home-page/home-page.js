@@ -48,6 +48,7 @@ const mobileProfileAvatar = document.getElementById("mobile-profile-avatar");
 const mobileProfileBtn = document.getElementById("mobile-profile-btn");
 const mobileSearchBtn = document.getElementById("mobile-search-btn");
 const homeNotifications = document.getElementById("home-notifications");
+const footerLoginBtn = document.getElementById("footer-login-btn");
 /** @type {ChatBox} */
 const chatBox = desktopChatBox;
 
@@ -67,7 +68,8 @@ const leaderboardComponent = new LeaderboardComponent({
     statusElement: document.getElementById("leaderboard-status"),
     listElement: document.getElementById("leaderboard-list"),
     selfElement: document.getElementById("leaderboard-self"),
-    getCurrentUserId: () => USER_ID
+    getCurrentUserId: () => USER_ID,
+    isAuthenticated: Boolean(USER_ID)
 });
 
 const friendsComponent = new FriendsComponent({
@@ -145,7 +147,7 @@ document.addEventListener("click", async (event) => {
 
 });
 
-mobileNavbar?.addEventListener("mobile-nav-select", async (event) => {
+mobileNavbar.addEventListener("mobile-nav-select", async (event) => {
     const { section } = event.detail || {};
     if (section) {
         await handleSectionSelection(section);
@@ -230,7 +232,7 @@ async function logout() {
         window.location.reload();
     }
 }
-
+footerLoginBtn.onclick = async () => login();
 const signupBtn = document.getElementById("signup-btn");
 signupBtn.onclick = async () => signup();
 
@@ -339,30 +341,34 @@ startLocalMultiplayerBtn.onclick = async () => startLocalMultiplayerGame();
 document.getElementById("mobile-start-local-multiplayer-btn").onclick = async () => startLocalMultiplayerGame();
 
 const joinMultiplayerBtn = document.getElementById("join-multiplayer-btn");
+const mobileJoinMultiplayerBtn = document.getElementById("mobile-join-multiplayer-btn");
 joinMultiplayerBtn.onclick = async () => joinMultiplayerGame();
-document.getElementById("mobile-join-multiplayer-btn").onclick = async () => joinMultiplayerGame();
+mobileJoinMultiplayerBtn.onclick = async () => joinMultiplayerGame();
 
 /**
  Authenticated view
  */
 
 async function toggleAuthenticatedView(isLoggedIn) {
-    signupBtn.style.display = isLoggedIn ? "none" : "flex";
-    loginBtn.style.display = isLoggedIn ? "none" : "flex";
+    const showMobileUnauthenticatedCta = isMobileLayout && !isLoggedIn;
+    footerLoginBtn.hidden = !showMobileUnauthenticatedCta;
+    signupBtn.style.display = showMobileUnauthenticatedCta || isLoggedIn ? "none" : "flex";
+    loginBtn.style.display = showMobileUnauthenticatedCta || isLoggedIn ? "none" : "flex";
     profileBtn.style.display = isLoggedIn ? "flex" : "none";
     logoutBtn.style.display = isLoggedIn ? "flex" : "none";
-    sidebarAvatar.style.display = isLoggedIn ? "flex" : "none";
+    profileChipBtn.style.display = isLoggedIn ? "flex" : "none";
     joinMultiplayerBtn.style.display = isLoggedIn ? "flex" : "none";
+    mobileJoinMultiplayerBtn.style.display = isLoggedIn ? "flex" : "none";
     sidebarStatus.textContent = isLoggedIn ? "En ligne" : "Hors ligne";
     friendsMenuSelector.style.display = isLoggedIn ? "flex" : "none";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
-    searchComponent.setEnabled(isLoggedIn);
+    mobileProfileBtn.hidden = !isLoggedIn;
 }
 
 async function toggleMobileView(isMobileView,isLoggedIn) {
-    mobileHeader.hidden = !isMobileView || !isLoggedIn;
-    mobileNavbar.hidden = !isMobileView;
+    mobileHeader.hidden = !isMobileView;
+    mobileNavbar.hidden = !isMobileView || !isLoggedIn;
 }
 
 /**
@@ -419,7 +425,7 @@ async function toggleChatBox(isLoggedIn) {
 }
 
 function applyResponsiveLayout() {
-    mobileHeader.hidden = !isMobileLayout || !USER_ID;
+    mobileHeader.hidden = !isMobileLayout;
     document.body.classList.toggle("is-mobile-layout", isMobileLayout);
     showMainPanel("play");
 }
@@ -727,6 +733,7 @@ onload = async () => {
 
     if (!token) {
         await toggleAuthenticatedView(false);
+        await toggleMobileView(isMobileLayout, false);
         await toggleChatBox(false);
         await toggleMobileChat(false);
         return;
