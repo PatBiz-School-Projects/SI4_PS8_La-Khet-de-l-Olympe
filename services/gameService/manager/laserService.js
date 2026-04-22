@@ -79,9 +79,6 @@ class LaserService {
                                 hit:"destroyed",
                                 piece:piece.type,
                             });
-                            if (piece.type === "Pharaoh") {
-                                return { path, destroyedPieces };
-                            }
                             break;
                     }
                 } else {

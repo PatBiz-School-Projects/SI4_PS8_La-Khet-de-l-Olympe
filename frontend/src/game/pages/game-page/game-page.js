@@ -529,9 +529,14 @@ gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratin
     }
 
     isGameOver = true;
-    gameOverModal.show();
+
     const ratingMessage = formatRatingUpdate(rating ?? ratingUpdate);
     gameOverModal.detail = ratingMessage ? `${baseMessage} ${ratingMessage}` : baseMessage;
+
+    setTimeout(() => {
+        gameOverModal.show();
+    }, 3000);
+
 }));
 
 gameSocket.on("action-timer-sync", async ({remainingTime}) => {
