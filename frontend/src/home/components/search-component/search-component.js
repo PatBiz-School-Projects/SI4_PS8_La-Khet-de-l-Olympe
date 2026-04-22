@@ -36,7 +36,9 @@ export class SearchComponent {
             return;
         }
 
-        button.textContent = "Demande envoyée";
+        button.classList.add("is-sent");
+        button.setAttribute("aria-label", "Demande envoyée");
+        button.title = "Demande envoyée";
         this.setStatus("Demande d'ami envoyée.");
     }
 
@@ -68,8 +70,17 @@ export class SearchComponent {
 
             const addFriendButton = document.createElement("button");
             addFriendButton.type = "button";
-            addFriendButton.className = "search-action-btn";
-            addFriendButton.textContent = "Ajouter en ami";
+            addFriendButton.className = "search-action-btn search-action-btn--icon";
+            addFriendButton.setAttribute("aria-label", "Ajouter en ami");
+            addFriendButton.title = "Ajouter en ami";
+
+            const addFriendIcon = document.createElement("img");
+            addFriendIcon.src = "/assets/add-friend.svg";
+            addFriendIcon.alt = "";
+            addFriendIcon.className = "search-action-btn__icon";
+            addFriendIcon.setAttribute("aria-hidden", "true");
+
+            addFriendButton.append(addFriendIcon);
             addFriendButton.onclick = async () => this.sendFriendRequest(user.userId, addFriendButton);
 
             actions.append(addFriendButton);

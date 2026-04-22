@@ -717,6 +717,23 @@ chat-box.mobile-chat-box {
 .search-action-btn:hover {
     background: rgba(212, 177, 106, 0.16);
 }
+.search-action-btn--icon {
+    min-width: 40px;
+    padding: 6px;
+    display: grid;
+    place-items: center;
+}
+
+.search-action-btn__icon {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+.search-action-btn--icon.is-sent {
+    opacity: 0.65;
+    border-color: rgba(212, 177, 106, 0.3);
+}
 
 .feature-card {
     border-radius: 16px;
@@ -805,12 +822,11 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
 }
 
 .mobile .play-buttons--mobile {
-    margin-top: 24px;
+    margin-top: 40px;
 }
 
 .mobile .auth-bar {
-    top: 10px;
-    right: 12px;
+    display: none;
 }
 
 .mobile .app-shell {
@@ -857,13 +873,17 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
 }
 
 .mobile .mobile-header__search {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid rgba(212, 177, 106, 0.4);
     border-radius: 10px;
     min-width: 42px;
     min-height: 42px;
     background: rgba(212, 177, 106, 0.08);
     color: var(--text-main);
-    font-size: 1.2rem;
+    font-size: 1.8rem;
+    line-height: 1;
 }
 
 .mobile .cards-grid {
