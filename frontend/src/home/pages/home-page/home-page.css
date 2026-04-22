@@ -357,7 +357,9 @@ body::before {
 .play-buttons--mobile {
     margin-top: 0;
 }
-
+.title-block--mobile {
+    margin-top: 8px;
+}
 chat-box.mobile-chat-box {
     position: static;
     width: 100%;
@@ -795,6 +797,17 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
 
 
 @media (max-width: 980px) {
+    #mobile-home-panel {
+        padding-top: 56px;
+    }
+
+    .title-block--mobile {
+        margin-top: 0;
+    }
+
+    .play-buttons--mobile {
+        margin-top: 24px;
+    }
     .auth-bar {
         top: 10px;
         right: 12px;
@@ -875,6 +888,17 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
     #mobile-chat-panel {
         min-height: calc(100vh - 210px);
     }
+    .title-block--mobile .title-main {
+        font-size: clamp(1.6rem, 8vw, 2.3rem);
+    }
+
+    .title-block--mobile .divider {
+        width: min(190px, 70vw);
+    }
+
+    .title-block--mobile .title-sub {
+        letter-spacing: 0.18em;
+    }
 }
 
 @media (max-width: 620px) {
@@ -889,6 +913,17 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
     .btn-play {
         width: 100%;
         justify-content: center;
+    }
+    .title-block--mobile .title-main {
+        font-size: clamp(1.6rem, 8vw, 2.3rem);
+    }
+
+    .title-block--mobile .divider {
+        width: min(190px, 70vw);
+    }
+
+    .title-block--mobile .title-sub {
+        letter-spacing: 0.18em;
     }
     .search-result-item {
         grid-template-columns: 1fr;
