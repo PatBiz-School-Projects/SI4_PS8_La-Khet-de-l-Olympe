@@ -1125,7 +1125,7 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
 
 
 .mobile {
-    home-mobile-navbar {
+    home-mobile-navbar:not([hidden]) {
         display: block !important;
     }
 }
