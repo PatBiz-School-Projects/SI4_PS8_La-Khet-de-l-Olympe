@@ -24,6 +24,7 @@ import { API_HOST,IS_MOBILE_WEBVIEW } from "/env.js";
 /**
  * Navigation helpers
  */
+const mobileNavbar = document.querySelector("home-mobile-navbar");
 const menuItems = document.querySelectorAll(".menu-item[data-section]");
 const clickableCards = document.querySelectorAll(".feature-card.is-clickable");
 const sidebarUsername = document.getElementById("sidebar-username");
@@ -344,8 +345,12 @@ async function toggleAuthenticatedView(isLoggedIn) {
     friendsMenuSelector.style.display = isLoggedIn ? "flex" : "none";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
-    mobileHeader.hidden = !isMobileLayout || !isLoggedIn;
     searchComponent.setEnabled(isLoggedIn);
+}
+
+async function toggleMobileView(isMobileView,isLoggedIn) {
+    mobileHeader.hidden = !isMobileView || !isLoggedIn;
+    mobileNavbar.hidden = !isMobileView;
 }
 
 /**
@@ -725,6 +730,7 @@ onload = async () => {
     USER_ID = userId;
 
     await toggleAuthenticatedView(true);
+    await toggleMobileView(isMobileLayout,true);
     await toggleChatBox(true);
     await toggleMobileChat(true);
     await initHomeNotifications();
