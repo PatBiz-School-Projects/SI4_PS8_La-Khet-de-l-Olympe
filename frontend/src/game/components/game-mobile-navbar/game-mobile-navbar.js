@@ -31,11 +31,6 @@ export class GameMobileNavbar extends HTMLElement {
         } catch (err) {
             console.error("Error while loading the component:", err)
         }
-
-        if (!isMobile()) {
-            this.style.display = 'none';
-            return;
-        }
     }
 }
 customElements.define('game-mobile-navbar', GameMobileNavbar);

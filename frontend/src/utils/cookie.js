@@ -1,9 +1,8 @@
-import { Capacitor } from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
+import { IS_MOBILE_WEBVIEW } from "/env.js";
 
-const isAndroid = Capacitor.getPlatform() === 'android';
 
 export function getCookie(name) {
-    if (isAndroid) {
+    if (IS_MOBILE_WEBVIEW) {
         return localStorage.getItem(name);
     }
     const cookies = document.cookie.split(';');
@@ -15,7 +14,7 @@ export function getCookie(name) {
 }
 
 export function setCookie(name, value) {
-    if (isAndroid) {
+    if (IS_MOBILE_WEBVIEW) {
         localStorage.setItem(name, value);
         return;
     }
@@ -23,7 +22,7 @@ export function setCookie(name, value) {
 }
 
 export function removeCookie(name) {
-    if (isAndroid) {
+    if (IS_MOBILE_WEBVIEW) {
         localStorage.removeItem(name);
         return;
     }
@@ -32,7 +31,7 @@ export function removeCookie(name) {
 
 /** @alias {@link clearCookies()} */
 export function removeAllCookies() {
-    if (isAndroid) {
+    if (IS_MOBILE_WEBVIEW) {
         localStorage.clear();
         return;
     }

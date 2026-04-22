@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Khet de l'Olympe | Accueil</title>
     <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+
+    <script src="/media.js"></script>
+
     <link href="./home-page.css" rel="stylesheet" />
     <script type="module" src="./home-page.js" defer></script>
 </head>
@@ -14,6 +17,7 @@
     <button id="login-btn" class="auth-btn" type="button">Connexion</button>
     <button id="signup-btn" class="auth-btn" type="button">Inscription</button>
 </nav>
+
 <div class="app-shell">
     <!-- Sidebar fixe inspirée d'une navigation de plateforme de jeu -->
     <aside class="sidebar" aria-label="Navigation principale">
@@ -55,9 +59,6 @@
                 <div id="search-results" class="search-results"></div>
             </section>
         </nav>
-
-        <app-mobile-navbar page="home"></app-mobile-navbar>
-
 
         <div class="sidebar__footer">
             <button id="logout-btn" class="menu-item menu-item--danger" type="button" style="display: none;">
@@ -160,6 +161,7 @@
         <!-- nothing -->
     </div>
 </app-modal>
+
 <div id="home-notifications" class="home-notifications" aria-live="polite" aria-atomic="false"></div>
 
 <footer>
