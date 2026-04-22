@@ -391,6 +391,9 @@ gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
 
     await player1Inventory.actualise();
     await player2Inventory.actualise();
+
+    player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+    player2MobileCounter.count = player2Inventory.getNbOfPyramid();
 }));
 
 gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
@@ -451,6 +454,10 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
             console.log("Opponent placed piece:", piece, "at:", pos);
 
             await PLAYERS_INVENTORY_BY_ID[piece.owner].popPyramid();
+
+            player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+            player2MobileCounter.count = player2Inventory.getNbOfPyramid();
+
             await board.placePiece(piece, pos);
         } break;
         case "rotate": {
@@ -481,6 +488,9 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
     gameSocket.emit("animation-complete");
 }));
@@ -713,6 +723,10 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     console.log("Placement accepted");
 
     await PLAYERS_INVENTORY_BY_ID[piece.owner].popPyramid();
+
+    player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+    player2MobileCounter.count = player2Inventory.getNbOfPyramid();
+
     player1RotationIndicator.active = false;
     player2RotationIndicator.active = false;
 
