@@ -1,5 +1,13 @@
 {
   "appId": "com.pns.khet",
   "appName": "Khet de l'Olympe",
-  "webDir": "./dist"
+  "webDir": "./dist",
+  "plugins": {
+    "CapacitorCookies": {
+      "enabled": true
+    },
+    "CapacitorHttp": {
+      "enabled": true
+    }
+  }
 }
