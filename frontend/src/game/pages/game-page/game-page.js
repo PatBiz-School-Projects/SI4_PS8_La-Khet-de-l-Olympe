@@ -57,6 +57,25 @@ const forfeitModal = document.querySelector("game-forfeit-modal");
 const gameOverModal = document.querySelector("game-over-modal");
 /** @type { ChatBox } */
 const chatBox = document.querySelector("chat-box");
+const mobileNavbar = document.querySelector("game-mobile-navbar");
+
+if (mobileNavbar) {
+    mobileNavbar.addEventListener('game-mobile-nav-click', (event) => {
+        if (isGameOver) return;
+
+        const section = event.detail.section;
+
+        if (section === 'quit') {
+            forfeitModal.show();
+        } else if (section === 'info') {
+            alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`);
+        } else if (section === 'chat') {
+            console.log("Ouvrir le chat...");
+        }
+
+        stateMachine.on(clickHandler.computePageAction(event));
+    });
+}
 
 
 //
@@ -244,7 +263,7 @@ onload = async _ => {
 
     // Initialising turn indicator
     if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
-        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase() === "RED" ? "ROUGE":"BLEU";
     } else {
         turnIndicator.activePlayerName = activePlayer.profile.username;
     }
@@ -369,7 +388,7 @@ gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
 
     if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
-        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase() === "RED" ? "ROUGE":"BLEU";
     } else {
         turnIndicator.activePlayerName = activePlayer.profile.username;
     }
@@ -408,7 +427,7 @@ gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
     stateMachine.on({ type: GamePageActionType.END_TURN })
 
     if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
-        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase() === "RED" ? "ROUGE":"BLEU";
     } else {
         turnIndicator.activePlayerName = activePlayer.profile.username;
     }
@@ -523,7 +542,8 @@ gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratin
                 baseMessage = (CLIENT_PLAYER.playerId === winnerId) ? "Victoire !" : "Défaite...";
                 break;
             case GameMode.LOCAL_MULTIPLAYER:
-                baseMessage = "Victoire de " + PLAYERS_COLOR_BY_ID[winnerId].toUpperCase();
+                const color = (PLAYERS_COLOR_BY_ID[winnerId].toUpperCase() === "red")? "ROUGE":"BLEU";
+                baseMessage = "Victoire de " + color;
                 break;
         }
     }
@@ -548,27 +568,24 @@ onclick = (event) => {
     if (isGameOver) {
         return;
     }
-    const navButton = event.target.closest('[data-section]');
-
-    if (navButton) {
-        const section = navButton.dataset.section;
-
-        if (section === 'quit') {
-            document.querySelector('game-forfeit-modal').show();
-            return;
-        }
-        if (section === 'info') {
-            alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`);
-            return;
-        }
-        if (section === 'chat') {
-            console.log("Ouvrir le chat...");
-            return;
-        }
-    }
-
     stateMachine.on(clickHandler.computePageAction(event));
 };
+
+if (mobileNavbar) {
+    mobileNavbar.addEventListener('game-mobile-nav-click', (event) => {
+        if (isGameOver) return;
+
+        const section = event.detail.section;
+
+        if (section === 'quit') {
+            forfeitModal.show();
+        } else if (section === 'info') {
+            alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`);
+        } else if (section === 'chat') {
+            console.log("Ouvrir le chat...");
+        }
+    });
+}
 
 
 player1Inventory.addEventListener("inventory-click", event => {

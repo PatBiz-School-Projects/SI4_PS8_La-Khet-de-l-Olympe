@@ -2,15 +2,6 @@
     display: block;
 }
 
-app-mobile-navbar {
-    display: none !important;
-}
-
-@media (max-width: 768px) {
-    app-mobile-navbar {
-        display: block !important;
-    }
-}
 
 #app-mobile-navbar {
     position: fixed;
@@ -25,13 +16,12 @@ app-mobile-navbar {
     box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.6);
 
     display: flex;
-    justify-content: space-evenly;
-    padding: 12px 0 18px 0;
+    padding: 12px 8px 18px 8px;
+    box-sizing: border-box;
     z-index: 1000;
 
     & #nav-items {
         display: flex;
-        justify-content: space-around;
         align-items: center;
         width: 100%;
     }
