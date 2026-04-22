@@ -52,8 +52,17 @@ export class FriendsComponent {
             if (canChallenge) {
                 const challengeButton = document.createElement("button");
                 challengeButton.type = "button";
-                challengeButton.className = "search-action-btn friend-challenge-btn";
-                challengeButton.textContent = "Défier";
+                challengeButton.className = "search-action-btn search-action-btn--icon friend-challenge-btn";
+                challengeButton.setAttribute("aria-label", `Défier ${friend.username}`);
+                challengeButton.title = `Défier ${friend.username}`;
+
+                const challengeIcon = document.createElement("img");
+                challengeIcon.src = "/assets/challenge.svg";
+                challengeIcon.alt = "";
+                challengeIcon.className = "search-action-btn__icon";
+                challengeIcon.setAttribute("aria-hidden", "true");
+
+                challengeButton.append(challengeIcon);
                 challengeButton.onclick = async () => {
                     challengeButton.disabled = true;
                     await this.challengeUser(friend.id);

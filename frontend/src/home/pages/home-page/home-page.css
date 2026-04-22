@@ -508,10 +508,29 @@ chat-box.mobile-chat-box {
 }
 
 .friend-item {
-    grid-template-columns: 42px 1fr auto auto;
+    grid-template-columns: 42px 1fr auto;
+    grid-template-areas:
+        "avatar username action"
+        "avatar elo action";
+    align-items: center;
+}
+
+.friend-item .leaderboard-item__avatar {
+    grid-area: avatar;
+}
+
+.friend-item .leaderboard-item__username {
+    grid-area: username;
+}
+
+.friend-item .leaderboard-item__elo {
+    grid-area: elo;
+    font-size: 0.78rem;
+    color: var(--text-muted);
 }
 
 .friend-challenge-btn {
+    grid-area: action;
     justify-self: end;
 }
 
@@ -694,13 +713,15 @@ chat-box.mobile-chat-box {
 
 .search-result-item__name {
     font-weight: 700;
+    width: 100%;
 }
 
 .search-result-item__actions {
     display: flex;
     gap: 8px;
-    flex-wrap: wrap;
     grid-column: 1 / -1;
+    flex-wrap: nowrap;
+    justify-self: end;
 }
 
 .search-action-btn {
