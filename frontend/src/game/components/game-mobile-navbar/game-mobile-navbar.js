@@ -28,6 +28,20 @@ export class GameMobileNavbar extends HTMLElement {
                 <style>${css}</style>
                 ${html}
             `;
+
+            const navButtons = this.shadowRoot.querySelectorAll('[data-section]');
+            navButtons.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const section = btn.getAttribute('data-section');
+
+                    this.dispatchEvent(new CustomEvent('game-mobile-nav-click', {
+                        detail: { section: section },
+                        bubbles: true,
+                        composed: true
+                    }));
+                });
+            })
+
         } catch (err) {
             console.error("Error while loading the component:", err)
         }

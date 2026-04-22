@@ -27,6 +27,7 @@
 #modal-body {
     position: relative;
     z-index: 1;
+    box-sizing: border-box;
 
     width: min(40rem, calc(100% - 1.875rem));
     border-radius: 0.425rem;
@@ -90,4 +91,8 @@
     display: block;
     margin-top: 0.25rem;
     color: var(--text-muted);
+}
+
+:host([no-close]) #close-modal-btn {
+    display: none !important;
 }

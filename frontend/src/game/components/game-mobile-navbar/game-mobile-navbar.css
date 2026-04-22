@@ -4,6 +4,8 @@
     align-items: center;
     justify-content: center;
 
+    flex: 1;
+
     background: transparent;
     border: none;
     cursor: pointer;
