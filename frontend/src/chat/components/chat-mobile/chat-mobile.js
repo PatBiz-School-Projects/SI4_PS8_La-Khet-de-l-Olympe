@@ -1,5 +1,5 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
-import {apiHost} from "/utils/platform.js"
+import {API_HOST} from "/env.js"
 
 export class ChatMobileComponent {
     constructor(chatBoxElement, userId) {
@@ -14,7 +14,7 @@ export class ChatMobileComponent {
             return;
         }
 
-        this.chatSocket = io(`${apiHost}/global-chat`, {
+        this.chatSocket = io(`${API_HOST}/global-chat`, {
             path: "/api/chats/socket.io",
         });
 
