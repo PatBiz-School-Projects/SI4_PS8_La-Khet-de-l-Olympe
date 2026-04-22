@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Khet de l'Olympe | Recherche</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cinzel:wght@400;600&display=swap" rel="stylesheet" />
+    <link href="../home-page/home-page.css" rel="stylesheet" />
+    <link href="./mobile-search-page.css" rel="stylesheet" />
+    <script type="module" src="./mobile-search-page.js" defer></script>
+</head>
+<body>
+<main class="mobile-search-main">
+    <header class="mobile-search-header">
+        <button id="mobile-search-back-btn" class="menu-item" type="button">← Retour</button>
+    </header>
+
+    <section class="search-panel search-panel--mobile visible" aria-label="Recherche de joueurs">
+        <label class="search-input-wrap" for="mobile-search-users-input">
+            <span>Recherche</span>
+            <input id="mobile-search-users-input" type="text" placeholder="Ex: Achille, Athena..." autocomplete="off" />
+        </label>
+        <p id="mobile-search-status" class="search-status" aria-live="polite"></p>
+        <div id="mobile-search-results" class="search-results"></div>
+    </section>
+</main>
+</body>
+</html>
