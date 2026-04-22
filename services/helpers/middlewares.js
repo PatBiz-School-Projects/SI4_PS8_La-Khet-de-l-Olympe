@@ -168,7 +168,7 @@ exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb)
             "Path=/",
             "HttpOnly",
             IS_PROD ? "Secure" : "",
-            "SameSite=Strict"
+            "SameSite=None"
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
