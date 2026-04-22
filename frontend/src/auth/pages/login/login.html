@@ -8,32 +8,25 @@
 
     <script src="/media.js"></script>
 
-    <link href="./auth.css" rel="stylesheet" />
-    <script type = "module" src="./auth.js" defer></script>
+    <link href="./login.css" rel="stylesheet" />
+    <script type = "module" src="./login.js" defer></script>
 </head>
 
 <body>
-<main class="auth-card">
-    <h1>Connexion</h1>
-    <p>Accédez à votre compte</p>
+    <main class="auth-card" hidden>
+        <h1>Connexion</h1>
+        <p>Accédez à votre compte</p>
 
-    <form data-endpoint="/api/auth/login" data-button="Se connecter">
-        <label for="username">Nom d'utilisateur</label>
-        <input id="username" name="username" type="username" placeholder="AbcdLeBG" required />
+        <login-form></login-form>
 
-        <label for="password">Mot de passe</label>
-        <input id="password" name="password" type="password" placeholder="********" required />
+        <p class="helper">
+            Pas encore de compte ? <a href="/auth/pages/signup/signup.html">Créer un compte</a>
+        </p>
+        <p class="helper">
+            Mot de passe oublié ? <a href="/auth/pages/forgot-password/forgot-password.html">Réinitialiser</a>
+        </p>
+    </main>
 
-        <button type="submit">Se connecter</button>
-        <p class="status" data-status></p>
-    </form>
-
-    <p class="helper">
-        Pas encore de compte ? <a href="../signup/signup.html">Créer un compte</a>
-    </p>
-    <p class="helper">
-        Mot de passe oublié ? <a href="../forgot-password/forgot-password.html">Réinitialiser</a>
-    </p>
-</main>
+    <a id="cancel-btn" href="/home/pages/home-page/home-page.html">Annuler</a>
 </body>
 </html>
