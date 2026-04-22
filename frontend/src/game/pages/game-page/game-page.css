@@ -18,6 +18,8 @@
 
 
 html, body {
+    margin: 0;
+    padding: 0;
     overflow: hidden;
     background-color: var(--dark);
 }
@@ -189,22 +191,16 @@ chat-box {
 @media (max-width: 768px) {
 
     .game-container {
-        padding-left: 0;
-        padding-right: 0;
+        display: block;
+        width: 100%;
+        height: auto;
+        padding: 0;
         gap: 0;
     }
 
     game-board {
-        /* - Largeur : On divise par 10 (la largeur du plateau Khet) au lieu de 16
-           - Hauteur : On soustrait ~160px pour laisser la place à ta barre mobile et ta navbar
-        */
-        --slot-size: min(
-            calc(98vw / 10),
-            calc((100vh - var(--header-h) - 160px) / 8)
-        );
 
-        margin: 0 auto;
-        transform: translateY(-20px); /* Remonte un peu le plateau pour l'éloigner de la zone de rotation */
+        margin: 0;
     }
 
     #header-btns,
@@ -215,9 +211,9 @@ chat-box {
     .mobile-action-bar {
         display: flex;
         justify-content: space-between;
-        align-items: flex-end;
+        align-items: center;
         position: fixed;
-        bottom: 80px;
+        bottom: 20vh;
         left: 0;
         width: 100vw;
         padding: 0 16px 12px 16px;
@@ -233,8 +229,11 @@ chat-box {
 
 
     .mobile-rotation-spacer {
-        width: 80px;
-        height: 80px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 36vw;
+        height: 12vw;
     }
 
 
@@ -243,8 +242,10 @@ chat-box {
         top: auto !important;
         left: 50% !important;
         right: auto !important;
-        bottom: 80px !important;
+        bottom: 22% !important;
         transform: translateX(-50%);
         z-index: 60;
+        width: 36vw !important;
+        height: 12vw!important;
     }
 }

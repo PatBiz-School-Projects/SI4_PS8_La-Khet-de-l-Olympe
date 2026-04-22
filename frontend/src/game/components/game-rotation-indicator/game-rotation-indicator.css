@@ -42,10 +42,6 @@
 }
 
 @media (max-width: 768px) {
-    #rotate-indicator {
-        flex-direction: column;
-
-    }
 
     #piece-canvas {
         border-left: none;

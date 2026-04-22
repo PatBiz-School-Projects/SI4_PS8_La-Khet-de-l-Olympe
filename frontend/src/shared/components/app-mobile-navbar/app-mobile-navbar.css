@@ -14,7 +14,7 @@ app-mobile-navbar {
     position: fixed;
     bottom: 0;
     left: 0;
-    width: 100%;
+    width:100%;
     background: linear-gradient(175deg, rgba(18, 14, 12, 0.96), rgba(10, 10, 15, 0.98));
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
@@ -22,7 +22,7 @@ app-mobile-navbar {
     box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.6);
 
     display: flex;
-    justify-content: space-around;
+    justify-content: space-evenly;
     padding: 12px 0 18px 0;
     z-index: 1000;
 }
@@ -41,6 +41,7 @@ app-mobile-navbar {
     font-weight: 600;
     letter-spacing: 0.08em;
     text-transform: uppercase;
+    flex: 1;
 
     /* Animations fluides */
     transition: all 0.3s ease;
