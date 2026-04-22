@@ -1,0 +1,16 @@
+.mobile-search-main {
+    padding: 16px;
+}
+
+.mobile-search-header {
+    margin-bottom: 12px;
+}
+
+.search-panel--mobile {
+    display: grid;
+}
+
+.search-result-item{
+    display: flex;
+    flex-direction: row;
+}

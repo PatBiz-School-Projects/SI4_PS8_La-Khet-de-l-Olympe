@@ -28,6 +28,21 @@ export class HomeMobileNavbar extends HTMLElement {
                 <style>${css}</style>
                 ${html}
             `;
+            const navButtons = this.shadowRoot.querySelectorAll(".nav-item[data-section]");
+
+            navButtons.forEach((button) => {
+                button.addEventListener("click", () => {
+                    const { section } = button.dataset;
+
+                    navButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+
+                    this.dispatchEvent(new CustomEvent("mobile-nav-select", {
+                        detail: { section },
+                        bubbles: true,
+                        composed: true,
+                    }));
+                });
+            });
         } catch (err) {
             console.error("Error while loading the component:", err)
         }

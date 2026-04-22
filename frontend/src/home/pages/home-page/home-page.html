@@ -17,7 +17,6 @@
     <button id="login-btn" class="auth-btn" type="button">Connexion</button>
     <button id="signup-btn" class="auth-btn" type="button">Inscription</button>
 </nav>
-
 <div class="app-shell">
     <!-- Sidebar fixe inspirée d'une navigation de plateforme de jeu -->
     <aside class="sidebar" aria-label="Navigation principale">
@@ -60,6 +59,7 @@
             </section>
         </nav>
 
+
         <div class="sidebar__footer">
             <button id="logout-btn" class="menu-item menu-item--danger" type="button" style="display: none;">
                 <span class="menu-item__icon" aria-hidden="true">↩</span>
@@ -81,6 +81,12 @@
 
     <!-- Zone centrale immersive -->
     <main class="home-main">
+        <header id="mobile-header" class="mobile-header" hidden>
+            <button id="mobile-profile-btn" class="mobile-header__profile" type="button" aria-label="Accéder au profil">
+                <img id="mobile-profile-avatar" loading="lazy" decoding="async" alt="Avatar utilisateur" />
+            </button>
+            <button id="mobile-search-btn" class="mobile-header__search" type="button" aria-label="Ouvrir la recherche">⌕</button>
+        </header>
         <section id="play-panel" class="scene">
             <div class="title-block">
                 <p class="title-eyebrow">Bienvenue dans</p>
@@ -106,7 +112,20 @@
                 </button>
             </div>
 
-            <chat-box></chat-box>
+            <chat-box id="desktop-chat-box"></chat-box>
+        </section>
+        <section id="mobile-home-panel" class="leaderboard-panel mobile-panel" hidden>
+            <div class="title-block title-block--mobile">
+                <p class="title-eyebrow">Bienvenue dans</p>
+                <h1 class="title-main">La Khet De L'Olympe</h1>
+                <div class="divider"></div>
+                <p class="title-sub">Que les dieux guident vos pièces</p>
+            </div>
+            <div class="play-buttons play-buttons--mobile">
+                <button id="mobile-start-solo-btn" class="btn-play" type="button"><div class="glow-bg"></div><span>Jouer solo</span></button>
+                <button id="mobile-join-multiplayer-btn" class="btn-play primary" type="button"><div class="glow-bg"></div><span>Multi</span></button>
+                <button id="mobile-start-local-multiplayer-btn" class="btn-play" type="button"><div class="glow-bg"></div><span>Multi local</span></button>
+            </div>
         </section>
         <section id="leaderboard-panel" class="leaderboard-panel" aria-labelledby="leaderboard-title" hidden>
             <div class="leaderboard-card">
@@ -115,6 +134,7 @@
                     <p>Archive des meilleurs guerriers</p>
                 </div>
                 <p id="leaderboard-status" class="leaderboard-status" aria-live="polite"></p>
+                <div id="leaderboard-self" class="leaderboard-self" hidden></div>
                 <ol id="leaderboard-list" class="leaderboard-list"></ol>
             </div>
         </section>
@@ -134,10 +154,11 @@
                 <ul id="friends-offline-list" class="leaderboard-list"></ul>
             </div>
         </section>
-
+        <section id="mobile-chat-panel" class="leaderboard-panel mobile-panel" hidden>
+            <chat-box id="mobile-chat-box" class="mobile-chat-box"></chat-box>
+        </section>
     </main>
 </div>
-
 <app-modal id="difficulty-modal">
     <div slot="modal-header">
         <h2 id="difficulty-title">Choisissez votre destin</h2>
@@ -161,7 +182,6 @@
         <!-- nothing -->
     </div>
 </app-modal>
-
 <div id="home-notifications" class="home-notifications" aria-live="polite" aria-atomic="false"></div>
 
 <footer>
