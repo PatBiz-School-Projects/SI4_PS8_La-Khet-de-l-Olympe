@@ -404,8 +404,6 @@ async function toggleChatBox(isLoggedIn) {
 }
 
 function applyResponsiveLayout() {
-    document.body.classList.toggle("is-mobile-layout", isMobileLayout);
-    // Remove the mobileHeader line here — let toggleMobileView handle it
     showMainPanel("play");
 }
 
