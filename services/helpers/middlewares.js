@@ -130,8 +130,8 @@ exports.authenticated = (handlerCb) => async (req, res) => {
             `userToken=${newAccessToken}`,
             "Path=/",
             "HttpOnly",
-            IS_PROD ? "Secure" : "",
-            "SameSite=None"
+            "SameSite=None",
+            "Secure",
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
@@ -167,8 +167,8 @@ exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb)
             `guestToken=${newGuestToken}`,
             "Path=/",
             "HttpOnly",
-            IS_PROD ? "Secure" : "",
-            "SameSite=None"
+            "SameSite=None",
+            "Secure",
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
