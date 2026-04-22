@@ -1,12 +1,13 @@
-import { authenticatedFetch } from "/utils/auth.js";
 import { getPictureUrl } from "/utils/picture.js";
+import {apiFetch} from "/utils/wrapFetch.js";
 
 export class SearchComponent {
-    constructor({ inputElement, statusElement, resultsElement, getCurrentUserId }) {
+    constructor({ inputElement, statusElement, resultsElement, getCurrentUserId,isAuthenticated }) {
         this.inputElement = inputElement;
         this.statusElement = statusElement;
         this.resultsElement = resultsElement;
         this.getCurrentUserId = getCurrentUserId;
+        this.isAuthenticated = isAuthenticated;
     }
 
     setStatus(message, isError = false) {
@@ -17,7 +18,7 @@ export class SearchComponent {
     async sendFriendRequest(targetUserId, button) {
         button.disabled = true;
 
-        const response = await authenticatedFetch("/api/users/friends/request", {
+        const response = await apiFetch("/api/users/friends/request", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ targetUserId }),
@@ -67,23 +68,24 @@ export class SearchComponent {
 
             const actions = document.createElement("div");
             actions.className = "search-result-item__actions";
+            if(this.isAuthenticated) {
+                const addFriendButton = document.createElement("button");
+                addFriendButton.type = "button";
+                addFriendButton.className = "search-action-btn search-action-btn--icon";
+                addFriendButton.setAttribute("aria-label", "Ajouter en ami");
+                addFriendButton.title = "Ajouter en ami";
 
-            const addFriendButton = document.createElement("button");
-            addFriendButton.type = "button";
-            addFriendButton.className = "search-action-btn search-action-btn--icon";
-            addFriendButton.setAttribute("aria-label", "Ajouter en ami");
-            addFriendButton.title = "Ajouter en ami";
+                const addFriendIcon = document.createElement("img");
+                addFriendIcon.src = "/assets/add-friend.svg";
+                addFriendIcon.alt = "";
+                addFriendIcon.className = "search-action-btn__icon";
+                addFriendIcon.setAttribute("aria-hidden", "true");
 
-            const addFriendIcon = document.createElement("img");
-            addFriendIcon.src = "/assets/add-friend.svg";
-            addFriendIcon.alt = "";
-            addFriendIcon.className = "search-action-btn__icon";
-            addFriendIcon.setAttribute("aria-hidden", "true");
+                addFriendButton.append(addFriendIcon);
+                addFriendButton.onclick = async () => this.sendFriendRequest(user.userId, addFriendButton);
 
-            addFriendButton.append(addFriendIcon);
-            addFriendButton.onclick = async () => this.sendFriendRequest(user.userId, addFriendButton);
-
-            actions.append(addFriendButton);
+                actions.append(addFriendButton);
+            }
             item.append(avatar, name, actions);
             this.resultsElement.appendChild(item);
         });
@@ -100,7 +102,7 @@ export class SearchComponent {
 
         this.setStatus("Recherche en cours...");
 
-        const response = await authenticatedFetch(`/api/users?query=${encodeURIComponent(query)}`, {
+        const response = await apiFetch(`/api/users?query=${encodeURIComponent(query)}`, {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         });
@@ -127,13 +129,6 @@ export class SearchComponent {
         this.inputElement.addEventListener("input", async (event) => {
             await this.runUserSearch(event.target.value);
         });
-    }
-
-    setEnabled(enabled) {
-        this.inputElement.disabled = !enabled;
-        if (!enabled) {
-            this.setStatus("Connectez-vous pour rechercher des joueurs.");
-        }
     }
 
     redirectToPublicProfile(targetUserId) {

@@ -17,11 +17,6 @@ backButton.onclick = () => {
 
 onload = async () => {
     const token = await ensureValidAccessToken();
-    if (!token) {
-        clearAuthTokens();
-        window.location.href = "/auth/pages/login/login.html";
-        return;
-    }
 
     const payload = decodeJwtPayload(token);
     window.__mobileSearchUserId = payload?.sub;

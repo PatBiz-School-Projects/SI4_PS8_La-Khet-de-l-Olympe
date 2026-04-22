@@ -89,6 +89,46 @@ body::before {
     box-shadow: 0 0 14px rgba(201,168,76,.25);
 }
 
+footer {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 14px;
+    z-index: 110;
+    pointer-events: none;
+}
+
+home-mobile-navbar {
+    pointer-events: auto;
+}
+
+.footer-login-btn {
+    pointer-events: auto;
+    width: min(540px, calc(100vw - 36px));
+    min-height: 56px;
+    border-radius: 16px;
+    border: 1px solid rgba(212, 177, 106, 0.6);
+    background: linear-gradient(130deg, rgba(212, 177, 106, 0.34), rgba(131, 96, 58, 0.28));
+    color: #fff4d1;
+    font-family: "Cinzel", serif;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.footer-login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
+}
+
 
 /* Sidebar */
 .sidebar {
@@ -886,7 +926,7 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
 }
 
 .mobile .home-main {
-    padding: 70px 16px 108px;
+    padding: 70px 16px 126px;
     gap: 16px;
 }
 
@@ -1085,7 +1125,7 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
 
 
 .mobile {
-    home-mobile-navbar {
+    home-mobile-navbar:not([hidden]) {
         display: block !important;
     }
 }
