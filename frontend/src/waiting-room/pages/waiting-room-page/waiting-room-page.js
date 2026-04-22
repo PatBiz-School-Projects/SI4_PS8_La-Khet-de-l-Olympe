@@ -1,11 +1,14 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
-import { apiFetch} from "/utils/wrapFetch.js";
-import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
-const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "https://khet-olympe.ps8.pns.academy";
+
+import { apiFetch } from "/utils/wrapFetch.js";
+
+import { API_HOST } from "/env.js";
+
+
 const GAME_ID = localStorage.getItem("gameId");
 
 
-const socket = io(apiHost,{
+const socket = io(API_HOST,{
     path: "/api/games/socket.io",
     query: {
         gameId: GAME_ID,

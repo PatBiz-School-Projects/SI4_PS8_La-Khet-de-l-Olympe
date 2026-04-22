@@ -1,13 +1,16 @@
-import {Capacitor} from 'https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm';
-import {getCookie} from '/utils/cookie.js';
-const ACCESS_TOKEN_COOKIE = 'userToken';
-const REFRESH_TOKEN_COOKIE = 'refreshToken';
-const apiHost = Capacitor.getPlatform() === "web" ? window.location.origin : "https://khet-olympe.ps8.pns.academy";
+import { getCookie } from "/utils/cookie.js";
+
+import { API_HOST, IS_MOBILE_WEBVIEW } from "/env.js";
+
+
+const ACCESS_TOKEN_COOKIE = "userToken";
+const REFRESH_TOKEN_COOKIE = "refreshToken";
+
 
 export async function apiFetch(url, options = {}) {
     const headers = new Headers(options.headers || {});
 
-    if (Capacitor.getPlatform()==='android' && !headers.has('Authorization')) {
+    if (IS_MOBILE_WEBVIEW && !headers.has('Authorization')) {
         const accessToken = getCookie(ACCESS_TOKEN_COOKIE);
         const refreshToken = getCookie(REFRESH_TOKEN_COOKIE);
         console.log("Token envoyé",accessToken+refreshToken);
@@ -17,10 +20,9 @@ export async function apiFetch(url, options = {}) {
         }
     }
 
-    return await fetch(apiHost + url, {
+    return await fetch(API_HOST + url, {
         ...options,
         credentials: options.credentials ?? 'include',
         headers,
     });
 }
-

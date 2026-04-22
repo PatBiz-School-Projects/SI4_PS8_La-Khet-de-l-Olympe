@@ -1,8 +1,11 @@
-import {apiFetch} from '/utils/wrapFetch.js'
+import { apiFetch } from '/utils/wrapFetch.js'
+
+
 const form = document.getElementById('forgot-form');
 const statusEl = document.querySelector('[data-status]');
 const loadQuestionButton = document.getElementById('load-question');
 const questionBlock = document.getElementById('question-block');
+
 
 function setStatus(message, type) {
     statusEl.textContent = message;

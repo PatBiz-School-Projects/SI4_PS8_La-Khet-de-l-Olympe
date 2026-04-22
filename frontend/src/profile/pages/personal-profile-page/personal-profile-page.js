@@ -1,13 +1,14 @@
-import { authenticatedFetch, ensureValidAccessToken,getUserIdFromToken } from '/utils/auth.js';
-import { setCookie} from "/utils/cookie.js";
+import { authenticatedFetch, ensureValidAccessToken, getUserIdFromToken } from "/utils/auth.js";
+import { setCookie } from "/utils/cookie.js";
 import {
     sendChallenge,
     listIncomingChallenges,
     acceptChallenge,
     declineChallenge,
     createChallengeSocket,
-} from '/utils/challenge.js';
-import {getPictureUrl,getGlobalPicturePath} from "/utils/picture.js";
+} from "/utils/challenge.js";
+import { getPictureUrl, getGlobalPicturePath } from "/utils/picture.js";
+
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');

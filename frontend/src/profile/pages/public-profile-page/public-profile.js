@@ -1,12 +1,14 @@
-import { authenticatedFetch, ensureValidAccessToken } from '/utils/auth.js';
-import {getPictureUrl} from '/utils/picture.js';
-import {apiFetch} from "/utils/wrapFetch.js";
+import { authenticatedFetch, ensureValidAccessToken } from "/utils/auth.js";
+import { getPictureUrl } from "/utils/picture.js";
+import { apiFetch } from "/utils/wrapFetch.js";
+
 
 const usernameEl = document.getElementById('profile-username');
 const eloEl = document.getElementById('profile-elo');
 const pictureEl = document.getElementById('profile-picture');
 const statusEl = document.getElementById('profile-status');
 const addFriendButton = document.getElementById('add-friend-button');
+
 
 function setStatus(message, isError = false) {
     statusEl.textContent = message;

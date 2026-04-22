@@ -1,7 +1,11 @@
 import { setAuthTokens } from '/utils/auth.js';
+import { apiFetch } from "/utils/wrapFetch.js";
+
+
 const form = document.querySelector('form');
 const statusEl = document.querySelector('[data-status]');
-import { apiFetch} from "/utils/wrapFetch.js";
+
+
 function setStatus(message, type) {
     statusEl.textContent = message;
     statusEl.classList.remove('ok', 'error');
