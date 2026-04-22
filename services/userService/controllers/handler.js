@@ -225,12 +225,6 @@ exports.getAchievementsCatalogue = async (req, res) => {
 
 exports.findUsers =  async (req, res) => {
     try{
-        const token = extractToken(req, null);
-
-        if (!token) {
-            sendJson(res, 401, { ok: false, error: "MISSING_TOKEN" });
-            return;
-        }
         const {query} = req.queryParams;
         const users = await usersRepository.findUserByQuery(query,5);
         const response = users.map((user) => ({
