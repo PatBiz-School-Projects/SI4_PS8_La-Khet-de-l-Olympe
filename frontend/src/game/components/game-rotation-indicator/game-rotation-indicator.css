@@ -40,3 +40,17 @@
     border-right: 1px solid rgba(122, 96, 40, 0.3);
 
 }
+
+@media (max-width: 768px) {
+    #rotate-indicator {
+        flex-direction: column;
+
+    }
+
+    #piece-canvas {
+        border-left: none;
+        border-right: none;
+        border-top: 1px solid rgba(122, 96, 40, 0.3);
+        border-bottom: 1px solid rgba(122, 96, 40, 0.3);
+    }
+}
