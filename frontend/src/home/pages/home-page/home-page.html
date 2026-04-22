@@ -81,6 +81,12 @@
 
     <!-- Zone centrale immersive -->
     <main class="home-main">
+        <header id="mobile-header" class="mobile-header" hidden>
+            <button id="mobile-profile-btn" class="mobile-header__profile" type="button" aria-label="Accéder au profil">
+                <img id="mobile-profile-avatar" loading="lazy" decoding="async" alt="Avatar utilisateur" />
+            </button>
+            <button id="mobile-search-btn" class="mobile-header__search" type="button" aria-label="Ouvrir la recherche">⌕</button>
+        </header>
         <section id="play-panel" class="scene">
             <div class="title-block">
                 <p class="title-eyebrow">Bienvenue dans</p>
@@ -106,7 +112,14 @@
                 </button>
             </div>
 
-            <chat-box></chat-box>
+            <chat-box id="desktop-chat-box"></chat-box>
+        </section>
+        <section id="mobile-home-panel" class="leaderboard-panel mobile-panel" hidden>
+            <div class="play-buttons play-buttons--mobile">
+                <button id="mobile-start-solo-btn" class="btn-play" type="button"><div class="glow-bg"></div><span>Jouer solo</span></button>
+                <button id="mobile-start-local-multiplayer-btn" class="btn-play" type="button"><div class="glow-bg"></div><span>Multi local</span></button>
+                <button id="mobile-join-multiplayer-btn" class="btn-play primary" type="button"><div class="glow-bg"></div><span>Multi</span></button>
+            </div>
         </section>
         <section id="leaderboard-panel" class="leaderboard-panel" aria-labelledby="leaderboard-title" hidden>
             <div class="leaderboard-card">
@@ -134,7 +147,9 @@
                 <ul id="friends-offline-list" class="leaderboard-list"></ul>
             </div>
         </section>
-
+        <section id="mobile-chat-panel" class="leaderboard-panel mobile-panel" hidden>
+            <chat-box id="mobile-chat-box" class="mobile-chat-box"></chat-box>
+        </section>
     </main>
 </div>
 

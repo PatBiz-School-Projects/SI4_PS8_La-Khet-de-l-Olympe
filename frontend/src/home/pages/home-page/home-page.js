@@ -1,7 +1,7 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
 import { AppModal } from "/shared/components/index.js";
-import { HomeMobileNavbar } from "/home/components/index.js";
+import { HomeMobileNavbar,FriendsComponent,LeaderboardComponent,SearchComponent } from "/home/components/index.js";
 import { ChatBox } from "/chat/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
@@ -18,7 +18,7 @@ import {
 
 import { apiFetch } from "/utils/wrapFetch.js";
 
-import { API_HOST } from "/env.js";
+import { API_HOST,IS_MOBILE_WEBVIEW } from "/env.js";
 
 
 /**
@@ -34,276 +34,67 @@ const sidebarAvatar = document.getElementById("sidebar-avatar");
 const searchMenuItem = document.querySelector('.menu-item[data-section="search"]');
 const searchPanel = document.getElementById("search-panel");
 const searchInput = document.getElementById("search-users-input");
-const searchStatus = document.getElementById("search-status");
-const searchResults = document.getElementById("search-results");
 const playPanel = document.getElementById("play-panel");
+const mobileHomePanel = document.getElementById("mobile-home-panel");
 const leaderboardPanel = document.getElementById("leaderboard-panel");
-const leaderboardStatus = document.getElementById("leaderboard-status");
-const leaderboardList = document.getElementById("leaderboard-list");
 const friendsMenuSelector = document.querySelector('.menu-item[data-section="friends"]')
 const friendsPanel = document.getElementById("friends-panel");
-const friendsStatus = document.getElementById("friends-status");
-const friendsOnlineList = document.getElementById("friends-online-list");
-const friendsOfflineList = document.getElementById("friends-offline-list");
-const friendsOnlineEmpty = document.getElementById("friends-online-empty");
-const friendsOfflineEmpty = document.getElementById("friends-offline-empty");
+const mobileChatPanel = document.getElementById("mobile-chat-panel");
+const desktopChatBox = document.getElementById("desktop-chat-box");
+const mobileChatBox = document.getElementById("mobile-chat-box");
+const mobileHeader = document.getElementById("mobile-header");
+const mobileProfileAvatar = document.getElementById("mobile-profile-avatar");
+const mobileProfileBtn = document.getElementById("mobile-profile-btn");
+const mobileSearchBtn = document.getElementById("mobile-search-btn");
 const homeNotifications = document.getElementById("home-notifications");
 /** @type {ChatBox} */
-const chatBox = document.querySelector("chat-box");
+const chatBox = desktopChatBox;
 
 let USER_ID;
 let searchDebounceId;
+const isMobileLayout = !IS_MOBILE_WEBVIEW;
+let mobileChatComponent = null;
+
+const searchComponent = new SearchComponent({
+    inputElement: document.getElementById("search-users-input"),
+    statusElement: document.getElementById("search-status"),
+    resultsElement: document.getElementById("search-results"),
+    getCurrentUserId: () => USER_ID,
+});
+
+const leaderboardComponent = new LeaderboardComponent({
+    statusElement: document.getElementById("leaderboard-status"),
+    listElement: document.getElementById("leaderboard-list"),
+});
+
+const friendsComponent = new FriendsComponent({
+    statusElement: document.getElementById("friends-status"),
+    onlineListElement: document.getElementById("friends-online-list"),
+    offlineListElement: document.getElementById("friends-offline-list"),
+    onlineEmptyElement: document.getElementById("friends-online-empty"),
+    offlineEmptyElement: document.getElementById("friends-offline-empty"),
+});
 
 /**
  * Sidebar functions
  */
 function showMainPanel(section) {
+    if (isMobileLayout) {
+        playPanel.hidden = true;
+        mobileHomePanel.hidden = section !== "play";
+        leaderboardPanel.hidden = section !== "leaderboard";
+        friendsPanel.hidden = section !== "friends";
+        mobileChatPanel.hidden = section !== "chat";
+        return;
+    }
+
     const showLeaderboard = section === "leaderboard";
     const showFriends = section === "friends";
     playPanel.hidden = showLeaderboard || showFriends;
     leaderboardPanel.hidden = !showLeaderboard;
     friendsPanel.hidden = !showFriends;
-}
-function setSearchStatus(message, isError = false) {
-    searchStatus.textContent = message;
-    searchStatus.style.color = isError ? "#ffb3b3" : "";
-}
-function setLeaderboardStatus(message, isError = false) {
-    leaderboardStatus.textContent = message;
-    leaderboardStatus.style.color = isError ? "#ffb3b3" : "";
-}
-function setFriendsStatus(message, isError = false) {
-    friendsStatus.textContent = message;
-    friendsStatus.style.color = isError ? "#ffb3b3" : "";
-}
-function renderLeaderboard(users) {
-    leaderboardList.innerHTML = "";
-    users.forEach((user, index) => {
-        const item = document.createElement("li");
-        item.className = "leaderboard-item";
-
-        const rank = document.createElement("span");
-        rank.className = "leaderboard-item__rank";
-        rank.textContent = `#${index + 1}`;
-
-        const avatar = document.createElement("img");
-        avatar.className = "leaderboard-item__avatar";
-        avatar.src = getPictureUrl(user.profilePicture);
-        avatar.alt = `Avatar de ${user.username}`;
-
-        const username = document.createElement("span");
-        username.className = "leaderboard-item__username";
-        username.textContent = user.username;
-
-        const elo = document.createElement("span");
-        elo.className = "leaderboard-item__elo";
-        elo.textContent = `${user.elo} ELO`;
-
-        item.append(rank, avatar, username, elo);
-        leaderboardList.appendChild(item);
-    });
-}
-
-async function loadLeaderboard(limit = 10) {
-    leaderboardList.innerHTML = "";
-
-    try {
-        const response = await apiFetch(`/api/users/leaderboard?limit=${encodeURIComponent(limit)}`, {
-            method: "GET",
-            headers: { "Content-Type": "application/json" },
-        });
-        const payload = await response.json();
-
-        if (!response.ok) {
-            setLeaderboardStatus(payload.error || "Impossible de charger le leaderboard.", true);
-            return;
-        }
-        renderLeaderboard(payload);
-    } catch (error) {
-        console.error("Unable to load leaderboard", error);
-        setLeaderboardStatus("Erreur réseau pendant le chargement du leaderboard.", true);
-    }
-}
-
-async function sendFriendRequest(targetUserId, button) {
-    button.disabled = true;
-
-    const response = await authenticatedFetch("/api/users/friends/request", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ targetUserId }),
-    });
-
-    if (!response) {
-        setSearchStatus("Session expirée. Veuillez vous reconnecter.", true);
-        button.disabled = false;
-        return;
-    }
-
-    const payload = await response.json();
-    if (!response.ok) {
-        setSearchStatus(payload.error || "Impossible d'envoyer la demande d'ami.", true);
-        button.disabled = false;
-        return;
-    }
-
-    button.textContent = "Demande envoyée";
-    setSearchStatus("Demande d'ami envoyée.", false);
-}
-
-async function challengeUser(targetUserId) {
-    const result = await sendChallenge(targetUserId);
-    if (!result.ok) {
-        setSearchStatus(result.payload?.error || "Impossible d'envoyer le défi.", true);
-        return;
-    }
-
-    setSearchStatus("Défi envoyé avec succès.", false);
-}
-
-function renderFriendsList(targetElement, friends, canChallenge) {
-    targetElement.innerHTML = "";
-
-    friends.forEach((friend) => {
-        const item = document.createElement("li");
-        item.className = "leaderboard-item friend-item";
-
-        const avatar = document.createElement("img");
-        avatar.className = "leaderboard-item__avatar";
-        avatar.src = getPictureUrl(friend.profilePicture);
-        avatar.alt = `Avatar de ${friend.username}`;
-
-        const username = document.createElement("span");
-        username.className = "leaderboard-item__username";
-        username.textContent = friend.username;
-
-        const elo = document.createElement("span");
-        elo.className = "leaderboard-item__elo";
-        elo.textContent = `${friend.elo} ELO`;
-
-        item.append(avatar, username, elo);
-
-        if (canChallenge) {
-            const challengeButton = document.createElement("button");
-            challengeButton.type = "button";
-            challengeButton.className = "search-action-btn friend-challenge-btn";
-            challengeButton.textContent = "Défier";
-            challengeButton.onclick = async () => {
-                challengeButton.disabled = true;
-                await challengeUser(friend.id);
-                challengeButton.disabled = false;
-            };
-            item.append(challengeButton);
-        }
-
-        targetElement.appendChild(item);
-    });
-}
-
-async function loadFriendsPanel() {
-    friendsOnlineList.innerHTML = "";
-    friendsOfflineList.innerHTML = "";
-    friendsOnlineEmpty.hidden = true;
-    friendsOfflineEmpty.hidden = true;
-
-    const friendsResponse = await authenticatedFetch("/api/users/friends", {
-        method: "GET",
-        headers: {"Content-Type": "application/json"},
-    });
-
-    if (!friendsResponse) {
-        setFriendsStatus("Session expirée. Veuillez vous reconnecter.", true);
-        return;
-    }
-    const connectedResponse = await apiFetch("/api/users/connected", {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-    });
-
-    const friendsPayload = await friendsResponse.json();
-    const connectedPayload = connectedResponse.ok
-        ? await connectedResponse.json()
-        : { users: [] };
-
-    if (!friendsResponse.ok) {
-        setFriendsStatus(friendsPayload.error || "Impossible de charger vos amis.", true);
-        return;
-    }
-
-    const friends = friendsPayload.friends || [];
-    const connectedIds = new Set((connectedPayload.users || []).map((user) => user.id));
-
-    const onlineFriends = friends.filter((friend) => connectedIds.has(friend.id));
-    const offlineFriends = friends.filter((friend) => !connectedIds.has(friend.id));
-
-    renderFriendsList(friendsOnlineList, onlineFriends, true);
-    renderFriendsList(friendsOfflineList, offlineFriends, false);
-
-    friendsOnlineEmpty.hidden = onlineFriends.length !== 0;
-    friendsOfflineEmpty.hidden = offlineFriends.length !== 0;
-}
-function renderSearchResults(users) {
-    searchResults.innerHTML = "";
-
-    users.forEach((user) => {
-        const item = document.createElement("article");
-        item.className = "search-result-item";
-
-        const avatar = document.createElement("img");
-        avatar.className = "search-result-item__avatar";
-        avatar.src = getPictureUrl(user.profilePicture);
-        avatar.alt = `Avatar de ${user.username}`;
-
-        const name = document.createElement("p");
-        name.className = "search-result-item__name";
-        name.textContent = user.username;
-
-        const actions = document.createElement("div");
-        actions.className = "search-result-item__actions";
-
-        const addFriendButton = document.createElement("button");
-        addFriendButton.type = "button";
-        addFriendButton.className = "search-action-btn";
-        addFriendButton.textContent = "Ajouter en ami";
-        addFriendButton.onclick = async () => sendFriendRequest(user.userId, addFriendButton);
-
-        actions.append(addFriendButton);
-        item.append(avatar, name, actions);
-        searchResults.appendChild(item);
-    });
-}
-
-async function runUserSearch(rawQuery) {
-    const query = rawQuery.trim();
-
-    if (query.length < 2) {
-        searchResults.innerHTML = "";
-        setSearchStatus("Tapez au moins 2 caractères.");
-        return;
-    }
-
-    setSearchStatus("Recherche en cours...");
-
-    const response = await authenticatedFetch(`/api/users?query=${encodeURIComponent(query)}`, {
-        method: "GET",
-        headers: { "Content-Type": "application/json" },
-    });
-
-    if (!response) {
-        setSearchStatus("Session expirée. Veuillez vous reconnecter.", true);
-        return;
-    }
-
-    const payload = await response.json();
-    const users = payload.filter((user) => user.userId!==USER_ID);
-    if (!users.length) {
-        searchResults.innerHTML = "";
-        setSearchStatus("Aucun joueur trouvé.");
-        return;
-    }
-
-    setSearchStatus(`${users.length} joueur(s) trouvé(s).`);
-    renderSearchResults(users);
+    mobileHomePanel.hidden = true;
+    mobileChatPanel.hidden = true;
 }
 
 function setActiveMenu(section) {
@@ -327,15 +118,19 @@ document.addEventListener("click", async (event) => {
             showMainPanel(section);
 
             if (section === "leaderboard") {
-                await loadLeaderboard(10);
+                await leaderboardComponent.load(10);
                 return;
             }
             if (section === "friends") {
-                await loadFriendsPanel();
+                await friendsComponent.load();
                 console.log("friends")
                 return;
             }
             if (section === "search") {
+                if (isMobileLayout) {
+                    window.location.href = "/home/pages/mobile-search-page/mobile-search-page.html";
+                    return;
+                }
                 searchPanel.classList.toggle('visible');
                 searchPanel.scrollIntoView({behavior: "smooth", block: "start"});
                 searchInput.focus();
@@ -356,18 +151,21 @@ clickableCards.forEach(card => {
     })
 });
 
-searchInput.addEventListener("input", async (event) => {
-    clearTimeout(searchDebounceId);
-    await runUserSearch(event.target.value);
-});
-
 searchMenuItem.addEventListener("click", () => {
-    setSearchStatus("Tapez au moins 2 caractères.");
+    searchComponent.setStatus("Tapez au moins 2 caractères.");
 });
 
 const profileBtn = document.getElementById("profile-btn");
 profileBtn.onclick = async () => {
     window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+};
+
+mobileProfileBtn.onclick = async () => {
+    window.location.href = "/profile/pages/personal-profile-page/personal-profile-page.html";
+};
+
+mobileSearchBtn.onclick = async () => {
+    window.location.href = "/home/pages/mobile-search-page/mobile-search-page.html";
 };
 
 profileChipBtn.onclick = async () => {
@@ -377,6 +175,8 @@ profileChipBtn.onclick = async () => {
 function applySidebarIdentity(username, profilePicture) {
     sidebarUsername.textContent = username;
     sidebarAvatar.src = profilePicture;
+    mobileProfileAvatar.src = profilePicture;
+    mobileProfileAvatar.alt = `Avatar de ${username}`;
 }
 async function loadSidebarProfile() {
     const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
@@ -519,11 +319,15 @@ startSoloGameBtn.onclick = () => {
     difficultyModal.show();
 };
 
+document.getElementById("mobile-start-solo-btn").onclick = () => difficultyModal.show();
+
 const startLocalMultiplayerBtn = document.getElementById("start-local-multiplayer-btn");
 startLocalMultiplayerBtn.onclick = async () => startLocalMultiplayerGame();
+document.getElementById("mobile-start-local-multiplayer-btn").onclick = async () => startLocalMultiplayerGame();
 
 const joinMultiplayerBtn = document.getElementById("join-multiplayer-btn");
 joinMultiplayerBtn.onclick = async () => joinMultiplayerGame();
+document.getElementById("mobile-join-multiplayer-btn").onclick = async () => joinMultiplayerGame();
 
 /**
  Authenticated view
@@ -540,12 +344,8 @@ async function toggleAuthenticatedView(isLoggedIn) {
     friendsMenuSelector.style.display = isLoggedIn ? "flex" : "none";
     statusDot.classList.toggle("status-dot--online", isLoggedIn);
     statusDot.classList.toggle("status-dot--offline", !isLoggedIn);
-    if (!isLoggedIn) {
-        searchInput.disabled = true;
-        setSearchStatus("Connectez-vous pour rechercher des joueurs.");
-    } else {
-        searchInput.disabled = false;
-    }
+    mobileHeader.hidden = !isMobileLayout || !isLoggedIn;
+    searchComponent.setEnabled(isLoggedIn);
 }
 
 /**
@@ -599,6 +399,25 @@ async function toggleChatBox(isLoggedIn) {
     } else {
         chatBox.remove();
     }
+}
+
+function applyResponsiveLayout() {
+    mobileHeader.hidden = !isMobileLayout || !USER_ID;
+    document.body.classList.toggle("is-mobile-layout", isMobileLayout);
+    showMainPanel("play");
+}
+
+async function toggleMobileChat(isLoggedIn) {
+    if (!isLoggedIn || !mobileChatBox) {
+        mobileChatComponent?.disconnect();
+        mobileChatComponent = null;
+        return;
+    }
+
+    if (!mobileChatComponent) {
+        mobileChatComponent = new ChatMobileComponent(mobileChatBox, USER_ID);
+    }
+    await mobileChatComponent.connect();
 }
 
 /**
@@ -755,13 +574,13 @@ async function refreshFriendRequestNotifications() {
                             body: JSON.stringify({requestUserId: request.requester?.id})
                         });
                         if (!response) {
-                            setStatus('Session expirée. Veuillez vous reconnecter.');
+                            friendsComponent.setStatus('Session expirée. Veuillez vous reconnecter.');
                             return;
                         }
                         const payload = await response.json();
 
                         if (!response.ok) {
-                            setStatus(payload.error || 'Impossible d’accepter cette demande.');
+                            friendsComponent.setStatus(payload.error || 'Impossible d’accepter cette demande.');
                         }
                     },
                 }
@@ -883,12 +702,16 @@ window.addEventListener("beforeunload", () => {
  onLoad function
  */
 onload = async () => {
+    applyResponsiveLayout();
+    window.addEventListener("resize", applyResponsiveLayout);
+    searchComponent.bindInput();
     showMainPanel("play");
     const token = await ensureValidAccessToken();
 
     if (!token) {
         await toggleAuthenticatedView(false);
         await toggleChatBox(false);
+        await toggleMobileChat(false);
         return;
     }
 
@@ -903,7 +726,8 @@ onload = async () => {
 
     await toggleAuthenticatedView(true);
     await toggleChatBox(true);
+    await toggleMobileChat(true);
     await initHomeNotifications();
     await loadSidebarProfile();
-    setSearchStatus("Tapez au moins 2 caractères.");
+    searchComponent.setStatus("Tapez au moins 2 caractères.");
 };
