@@ -45,6 +45,13 @@ export class SearchComponent {
 
         users.forEach((user) => {
             const item = document.createElement("article");
+            item.onclick = (event) => {
+                const targetElement = event.target instanceof Element ? event.target : null;
+                if (targetElement?.closest(".search-action-btn")) {
+                    return;
+                }
+                this.redirectToPublicProfile(user.userId);
+            };
             item.className = "search-result-item";
 
             const avatar = document.createElement("img");
@@ -116,5 +123,9 @@ export class SearchComponent {
         if (!enabled) {
             this.setStatus("Connectez-vous pour rechercher des joueurs.");
         }
+    }
+
+    redirectToPublicProfile(targetUserId) {
+        window.location.href = `/profile/pages/public-profile-page/public-profile.html?userId=${encodeURIComponent(targetUserId)}`;
     }
 }
