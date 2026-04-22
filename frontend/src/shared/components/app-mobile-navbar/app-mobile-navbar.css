@@ -24,6 +24,8 @@ app-mobile-navbar {
     border-top: 1px solid rgba(212, 177, 106, 0.22);
     box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.6);
 
+    display: flex;
+    justify-content: space-evenly;
     padding: 12px 0 18px 0;
     z-index: 1000;
 
