@@ -1,0 +1,83 @@
+:host {
+    display: contents;
+    --gold:       #c9a84c;
+    --dark:       #0a0a0f;
+    --text:       #e8dfc0;
+    --text-dim:   #8a7d5a;
+}
+
+[slot="modal-header"] h2 {
+    color: var(--gold);
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    text-align: center;
+    margin: 0;
+}
+
+[slot="modal-content"] {
+    display: flex;
+    flex-direction: column;
+    width: min(600px, calc(100vw - 3rem)); /* Plus large qu'un forfeit, mais sécurisé sur mobile */
+    box-sizing: border-box;
+    gap: 1.5rem;
+}
+
+/* La zone de texte qui peut scroller sur mobile */
+.scrollable-content {
+    max-height: 60vh; /* Ne dépasse jamais 60% de l'écran en hauteur */
+    overflow-y: auto;
+    padding-right: 1rem;
+    color: var(--text);
+    font-family: sans-serif; /* Ou la police de texte de ton jeu */
+    font-size: clamp(0.85rem, 3vw, 1rem);
+    line-height: 1.5;
+}
+
+/* Customisation de la barre de scroll pour l'esthétique */
+.scrollable-content::-webkit-scrollbar { width: 6px; }
+.scrollable-content::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+.scrollable-content::-webkit-scrollbar-thumb { background: var(--gold); border-radius: 4px; }
+
+h3 {
+    color: var(--gold);
+    border-bottom: 1px solid rgba(201, 168, 76, 0.3);
+    padding-bottom: 0.3rem;
+    margin-top: 1.5rem;
+}
+
+.intro { font-style: italic; color: var(--text-dim); text-align: center; }
+.pieces-list li { margin-bottom: 0.5rem; }
+.pieces-list strong { color: #f0d080; }
+
+.laser-warning {
+    background: rgba(201, 168, 76, 0.1);
+    border: 1px solid var(--gold);
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-top: 1.5rem;
+    font-weight: bold;
+    color: #ffb3b3;
+}
+
+#buttons {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+#close-btn {
+    border: 1px solid var(--gold);
+    background: #1a1208;
+    color: var(--text);
+    font-family: 'Cinzel', serif;
+    padding: 0.8rem 2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+#close-btn:hover {
+    color: var(--dark);
+    background: var(--gold);
+}

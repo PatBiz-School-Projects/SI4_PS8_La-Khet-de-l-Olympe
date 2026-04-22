@@ -503,6 +503,7 @@ async function loadHistory(token) {
 
             let resultClass = 'draw';
             let resultText = 'Égalité';
+            let nbMoves = game.movesCount>0?game.movesCount:0;
             if (game.result === 'WIN') { resultClass = 'win'; resultText = 'Victoire'; }
             if (game.result === 'LOSS') { resultClass = 'loss'; resultText = 'Défaite'; }
 
@@ -521,7 +522,7 @@ async function loadHistory(token) {
                 </div>
                 <div class="history-details">
                     <p class="history-result">${resultText}</p>
-                    <p class="history-meta">${game.movesCount} coups • ${dateStr}</p>
+                    <p class="history-meta">${nbMoves} coups • ${dateStr}</p>
                 </div>
             `;
 

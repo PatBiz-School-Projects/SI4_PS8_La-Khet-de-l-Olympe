@@ -7,3 +7,4 @@ export { GamePlayerInventory } from "./game-player-inventory/game-player-invento
 export { GameRotationIndicator } from "./game-rotation-indicator/game-rotation-indicator.js";
 export { GameTurnIndicator } from "./game-turn-indicator/game-turn-indicator.js";
 export {GameMobilePyramidCounter} from'./game-mobile-pyramid-counter/game-mobile-pyramid-counter.js'
+export {GameRulesModal} from'./game-rules-modal/game-rules-modal.js'

@@ -5,6 +5,7 @@ import {
     GameBoard,
     GameForfeitModal,
     GameOverModal,
+    GameRulesModal,
     GamePlayerInventory,
     GameRotationIndicator,
     GameTurnIndicator,
@@ -53,11 +54,18 @@ const player1MobileCounter = document.querySelector("#player1-mobile-counter");
 const player2MobileCounter = document.querySelector("#player2-mobile-counter");
 /** @type { GameForfeitModal } */
 const forfeitModal = document.querySelector("game-forfeit-modal");
+/** @type { GameRulesModal } */
+const rulesModal = document.querySelector("game-rules-modal");
 /** @type { GameOverModal } */
 const gameOverModal = document.querySelector("game-over-modal");
 /** @type { ChatBox } */
 const chatBox = document.querySelector("chat-box");
 const mobileNavbar = document.querySelector("game-mobile-navbar");
+const infoBtn = document.querySelector("#info-btn");
+
+if (infoBtn) {
+    infoBtn.onclick = () => rulesModal.show();
+}
 
 if (mobileNavbar) {
     mobileNavbar.addEventListener('game-mobile-nav-click', (event) => {
@@ -67,8 +75,8 @@ if (mobileNavbar) {
 
         if (section === 'quit') {
             forfeitModal.show();
-        } else if (section === 'info') {
-            alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`);
+        } else if (section === 'infos') {
+            rulesModal.show();
         } else if (section === 'chat') {
             console.log("Ouvrir le chat...");
         }
@@ -76,6 +84,8 @@ if (mobileNavbar) {
         stateMachine.on(clickHandler.computePageAction(event));
     });
 }
+
+
 
 
 //
@@ -570,22 +580,6 @@ onclick = (event) => {
     }
     stateMachine.on(clickHandler.computePageAction(event));
 };
-
-if (mobileNavbar) {
-    mobileNavbar.addEventListener('game-mobile-nav-click', (event) => {
-        if (isGameOver) return;
-
-        const section = event.detail.section;
-
-        if (section === 'quit') {
-            forfeitModal.show();
-        } else if (section === 'info') {
-            alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`);
-        } else if (section === 'chat') {
-            console.log("Ouvrir le chat...");
-        }
-    });
-}
 
 
 player1Inventory.addEventListener("inventory-click", event => {
