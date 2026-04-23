@@ -2,6 +2,10 @@
   "appId": "com.pns.khet",
   "appName": "Khet de l'Olympe",
   "webDir": "./dist",
+  "server": {
+    "hostname": "khet-olympe.mobile.app",
+    "androidScheme": "https"
+  },
   "plugins": {
     "CapacitorCookies": {
       "enabled": true

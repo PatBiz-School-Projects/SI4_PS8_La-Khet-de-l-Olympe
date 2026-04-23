@@ -13,6 +13,13 @@ const {
 
 const IS_PROD = process.env.IS_PROD === "true";
 
+
+const ALLOWED_ORIGINS = [
+    "https://khet-olympe.mobile.app",
+    (IS_PROD) ? "https://khet-olympe.ps8.pns.academy" : "localhost:8000",
+];
+
+
 // Proxy to send requests to the other services.
 const proxy = httpProxy.createProxyServer();
 
@@ -22,23 +29,27 @@ function getPathSegments(url) {
 }
 
 async function handleHTTPRequest(req, res) {
-    // First, let's check the URL to see if it's a REST request or a file request.
-    // We will remove all cases of "../" in the url for security purposes.
-    const filePath = getPathSegments(req.url);
-    const requestOrigin = req.headers.origin || '*';
+    const origin = req.headers.origin;
+
+    // Add CORS headers to the response
+    if (ALLOWED_ORIGINS.includes(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin);
+        res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, refreshToken");
+        res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
+    // Handle preflight
     if (req.method === 'OPTIONS') {
-        res.setHeader('Access-Control-Allow-Origin', requestOrigin);
-        res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, PATCH, DELETE, OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, refreshToken');
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
         res.statusCode = 204;
         res.end();
         return;
     }
 
-    // Add CORS headers to all other responses
-    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    // First, let's check the URL to see if it's a REST request or a file request.
+    // We will remove all cases of "../" in the url for security purposes.
+    const filePath = getPathSegments(req.url);
+
     try {
         // If the URL starts by /api, then it's a REST request (you can change that if you want).
         if (filePath[1] === "api") {
@@ -78,9 +89,15 @@ async function handleHTTPRequest(req, res) {
 }
 
 function handleWebSocket(req, socket, head) {
-    let filePath = req.url.split("/").filter(function(elem) {
-        return elem !== "..";
-    });
+    const origin = req.headers.origin;
+
+    if (!ALLOWED_ORIGINS.includes(origin)) {
+        socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+        socket.destroy();
+        return;
+    }
+
+    let filePath = getPathSegments(req.url);
 
     if (filePath[1] === "api") {
         switch(filePath[2]) {
