@@ -9,6 +9,7 @@ const searchComponent = new SearchComponent({
     statusElement: document.getElementById("mobile-search-status"),
     resultsElement: document.getElementById("mobile-search-results"),
     getCurrentUserId: () => window.__mobileSearchUserId,
+    isAuthenticated: true
 });
 
 backButton.onclick = () => {

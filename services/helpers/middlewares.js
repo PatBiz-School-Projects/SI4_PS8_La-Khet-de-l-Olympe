@@ -135,12 +135,13 @@ exports.authenticated = (handlerCb) => async (req, res) => {
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
-
+        res.setHeader("userToken",newAccessToken);
+        res.setHeader("Authorization", `Bearer ${newAccessToken}`);
         await handlerCb(req, res);
         return;
     } catch (err) {
-        // Should never happens
-        throw new Error(`Unexpected error during authentication check: ${err}`)
+        // Should never happen
+        throw new Error(`Unexpected error during authentication check: ${JSON.stringify(err)}`)
     }
 };
 
@@ -148,7 +149,9 @@ exports.authenticated = (handlerCb) => async (req, res) => {
  * Dispatches the incoming request to the given guest & authenticated handler based on the presence of an access token.
  */
 exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb) => async (req, res) => {
-    const { userToken: accessToken } = parseCookies(req.headers.cookie);
+    const { userToken: cookieAccessToken } = parseCookies(req.headers.cookie);
+    console.log("\n\n\n\n",parseCookies(req.headers.cookie),"\n\n\n\n")
+    const accessToken = req.headers.authorization?.replace('Bearer ', '') || cookieAccessToken;
 
     if (accessToken) {
         await authenticatedHandlerCb(req, res);
@@ -172,6 +175,8 @@ exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb)
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
+        res.setHeader("guestToken", newGuestToken);
+        res.setHeader("Authorization", `Bearer ${newGuestToken}`);
         req.headers.cookie = `${req.headers.cookie}; guestToken=${newGuestToken}`;
     }
 

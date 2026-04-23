@@ -20,10 +20,31 @@ body {
     margin: 0 auto;
     padding: 32px 20px;
 }
+.profile-page-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
 
 .back-link {
     color: var(--gold);
     text-decoration: none;
+}
+
+.profile-logout-btn {
+    border: 1px solid rgba(255, 130, 130, 0.5);
+    background: transparent;
+    color: #ffb3b3;
+    border-radius: 999px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.profile-logout-btn:hover {
+    border-color: #ff8a8a;
+    color: #ffd2d2;
 }
 
 .profile-card,

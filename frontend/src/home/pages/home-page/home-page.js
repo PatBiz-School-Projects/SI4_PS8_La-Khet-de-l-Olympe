@@ -6,7 +6,7 @@ import { ChatBox,ChatMobileComponent } from "/chat/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
-import { ensureValidAccessToken, clearAuthTokens, authenticatedFetch } from "/utils/auth.js";
+import { ensureValidAccessToken, clearAuthTokens} from "/utils/auth.js";
 import { getPictureUrl } from "/utils/picture.js";
 import {
     acceptChallenge,
@@ -15,6 +15,16 @@ import {
     listIncomingChallenges,
     sendChallenge
 } from "/utils/challenge.js";
+
+import {
+    APP_ROUTES,
+    clearPushRegistration,
+    initLocalNotifications,
+    initPushNotifications,
+    registerPushToken,
+    scheduleChallengeLocalNotification,
+    scheduleFriendRequestLocalNotification
+} from "/utils/mobile-notifications-service.js";
 
 import { apiFetch } from "/utils/wrapFetch.js";
 
@@ -62,6 +72,7 @@ const searchComponent = new SearchComponent({
     statusElement: document.getElementById("search-status"),
     resultsElement: document.getElementById("search-results"),
     getCurrentUserId: () => USER_ID,
+    isAuthenticated:true
 });
 
 const leaderboardComponent = new LeaderboardComponent({
@@ -69,7 +80,6 @@ const leaderboardComponent = new LeaderboardComponent({
     listElement: document.getElementById("leaderboard-list"),
     selfElement: document.getElementById("leaderboard-self"),
     getCurrentUserId: () => USER_ID,
-    isAuthenticated: Boolean(USER_ID)
 });
 
 const friendsComponent = new FriendsComponent({
@@ -194,7 +204,7 @@ function applySidebarIdentity(username, profilePicture) {
     mobileProfileAvatar.alt = `Avatar de ${username}`;
 }
 async function loadSidebarProfile() {
-    const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
+    const response = await apiFetch(`/api/users/${USER_ID}/minimal-profile`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -216,6 +226,8 @@ async function login() {
 
 async function logout() {
     try {
+        const token = getCookie("userToken")
+        console.log("Token logout",token);
         await apiFetch("/api/auth/logout", {
             method: "POST",
             headers: {
@@ -226,8 +238,9 @@ async function logout() {
     } catch (error) {
         console.error("Logout request failed", error);
     } finally {
-        clearAuthTokens();
-        removeAllCookies();
+        await clearPushRegistration();
+        await clearAuthTokens();
+        await removeAllCookies();
         window.location.reload();
     }
 }
@@ -550,7 +563,7 @@ function showHomeNotification({ key, title, text, actions=[] }) {
 }
 
 async function refreshFriendRequestNotifications() {
-    const response = await authenticatedFetch("/api/users/friends/requests", {
+    const response = await apiFetch("/api/users/friends/requests", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -561,6 +574,7 @@ async function refreshFriendRequestNotifications() {
 
     const payload = await response.json();
     for (const request of payload.requests || []) {
+        await scheduleFriendRequestLocalNotification(request);
         const notificationKey = `friend-request:${request.id}`;
         showHomeNotification({
             key: notificationKey,
@@ -571,7 +585,7 @@ async function refreshFriendRequestNotifications() {
                     label: "Refuser",
                     className: "danger",
                     onClick: async () => {
-                        const declineResponse = await authenticatedFetch("/api/users/friends/request", {
+                        const declineResponse = await apiFetch("/api/users/friends/request", {
                             method: "DELETE",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ userId: request.requester?.id }),
@@ -590,7 +604,7 @@ async function refreshFriendRequestNotifications() {
                 {
                     label: "Accepter",
                     onClick: async () => {
-                        const response = await authenticatedFetch('/api/users/friends/accept', {
+                        const response = await apiFetch('/api/users/friends/accept', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify({requestUserId: request.requester?.id})
@@ -620,7 +634,7 @@ async function getUsernameFromUserId(userId) {
         return profileNameCache.get(userId);
     }
 
-    const response = await authenticatedFetch(`/api/users/${encodeURIComponent(userId)}/minimal-profile`, {
+    const response = await apiFetch(`/api/users/${encodeURIComponent(userId)}/minimal-profile`, {
         method: "GET",
         headers: {"Content-Type": "application/json"},
     });
@@ -637,6 +651,7 @@ async function getUsernameFromUserId(userId) {
 
 async function showIncomingChallengeNotification(challenge) {
     const challengerName = await getUsernameFromUserId(challenge.challengerUserId);
+    await scheduleChallengeLocalNotification(challenge, challengerName);
     const notificationKey = `challenge-incoming:${challenge.id}`;
 
     showHomeNotification({
@@ -679,6 +694,16 @@ async function refreshChallengeNotifications() {
 }
 
 async function initHomeNotifications() {
+    await initLocalNotifications();
+    await initPushNotifications({
+        onFriendRequestPush: () => {
+            refreshFriendRequestNotifications().catch((error) => {
+                console.error("Unable to refresh friend request notifications after push", error);
+            });
+        },
+        onNotificationRoute: (data) => routeFromNotificationData(data),
+    });
+    await registerPushToken();
     await refreshFriendRequestNotifications();
     await refreshChallengeNotifications();
 
@@ -711,6 +736,33 @@ async function initHomeNotifications() {
     }, FRIEND_REQUESTS_REFRESH_MS);
 }
 
+async function routeFromNotificationData(data = {}) {
+    const route = data.route || data.notificationRoute;
+
+    if (route === APP_ROUTES.FRIEND_REQUESTS) {
+        await handleSectionSelection("friends");
+        return;
+    }
+
+    if (route === APP_ROUTES.CHALLENGES) {
+        await handleSectionSelection("play");
+        await refreshChallengeNotifications();
+    }
+}
+
+async function applyNotificationDeepLinkFromHash() {
+    const hashRoute = window.location.hash.replace("#", "");
+    if (hashRoute === "friends-requests") {
+        await handleSectionSelection("friends");
+        return;
+    }
+
+    if (hashRoute === "home-challenges") {
+        await handleSectionSelection("play");
+        await refreshChallengeNotifications();
+    }
+}
+
 window.addEventListener("beforeunload", () => {
     if (friendRequestsPollingId) {
         clearInterval(friendRequestsPollingId);
@@ -720,6 +772,7 @@ window.addEventListener("beforeunload", () => {
     }
     challengeSocket?.disconnect();
 });
+
 /**
  onLoad function
  */
@@ -751,7 +804,7 @@ onload = async () => {
     const payload = decodeJwtPayload(token);
     const userId = payload?.sub;
     if (!userId) {
-        clearAuthTokens();
+        await clearAuthTokens();
         return;
     }
 
@@ -763,5 +816,6 @@ onload = async () => {
     await toggleMobileChat(true);
     await initHomeNotifications();
     await loadSidebarProfile();
+    await applyNotificationDeepLinkFromHash();
     searchComponent.setStatus("Tapez au moins 2 caractères.");
 };

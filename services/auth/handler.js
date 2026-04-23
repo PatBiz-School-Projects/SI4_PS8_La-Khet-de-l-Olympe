@@ -158,7 +158,7 @@ exports.HTTPHandler = {
         }
 
         let refreshToken;
-
+        console.log("origin",origin)
         if (origin === "https://khet-olympe.mobile.app") {
             refreshToken = createMobileSessionId(user);
             await sessions.insertOne({refreshToken, username});
@@ -209,7 +209,7 @@ exports.HTTPHandler = {
             // Check validity of refresh token or session id
             const payload = jwt.verify(token, JWT_SECRET);
             if (payload.type === "session") {
-                const sessionExists = sessions.findOne({sessionId: token});
+                const sessionExists = await sessions.findOne({sessionId: token});
                 if (!sessionExists) {
                     throw new Error(`Session '${payload}' doesn't exist`);
                 }
@@ -290,7 +290,7 @@ exports.HTTPHandler = {
             const db = await getDb();
             const sessions = db.collection("sessions");
 
-            await collection.deleteOne({ refreshToken });
+            await sessions.deleteOne({ refreshToken });
         }
 
         try {
@@ -305,6 +305,7 @@ exports.HTTPHandler = {
             'Content-Type': 'application/json',
             'Set-Cookie': [
                 'userToken=; Path=/; Max-Age=0',
+                'refreshToken=; Path=/; Max-Age=0',
                 'userId=; Path=/; Max-Age=0',
                 'gameId=; Path=/; Max-Age=0'
             ],

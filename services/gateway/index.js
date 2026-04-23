@@ -16,7 +16,7 @@ const IS_PROD = process.env.IS_PROD === "true";
 
 const ALLOWED_ORIGINS = [
     "https://khet-olympe.mobile.app",
-    (IS_PROD) ? "https://khet-olympe.ps8.pns.academy" : "localhost:8000",
+    (IS_PROD) ? "https://khet-olympe.ps8.pns.academy" : "http://localhost:8000",
 ];
 
 
@@ -30,12 +30,12 @@ function getPathSegments(url) {
 
 async function handleHTTPRequest(req, res) {
     const origin = req.headers.origin;
-
+    console.log("\n\n\n\n\n",origin,"\n\n\n\n\n\n")
     // Add CORS headers to the response
     if (ALLOWED_ORIGINS.includes(origin)) {
         res.setHeader("Access-Control-Allow-Origin", origin);
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, refreshToken");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, refreshToken, guestToken");
         res.setHeader("Access-Control-Allow-Credentials", "true");
     }
 

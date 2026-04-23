@@ -1,7 +1,7 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-import { authenticatedFetch, ensureValidAccessToken } from "/utils/auth.js"
-
+import { ensureValidAccessToken } from "/utils/auth.js"
+import {apiFetch} from "/utils/wrapFetch.js"
 import { API_HOST } from "/env.js";
 
 
@@ -16,7 +16,7 @@ async function performChallengeRequest(path, options = {}) {
     }
 
     try {
-        const response = await authenticatedFetch(path, options);
+        const response = await apiFetch(path, options);
 
         if (!response) {
             return {
