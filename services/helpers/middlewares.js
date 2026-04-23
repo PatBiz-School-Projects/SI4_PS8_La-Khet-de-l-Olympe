@@ -139,8 +139,8 @@ exports.authenticated = (handlerCb) => async (req, res) => {
         await handlerCb(req, res);
         return;
     } catch (err) {
-        // Should never happens
-        throw new Error(`Unexpected error during authentication check: ${err}`)
+        // Should never happen
+        throw new Error(`Unexpected error during authentication check: ${JSON.stringify(err)}`)
     }
 };
 
