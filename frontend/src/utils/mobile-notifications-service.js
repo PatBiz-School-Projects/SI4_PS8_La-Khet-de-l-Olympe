@@ -147,88 +147,16 @@ export async function scheduleChallengeLocalNotification(challenge, challengerNa
 }
 
 export async function initPushNotifications({ onTokenRegistered, onFriendRequestPush, onNotificationRoute } = {}) {
-    if (!isNativePlatform() || isPushInitialized) {
-        pushRoutingHandler = onNotificationRoute || pushRoutingHandler;
-        return;
-    }
-
+    void onTokenRegistered;
+    void onFriendRequestPush;
     pushRoutingHandler = onNotificationRoute || pushRoutingHandler;
-
-    await PushNotifications.createChannel({
-        id: PUSH_CHANNEL_ID,
-        name: "Push Requêtes d'amis",
-        description: "Push notifications pour les requêtes d'amis",
-        importance: 4,
-    });
-
-    PushNotifications.removeAllListeners();
-
-    await PushNotifications.addListener("registration", async ({ value }) => {
-        if (!value) {
-            return;
-        }
-        onTokenRegistered?.(value);
-        await syncPushTokenWithBackend(value);
-    });
-
-    await PushNotifications.addListener("registrationError", ({ error }) => {
-        console.error("Push registration error", error);
-    });
-
-    await PushNotifications.addListener("pushNotificationReceived", ({ data }) => {
-        const type = data?.notificationType || data?.type;
-        const requestId = data?.requestId || data?.friendRequestId;
-
-        if (type === "friend-request" && requestId) {
-            markEventDelivered(buildDedupKey("friend-request", requestId));
-            onFriendRequestPush?.(data);
-        }
-    });
-
-    await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
-        handlePushNotificationRouting(notification?.data || {});
-    });
-
-    isPushInitialized = true;
 }
 
 export async function registerPushToken() {
-    if (!isNativePlatform() || pushRegistrationDone) {
-        return;
-    }
-
-    const check = await PushNotifications.checkPermissions();
-    let receive = check.receive;
-
-    if (receive !== "granted") {
-        const request = await PushNotifications.requestPermissions();
-        receive = request.receive;
-    }
-
-    if (receive !== "granted") {
-        return;
-    }
-
-    await PushNotifications.register();
-    pushRegistrationDone = true;
 }
 
 export async function syncPushTokenWithBackend(token) {
-    const response = await apiFetch("/api/users/push-token", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, provider: "fcm" }),
-    });
-
-    if (!response || response.status === 404) {
-        console.info("Push token backend endpoint not available yet: expected POST /api/users/push-token");
-        return;
-    }
-
-    if (!response.ok) {
-        const payload = await response.json().catch(() => ({}));
-        console.warn("Failed to sync push token", payload?.error || response.statusText);
-    }
+    void token;
 }
 
 export function handlePushNotificationRouting(data = {}) {
@@ -250,7 +178,6 @@ export function handlePushNotificationRouting(data = {}) {
 }
 
 export async function clearPushRegistration() {
-    pushRegistrationDone = false;
 }
 
 export { APP_ROUTES };
