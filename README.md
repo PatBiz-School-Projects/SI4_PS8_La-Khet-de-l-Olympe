@@ -105,7 +105,7 @@ node services/chats/index.js
 
 ### Usage restrictions
 
-- Access requires authentication cookies (`userId`, `userToken`).
+- Access requires authentication cookies (`userToken` or `guestToken`, `refreshToken`).
 - Each chat is restricted to authorized users only.
 - Playing multiplayer games and accessing personal profiles are strictly restricted to authenticated users.
 
@@ -123,6 +123,8 @@ node services/chats/index.js
 ---
 
 ## Back-end Architecture Strategy
+
+
 
 ### Service decomposition
 
@@ -143,13 +145,24 @@ The platform is split into focused services:
 - Easier debugging and ownership by feature area.
 - Natural fit for different communication patterns (REST for request/response, WebSocket for real-time interactions).
 
+#### Event-driven architecture (Redis Pub/Sub)
+
+To reduce synchronous coupling between services, the architecture adopts **EDA via Redis Pub/Sub** for transient domain events:
+- Services publish events such as `users.created-new-user`, `users.pdated-user-profile`.
+- Interested services subscribe to relevant channels and react asynchronously.
+
+Benefits of this approach:
+
+- Lower request-chain latency and fewer hard dependencies between services.
+- Better resilience during partial outages (publish/retry patterns instead of deep sync call chains).
+- Cleaner separation between command handling (HTTP) and side effects/notifications (events).
+
 #### Difficulties encountered / what could be improved
 
 - Some flows go through multiple services (e.g., challenge → game room → chat room), increasing risks of network errors.
-- Cookie-based context (`gameId`) is practical but limits simultaneous games per user session.
 - More importantly, some choices were made purely because they were technically easier.
 
-### HTTP vs WebSocket strategy
+### HTTP & WebSocket strategy
 
 #### HTTP (request/response, deterministic operations)
 
@@ -182,6 +195,21 @@ Why this choice is relevant:
 - Real-time gameplay/chat/challenge UX requires low-latency events and need to be run all the time.
 - HTTP remains simpler for CRUD-like and transactional operations.
 
+#### Middleware strategy
+A shared middleware baseline is enforced at the gateway level, then complemented by domain-specific middleware inside each service:
+- **Gateway middleware pipeline**:
+  - CORS policy and origin filtering.
+  - JSON/body parsing.
+  - Access-token extraction/verification and auth-context propagation.
+  - Request validation.
+  - Injecting guest token when unauthenticated.
+  - Centralized error mapping/logging to provide consistent API responses.
+- **Service-level middleware**:
+  - Authorization guards (resource ownership / room membership checks).
+  - Domain validation (game move legality pre-checks, challenge state guardrails).
+
+
+This keeps cross-cutting concerns standardized while leaving business rules close to the owning bounded context.
 ---
 
 
