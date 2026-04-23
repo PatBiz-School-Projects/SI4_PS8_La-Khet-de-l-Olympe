@@ -3,6 +3,7 @@ import { GameBoard, GamePlayerInventory } from "/game/components/index.js";
 import { GamePageAction, GamePageActionType } from "./GamePageStateMachine/GamePageAction.js";
 
 import { Coord } from "/game/logic/board/Coord.js"
+import {IS_MOBILE_WEBVIEW} from "/env.js";
 
 
 export class GamePageClickHandler {
@@ -94,7 +95,7 @@ export class GamePageClickHandler {
         const inventory1 = this.dom.querySelector("#player1-inventory");
         const inventory2 = this.dom.querySelector("#player2-inventory");
 
-        if (clickEvent.target === inventory1 || clickEvent.target === inventory2) {
+        if (!IS_MOBILE_WEBVIEW && (clickEvent.target === inventory1 || clickEvent.target === inventory2)) {
             /** @type {GamePlayerInventory} */
             let inventory;
             if (clickEvent.target === inventory1) {
