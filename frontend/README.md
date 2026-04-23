@@ -63,3 +63,18 @@ A few elements are still page-coupled and could be extracted into standalone sha
 - Repeated profile info blocks and statistic cards.
 - Friend/challenge list rows used in profile page and in the friends tab.
 - Navigation/header buttons.
+
+
+# Android Front-end :
+
+## Setup
+
+- Create `android/` folder with :
+    ```sh
+    npx cap add android
+    ```
+
+- Build/actualise mobile app with :
+    ```sh
+    npm run build
+    ```
