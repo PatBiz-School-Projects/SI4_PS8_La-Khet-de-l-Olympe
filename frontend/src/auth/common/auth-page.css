@@ -1,0 +1,98 @@
+:root {
+    --bg-deep: #0a0a0f;
+    --bg-night: #121016;
+    --text-main: #e8dfc0;
+    --text-muted: #8a7d5a;
+    --gold: #c9a84c;
+    --gold-soft: #7a6028;
+    --danger: #ff9f93;
+    --success: #7de2ac;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 20px;
+    background:
+        radial-gradient(ellipse at 20% 30%, rgba(100, 70, 10, 0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 80% 70%, rgba(60, 40, 120, 0.16) 0%, transparent 55%),
+        radial-gradient(ellipse at 50% 100%, rgba(180, 120, 20, 0.12) 0%, transparent 40%),
+        linear-gradient(150deg, var(--bg-night), var(--bg-deep));
+    color: var(--text-main);
+    font-family: 'Cinzel', serif;
+}
+
+.auth-card {
+    display: block !important;
+
+    width: min(520px, 95vw);
+    border-radius: 20px;
+    border: 1px solid rgba(212, 177, 106, 0.25);
+    background: linear-gradient(145deg, rgba(25, 20, 16, 0.92), rgba(14, 12, 10, 0.96));
+    box-shadow: 0 24px 56px rgba(0, 0, 0, 0.42);
+    padding: clamp(10px, 4vw, 20px);
+}
+
+.auth-card h1 {
+    margin-top: 0;
+    margin-bottom: 8px;
+    font-family: 'Cinzel', serif;
+    letter-spacing: 0.04em;
+    color: #f0d080;
+}
+
+.auth-card p {
+    margin-top: 0;
+    color: var(--text-muted);
+}
+
+.auth-card .helper {
+    margin-top: 16px;
+    text-align: center;
+}
+
+.auth-card a {
+    color: #f0d080;
+}
+
+#cancel-btn {
+    margin-top: 30px;
+    line-height: 45px;
+
+    width: min(520px, 95vw);
+    min-height: 44px;
+
+    border: 1px solid rgba(180, 60, 60, 0.50);
+    border-radius: 10px;
+
+    background: linear-gradient(135deg, rgba(160, 40, 40, 0.25), rgba(140, 30, 30, 0.10));
+    color: #e8b4b4;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-decoration: none;
+
+    cursor: pointer;
+
+    text-align: center;
+    justify-content: center;
+
+    transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+    font-family: 'Cinzel', serif;
+
+    &:hover {
+        transform: translateY(-1px);
+        border-color: rgba(210, 80, 80, 0.80);
+        background: linear-gradient(135deg, rgba(160, 40, 40, 0.40), rgba(140, 30, 30, 0.18));
+    }
+}

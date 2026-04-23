@@ -8,35 +8,22 @@
 
     <script src="/media.js"></script>
 
-    <link href="../login/auth.css" rel="stylesheet" />
-    <script type="module" src="../login/auth.js" defer></script>
+    <link href="./signup.css" rel="stylesheet" />
+    <script type="module" src="./signup.js" defer></script>
 </head>
 
 <body>
-<main class="auth-card">
-    <h1>Inscription</h1>
-    <p>Créez un compte et définissez votre question secrète une seule fois.</p>
+    <main class="auth-card" hidden>
+        <h1>Inscription</h1>
+        <p>Inscrivez-vous.</p>
 
-    <form data-endpoint="/api/auth/signup" data-button="Créer le compte">
-        <label for="username">Nom d'utilisateur</label>
-        <input id="username" name="username" placeholder="nom_prenom" required />
+        <signup-form></signup-form>
 
-        <label for="password">Mot de passe</label>
-        <input id="password" name="password" type="password" placeholder="********" required />
+        <p class="helper">
+            Déjà un compte ? <a href="/auth/pages/login/login.html">Se connecter</a>
+        </p>
+    </main>
 
-        <label for="question">Question secrète</label>
-        <input id="question" name="question" type="text" placeholder="Ex: nom de mon premier animal ?" required />
-
-        <label for="answer">Réponse secrète</label>
-        <input id="answer" name="answer" type="text" placeholder="Votre réponse" required />
-
-        <button type="submit">Créer le compte</button>
-        <p class="status" data-status></p>
-    </form>
-
-    <p class="helper">
-        Déjà un compte ? <a href="../login/login.html">Se connecter</a>
-    </p>
-</main>
+    <a id="cancel-btn" href="/home/pages/home-page/home-page.html">Annuler</a>
 </body>
 </html>

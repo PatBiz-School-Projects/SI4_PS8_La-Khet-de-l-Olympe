@@ -15,10 +15,10 @@ const ROUTER = (new Router()
         POST: public(HTTPHandler.signup),
     })
     .add("/api/auth/renew", {
-        POST: public(HTTPHandler.renewToken),
+        POST: public(HTTPHandler.renewAcessToken),
     })
     .add("/api/auth/check", {
-        POST: public(HTTPHandler.checkToken),
+        POST: public(HTTPHandler.checkAccessToken),
     })
     .add("/api/auth/forgot-password", {
         POST: public(HTTPHandler.resetPassword),

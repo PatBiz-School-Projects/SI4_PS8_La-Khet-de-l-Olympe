@@ -5,10 +5,9 @@ let ioServer = null;
 
 function initChallengeSocket(httpServer) {
     ioServer = new Server(httpServer, {
-        path: '/api/challenge-service/socket.io',
+        path: "/api/challenge-service/socket.io",
         cors: {
             origin: '*',
-            methods: ['GET', 'POST','PUT', 'DELETE', 'OPTIONS','HEAD'],
         },
     });
 
@@ -16,7 +15,7 @@ function initChallengeSocket(httpServer) {
         try {
             const { userId, userToken } = parseCookies(socket.handshake.headers.cookie || '');
             if (!userId || !userToken) {
-                throw new Error('MISSING_AUTH_COOKIE');
+                throw new Error("MISSING_AUTH_COOKIE");
             }
             socket.data.userId = userId;
             return next();
@@ -25,7 +24,7 @@ function initChallengeSocket(httpServer) {
         }
     });
 
-    ioServer.on('connection', (socket) => {
+    ioServer.on("connection", (socket) => {
         socket.join(`user:${socket.data.userId}`);
     });
 

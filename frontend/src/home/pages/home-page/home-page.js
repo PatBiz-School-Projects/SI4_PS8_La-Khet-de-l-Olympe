@@ -216,7 +216,6 @@ async function login() {
 
 async function logout() {
     try {
-        const token = await ensureValidAccessToken();
         await apiFetch("/api/auth/logout", {
             method: "POST",
             headers: {
