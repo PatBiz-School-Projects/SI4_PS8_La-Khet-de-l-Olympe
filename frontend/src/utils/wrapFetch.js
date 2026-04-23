@@ -11,9 +11,6 @@ const REFRESH_TOKEN_COOKIE = "refreshToken";
 export async function apiFetch(url, options = {}) {
     const headers = new Headers(options.headers || {});
     console.log("Document cookie",document.cookie);
-    if (IS_MOBILE_WEBVIEW) {
-        // Force Origin header since Capacitor's native HTTP layer strips it
-        headers.set('Origin', 'https://khet-olympe.mobile.app');
 
         if (!headers.has('Authorization')) {
             const accessToken = getCookie(USER_ACCESS_TOKEN_COOKIE) || getCookie(GUEST_ACCESS_TOKEN_COOKIE);
@@ -25,7 +22,7 @@ export async function apiFetch(url, options = {}) {
                 headers.set('refreshToken', refreshToken);
             }
         }
-    }
+
 
     return await fetch(API_HOST + url, {
         ...options,
