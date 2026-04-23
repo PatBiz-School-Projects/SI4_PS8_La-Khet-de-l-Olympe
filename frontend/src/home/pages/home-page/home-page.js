@@ -54,7 +54,7 @@ const chatBox = desktopChatBox;
 
 let USER_ID;
 let searchDebounceId;
-const isMobileLayout = !IS_MOBILE_WEBVIEW;
+const isMobileLayout = IS_MOBILE_WEBVIEW;
 let mobileChatComponent = null;
 
 const searchComponent = new SearchComponent({

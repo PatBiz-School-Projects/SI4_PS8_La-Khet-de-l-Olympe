@@ -10,7 +10,7 @@
         || (isIOS && !navigator.userAgent.includes("Safari"))
     );
 
-    if (!isWebView) {
+    if (isWebView) {
         document.documentElement.classList.add("mobile");
     }
 })();

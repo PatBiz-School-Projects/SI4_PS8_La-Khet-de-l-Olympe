@@ -41,8 +41,7 @@
 
 }
 
-@media (max-width: 768px) {
-
+:host-context(.mobile) {
     #piece-canvas {
         border-left: none;
         border-right: none;
