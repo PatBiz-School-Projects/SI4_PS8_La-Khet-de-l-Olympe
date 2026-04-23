@@ -150,6 +150,7 @@ exports.authenticated = (handlerCb) => async (req, res) => {
  */
 exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb) => async (req, res) => {
     const { userToken: cookieAccessToken } = parseCookies(req.headers.cookie);
+    console.log("\n\n\n\n",parseCookies(req.headers.cookie),"\n\n\n\n")
     const accessToken = req.headers.authorization?.replace('Bearer ', '') || cookieAccessToken;
 
     if (accessToken) {
