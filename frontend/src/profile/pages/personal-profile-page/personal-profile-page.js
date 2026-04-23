@@ -1,5 +1,5 @@
-import { authenticatedFetch, ensureValidAccessToken, getUserIdFromToken } from "/utils/auth.js";
-import { setCookie } from "/utils/cookie.js";
+import { authenticatedFetch,clearTokens, ensureValidAccessToken, getUserIdFromToken } from "/utils/auth.js";
+import { removeAllCookies,setCookie } from "/utils/cookie.js";
 import {
     sendChallenge,
     listIncomingChallenges,
@@ -28,7 +28,7 @@ const incomingChallengesEmptyEl = document.getElementById('incoming-challenges-e
 const achievementsGrid = document.getElementById('achievements-grid');
 const historyListEl = document.getElementById('history-list');
 const historyEmptyEl = document.getElementById('history-empty');
-
+const profileLogoutBtn = document.getElementById('profile-logout-btn');
 let challengeSocket = null;
 
 
@@ -37,6 +37,22 @@ const closeAvatarModal = () => document.getElementById('avatar-modal')?.classLis
 function setStatus(message, isError = true) {
     statusEl.textContent = message;
     statusEl.style.color = isError ? '#ffb3b3' : '#b8f7c5';
+}
+
+async function logoutFromProfile() {
+    try {
+        await authenticatedFetch('/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+    } catch (error) {
+        console.error("Erreur lors de la déconnexion", error);
+    } finally {
+        localStorage.clear();
+        clearAuthTokens();
+        removeAllCookies();
+        window.location.href = '/home/pages/home-page/home-page.html';
+    }
 }
 
 async function handleAvatarSelection(event) {
@@ -589,4 +605,9 @@ async function loadProfile() {
 }
 bindAvatarModalEvents();
 bindTabEvents();
+profileLogoutBtn?.addEventListener('click', () => {
+    logoutFromProfile().catch((error) => {
+        console.error("Erreur inattendue lors de la déconnexion", error);
+    });
+});
 loadProfile();
