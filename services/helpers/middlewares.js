@@ -135,7 +135,8 @@ exports.authenticated = (handlerCb) => async (req, res) => {
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
-
+        res.setHeader("userToken",newAccessToken);
+        res.setHeader("Authorization", `Bearer ${newAccessToken}`);
         await handlerCb(req, res);
         return;
     } catch (err) {
@@ -172,6 +173,8 @@ exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb)
         ].filter(Boolean).join("; ");
 
         res.setHeader("Set-Cookie", cookieOptions);
+        res.setHeader("guestToken", newGuestToken);
+        res.setHeader("Authorization", `Bearer ${newGuestToken}`);
         req.headers.cookie = `${req.headers.cookie}; guestToken=${newGuestToken}`;
     }
 
