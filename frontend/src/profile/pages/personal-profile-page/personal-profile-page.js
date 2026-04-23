@@ -1,4 +1,4 @@
-import { authenticatedFetch,clearAuthTokens, ensureValidAccessToken, getUserIdFromToken } from "/utils/auth.js";
+import { clearAuthTokens, ensureValidAccessToken, getUserIdFromToken } from "/utils/auth.js";
 import { removeAllCookies,setCookie } from "/utils/cookie.js";
 import {
     sendChallenge,
@@ -7,6 +7,7 @@ import {
     declineChallenge,
     createChallengeSocket,
 } from "/utils/challenge.js";
+import {apiFetch} from "/utils/wrapFetch.js"
 import { getPictureUrl, getGlobalPicturePath } from "/utils/picture.js";
 
 
@@ -41,14 +42,13 @@ function setStatus(message, isError = true) {
 
 async function logoutFromProfile() {
     try {
-        await authenticatedFetch('/api/auth/logout', {
+        await apiFetch('/api/auth/logout', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
         console.error("Erreur lors de la déconnexion", error);
     } finally {
-        localStorage.clear();
         clearAuthTokens();
         removeAllCookies();
         window.location.href = '/home/pages/home-page/home-page.html';
@@ -80,7 +80,7 @@ async function handleAvatarSelection(event) {
 
 async function syncProfilePicture(userId,pictureUrl) {
     try{
-        const response = await authenticatedFetch(`/api/users/${userId}/profilePicture`, {
+        const response = await apiFetch(`/api/users/${userId}/profilePicture`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({profilePicture: pictureUrl })
@@ -286,7 +286,7 @@ function renderFriends(friends, token) {
                 label: 'Retirer',
                 className: 'danger',
                 onClick: async (friendId) => {
-                    const response = await authenticatedFetch('/api/users/friends', {
+                    const response = await apiFetch('/api/users/friends', {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ friendId })
@@ -363,7 +363,7 @@ function renderRequests(requests, token) {
             {
                 label: 'Accepter',
                 onClick: async (requestUserId) => {
-                    const response = await authenticatedFetch('/api/users/friends/accept', {
+                    const response = await apiFetch('/api/users/friends/accept', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ requestUserId })
@@ -387,7 +387,7 @@ function renderRequests(requests, token) {
                 label: 'Refuser',
                 className: 'danger',
                 onClick: async (userId) => {
-                    const response = await authenticatedFetch('/api/users/friends/request', {
+                    const response = await apiFetch('/api/users/friends/request', {
                         method: 'DELETE',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ userId })
@@ -415,11 +415,11 @@ function renderRequests(requests, token) {
 async function loadFriendData(token) {
     try {
         const [friendsResponse, requestsResponse] = await Promise.all([
-            authenticatedFetch('/api/users/friends', {
+            apiFetch('/api/users/friends', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             }),
-            authenticatedFetch('/api/users/friends/requests', {
+            apiFetch('/api/users/friends/requests', {
                 method: 'GET',
                 headers: { 'Content-Type': 'application/json' }
             })
@@ -456,7 +456,7 @@ async function loadAchievements(achievementsIds) {
 
     try {
 
-        const response = await authenticatedFetch('/api/users/achievements/catalogue', { method: 'GET',headers: { 'Content-Type': 'application/json' } });
+        const response = await apiFetch('/api/users/achievements/catalogue', { method: 'GET',headers: { 'Content-Type': 'application/json' } });
         const data = await response.json();
         const catalogue = data.catalogue || [];
 
@@ -495,7 +495,7 @@ async function loadHistory(token) {
     const userId = getUserIdFromToken(token);
 
     try {
-        const response = await authenticatedFetch(`/api/games/history/${userId}`, {
+        const response = await apiFetch(`/api/games/history/${userId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });
@@ -569,7 +569,7 @@ async function loadProfile() {
     }
 
     try {
-        const response = await authenticatedFetch(`/api/users/${getUserIdFromToken(token)}/profile`, {
+        const response = await apiFetch(`/api/users/${getUserIdFromToken(token)}/profile`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' }
         });

@@ -1,4 +1,3 @@
-import { authenticatedFetch } from "/utils/auth.js";
 import { apiFetch } from "/utils/wrapFetch.js";
 import { getPictureUrl } from "/utils/picture.js";
 import { sendChallenge } from "/utils/challenge.js";
@@ -81,7 +80,7 @@ export class FriendsComponent {
         this.onlineEmptyElement.hidden = true;
         this.offlineEmptyElement.hidden = true;
 
-        const friendsResponse = await authenticatedFetch("/api/users/friends", {
+        const friendsResponse = await apiFetch("/api/users/friends", {
             method: "GET",
             headers: { "Content-Type": "application/json" },
         });

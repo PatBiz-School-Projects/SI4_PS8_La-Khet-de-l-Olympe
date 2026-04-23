@@ -6,7 +6,7 @@ import { ChatBox,ChatMobileComponent } from "/chat/components/index.js";
 
 import { getCookie, setCookie, removeAllCookies } from "/utils/cookie.js";
 import { decodeJwtPayload } from "/utils/jwt.js";
-import { ensureValidAccessToken, clearAuthTokens, authenticatedFetch } from "/utils/auth.js";
+import { ensureValidAccessToken, clearAuthTokens} from "/utils/auth.js";
 import { getPictureUrl } from "/utils/picture.js";
 import {
     acceptChallenge,
@@ -204,7 +204,7 @@ function applySidebarIdentity(username, profilePicture) {
     mobileProfileAvatar.alt = `Avatar de ${username}`;
 }
 async function loadSidebarProfile() {
-    const response = await authenticatedFetch(`/api/users/${USER_ID}/minimal-profile`, {
+    const response = await apiFetch(`/api/users/${USER_ID}/minimal-profile`, {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -561,7 +561,7 @@ function showHomeNotification({ key, title, text, actions=[] }) {
 }
 
 async function refreshFriendRequestNotifications() {
-    const response = await authenticatedFetch("/api/users/friends/requests", {
+    const response = await apiFetch("/api/users/friends/requests", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
     });
@@ -583,7 +583,7 @@ async function refreshFriendRequestNotifications() {
                     label: "Refuser",
                     className: "danger",
                     onClick: async () => {
-                        const declineResponse = await authenticatedFetch("/api/users/friends/request", {
+                        const declineResponse = await apiFetch("/api/users/friends/request", {
                             method: "DELETE",
                             headers: { "Content-Type": "application/json" },
                             body: JSON.stringify({ userId: request.requester?.id }),
@@ -602,7 +602,7 @@ async function refreshFriendRequestNotifications() {
                 {
                     label: "Accepter",
                     onClick: async () => {
-                        const response = await authenticatedFetch('/api/users/friends/accept', {
+                        const response = await apiFetch('/api/users/friends/accept', {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json'},
                             body: JSON.stringify({requestUserId: request.requester?.id})
@@ -632,7 +632,7 @@ async function getUsernameFromUserId(userId) {
         return profileNameCache.get(userId);
     }
 
-    const response = await authenticatedFetch(`/api/users/${encodeURIComponent(userId)}/minimal-profile`, {
+    const response = await apiFetch(`/api/users/${encodeURIComponent(userId)}/minimal-profile`, {
         method: "GET",
         headers: {"Content-Type": "application/json"},
     });

@@ -1,6 +1,6 @@
 import { escapeHtml } from "/utils/security.js";
 import { apiFetch } from "/utils/wrapFetch.js";
-import { setAuthTokens } from '/utils/auth.js';
+import { setAuthTokens,clearAuthTokens } from '/utils/auth.js';
 
 
 export class LoginForm extends HTMLElement {
@@ -68,8 +68,10 @@ export class LoginForm extends HTMLElement {
 
                 const accessToken = payload.accessToken;
                 const refreshToken = payload.refreshToken;
+                console.log("Payload reçu");
+                console.log(payload)
                 if (accessToken) {
-                    setAuthTokens(accessToken, refreshToken);
+                    await setAuthTokens(accessToken, refreshToken);
                     this._setStatus(payload.detail || "Connexion réussie.", "ok");
                     window.location.href = "/home/pages/home-page/home-page.html";
                     return;
