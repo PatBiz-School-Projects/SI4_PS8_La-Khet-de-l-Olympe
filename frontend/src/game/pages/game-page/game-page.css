@@ -217,19 +217,6 @@ chat-box {
         margin: 0;
     }
 
-    .game-container {
-        display: block;
-        width: 100%;
-        height: auto;
-        padding: 0;
-        gap: 0;
-    }
-
-    game-board {
-
-        margin: 0;
-    }
-
     #header-btns,
     .desktop-only {
         display: none !important;
