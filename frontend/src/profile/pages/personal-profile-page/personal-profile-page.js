@@ -1,4 +1,4 @@
-import { authenticatedFetch,clearTokens, ensureValidAccessToken, getUserIdFromToken } from "/utils/auth.js";
+import { authenticatedFetch,clearAuthTokens, ensureValidAccessToken, getUserIdFromToken } from "/utils/auth.js";
 import { removeAllCookies,setCookie } from "/utils/cookie.js";
 import {
     sendChallenge,
