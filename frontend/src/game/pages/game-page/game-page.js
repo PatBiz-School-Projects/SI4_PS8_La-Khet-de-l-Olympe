@@ -76,11 +76,25 @@ if (mobileNavbar) {
         const section = event.detail.section;
 
         if (section === 'quit') {
+            if (chatBox) chatBox.classList.remove('chat-visible');
+            pendingForfeitAction = () => {
+                window.location.href = "/home/pages/home-page/home-page.html";
+            };
             forfeitModal.show();
         } else if (section === 'infos') {
+            if (chatBox) chatBox.classList.remove('chat-visible');
             rulesModal.show();
         } else if (section === 'chat') {
             console.log("Ouvrir le chat...");
+
+            if (chatBox) {
+                chatBox.classList.toggle('chat-visible');
+
+                if (chatBox.classList.contains('chat-visible')) {
+                    chatBox.unfold();
+                }
+
+            }
         }
 
         stateMachine.on(clickHandler.computePageAction(event));
@@ -311,6 +325,12 @@ onload = async _ => {
     if (GAME_MODE === GameMode.MULTIPLAYER) {
         chatBox.chatId = GAME_ID;
         await chatBox.actualise();
+
+        const isMobile = document.documentElement.classList.contains('mobile') || document.body.classList.contains('mobile');
+        if (isMobile) {
+            chatBox.classList.add('mobile-chat-box', 'game-overlay-chat');
+            chatBox.classList.remove('chat-visible');
+        }
     } else {
         chatBox.remove();
         gameOverModal.deactivateChallenge();

@@ -218,6 +218,12 @@ exports.SocketIOHandler = {
 
         const { chatId } = socket.handshake.query;
 
+        const { userToken } = parseCookies(socket.handshake.headers.cookie || "");
+        const userId = extractUserId(userToken);
+
+        console.log(message);
+        console.log(userId);
+
         const chat = ChatsManager.getChatById(chatId);
         chat.addMessage(message);
         ChatsRepository.addMessage(chatId, message);

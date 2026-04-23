@@ -995,7 +995,21 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
 }
 
 .mobile #mobile-chat-panel {
-    min-height: calc(100vh - 210px);
+    display: flex;
+    flex-direction: column;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+
+    width: 100vw;
+    margin-left: -16px;
+    margin-right: -16px;
+    height: calc(100vh - 141px);
+    min-height: 0;
+    overflow: hidden;
 }
 
 .mobile .title-block--mobile .title-main {
