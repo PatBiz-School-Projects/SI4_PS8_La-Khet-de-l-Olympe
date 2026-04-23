@@ -1,5 +1,7 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
+import { Haptics, ImpactStyle, NotificationType } from "https://cdn.jsdelivr.net/npm/@capacitor/haptics@latest/+esm";
+
 import {
     GameActionTimer,
     GameBoard,
@@ -28,7 +30,7 @@ import { apiFetch } from "/utils/wrapFetch.js";
 // REVIEW : It's a feature instead of a util
 import { sendChallenge } from "/utils/challenge.js"
 
-import { API_HOST } from "/env.js";
+import { API_HOST,IS_MOBILE_WEBVIEW } from "/env.js";
 
 
 //
@@ -563,6 +565,21 @@ gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratin
     }
 
     isGameOver = true;
+
+    if (IS_MOBILE_WEBVIEW && GAME_MODE !== GameMode.LOCAL_MULTIPLAYER) {
+        try {
+            if (state === "DRAW") {
+                await Haptics.impact({ style: ImpactStyle.Medium });
+                setTimeout(async () => await Haptics.impact({ style: ImpactStyle.Medium }), 150);
+            } else if (CLIENT_PLAYER.playerId===winnerId) {
+                await Haptics.notification({ type: NotificationType.Success });
+            } else {
+                await Haptics.notification({ type: NotificationType.Error });
+            }
+        } catch (err) {
+            console.error("Erreur avec le moteur haptique :", err);
+        }
+    }
 
     const ratingMessage = formatRatingUpdate(rating ?? ratingUpdate);
     gameOverModal.detail = ratingMessage ? `${baseMessage} ${ratingMessage}` : baseMessage;
