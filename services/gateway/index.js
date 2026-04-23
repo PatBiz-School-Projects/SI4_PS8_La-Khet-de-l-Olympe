@@ -16,7 +16,7 @@ const IS_PROD = process.env.IS_PROD === "true";
 
 const ALLOWED_ORIGINS = [
     "https://khet-olympe.mobile.app",
-    (IS_PROD) ? "https://khet-olympe.ps8.pns.academy" : "localhost:8000",
+    (IS_PROD) ? "https://khet-olympe.ps8.pns.academy" : "http://localhost:8000",
 ];
 
 

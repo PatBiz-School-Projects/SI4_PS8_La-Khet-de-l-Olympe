@@ -11,14 +11,19 @@ const REFRESH_TOKEN_COOKIE = "refreshToken";
 export async function apiFetch(url, options = {}) {
     const headers = new Headers(options.headers || {});
     console.log("Document cookie",document.cookie);
-    if (!headers.has('Authorization')) {
-        const accessToken = getCookie(USER_ACCESS_TOKEN_COOKIE) || getCookie(GUEST_ACCESS_TOKEN_COOKIE);
-        const refreshToken = getCookie(REFRESH_TOKEN_COOKIE);
-        if (accessToken) {
-            headers.set('Authorization', `Bearer ${accessToken}`);
-        }
-        if (refreshToken) {
-            headers.set('refreshToken', refreshToken);
+    if (IS_MOBILE_WEBVIEW) {
+        // Force Origin header since Capacitor's native HTTP layer strips it
+        headers.set('Origin', 'https://khet-olympe.mobile.app');
+
+        if (!headers.has('Authorization')) {
+            const accessToken = getCookie(USER_ACCESS_TOKEN_COOKIE) || getCookie(GUEST_ACCESS_TOKEN_COOKIE);
+            const refreshToken = getCookie(REFRESH_TOKEN_COOKIE);
+            if (accessToken) {
+                headers.set('Authorization', `Bearer ${accessToken}`);
+            }
+            if (refreshToken) {
+                headers.set('refreshToken', refreshToken);
+            }
         }
     }
 
