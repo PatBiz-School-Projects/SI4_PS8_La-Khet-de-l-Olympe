@@ -77,6 +77,9 @@ if (mobileNavbar) {
 
         if (section === 'quit') {
             if (chatBox) chatBox.classList.remove('chat-visible');
+            pendingForfeitAction = () => {
+                window.location.href = "/home/pages/home-page/home-page.html";
+            };
             forfeitModal.show();
         } else if (section === 'infos') {
             if (chatBox) chatBox.classList.remove('chat-visible');
