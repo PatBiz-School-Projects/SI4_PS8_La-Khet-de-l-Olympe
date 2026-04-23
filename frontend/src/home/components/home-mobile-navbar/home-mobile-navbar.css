@@ -8,7 +8,7 @@
     border: none;
     cursor: pointer;
     text-decoration: none;
-
+    flex: 1;
     color: var(--text-muted, #8a7d5a);
     font-family: 'Cinzel', serif;
     font-size: 0.65rem;
