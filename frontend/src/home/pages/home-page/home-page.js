@@ -72,6 +72,7 @@ const searchComponent = new SearchComponent({
     statusElement: document.getElementById("search-status"),
     resultsElement: document.getElementById("search-results"),
     getCurrentUserId: () => USER_ID,
+    isAuthenticated:true
 });
 
 const leaderboardComponent = new LeaderboardComponent({
@@ -79,7 +80,6 @@ const leaderboardComponent = new LeaderboardComponent({
     listElement: document.getElementById("leaderboard-list"),
     selfElement: document.getElementById("leaderboard-self"),
     getCurrentUserId: () => USER_ID,
-    isAuthenticated: Boolean(USER_ID)
 });
 
 const friendsComponent = new FriendsComponent({
