@@ -16,6 +16,16 @@ import {
     sendChallenge
 } from "/utils/challenge.js";
 
+import {
+    APP_ROUTES,
+    clearPushRegistration,
+    initLocalNotifications,
+    initPushNotifications,
+    registerPushToken,
+    scheduleChallengeLocalNotification,
+    scheduleFriendRequestLocalNotification
+} from "/utils/mobile-notifications-service.js";
+
 import { apiFetch } from "/utils/wrapFetch.js";
 
 import { API_HOST,IS_MOBILE_WEBVIEW } from "/env.js";
@@ -226,6 +236,7 @@ async function logout() {
     } catch (error) {
         console.error("Logout request failed", error);
     } finally {
+        await clearPushRegistration();
         clearAuthTokens();
         removeAllCookies();
         window.location.reload();
@@ -561,6 +572,7 @@ async function refreshFriendRequestNotifications() {
 
     const payload = await response.json();
     for (const request of payload.requests || []) {
+        await scheduleFriendRequestLocalNotification(request);
         const notificationKey = `friend-request:${request.id}`;
         showHomeNotification({
             key: notificationKey,
@@ -637,6 +649,7 @@ async function getUsernameFromUserId(userId) {
 
 async function showIncomingChallengeNotification(challenge) {
     const challengerName = await getUsernameFromUserId(challenge.challengerUserId);
+    await scheduleChallengeLocalNotification(challenge, challengerName);
     const notificationKey = `challenge-incoming:${challenge.id}`;
 
     showHomeNotification({
@@ -679,6 +692,16 @@ async function refreshChallengeNotifications() {
 }
 
 async function initHomeNotifications() {
+    await initLocalNotifications();
+    await initPushNotifications({
+        onFriendRequestPush: () => {
+            refreshFriendRequestNotifications().catch((error) => {
+                console.error("Unable to refresh friend request notifications after push", error);
+            });
+        },
+        onNotificationRoute: (data) => routeFromNotificationData(data),
+    });
+    await registerPushToken();
     await refreshFriendRequestNotifications();
     await refreshChallengeNotifications();
 
@@ -711,6 +734,33 @@ async function initHomeNotifications() {
     }, FRIEND_REQUESTS_REFRESH_MS);
 }
 
+async function routeFromNotificationData(data = {}) {
+    const route = data.route || data.notificationRoute;
+
+    if (route === APP_ROUTES.FRIEND_REQUESTS) {
+        await handleSectionSelection("friends");
+        return;
+    }
+
+    if (route === APP_ROUTES.CHALLENGES) {
+        await handleSectionSelection("play");
+        await refreshChallengeNotifications();
+    }
+}
+
+async function applyNotificationDeepLinkFromHash() {
+    const hashRoute = window.location.hash.replace("#", "");
+    if (hashRoute === "friends-requests") {
+        await handleSectionSelection("friends");
+        return;
+    }
+
+    if (hashRoute === "home-challenges") {
+        await handleSectionSelection("play");
+        await refreshChallengeNotifications();
+    }
+}
+
 window.addEventListener("beforeunload", () => {
     if (friendRequestsPollingId) {
         clearInterval(friendRequestsPollingId);
@@ -720,6 +770,7 @@ window.addEventListener("beforeunload", () => {
     }
     challengeSocket?.disconnect();
 });
+
 /**
  onLoad function
  */
@@ -763,5 +814,6 @@ onload = async () => {
     await toggleMobileChat(true);
     await initHomeNotifications();
     await loadSidebarProfile();
+    await applyNotificationDeepLinkFromHash();
     searchComponent.setStatus("Tapez au moins 2 caractères.");
 };
