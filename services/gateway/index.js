@@ -30,7 +30,7 @@ function getPathSegments(url) {
 
 async function handleHTTPRequest(req, res) {
     const origin = req.headers.origin;
-    console.log(origin)
+    console.log("\n\n\n\n\n",origin,"\n\n\n\n\n\n")
     // Add CORS headers to the response
     if (ALLOWED_ORIGINS.includes(origin)) {
         res.setHeader("Access-Control-Allow-Origin", origin);
