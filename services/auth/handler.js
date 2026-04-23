@@ -290,7 +290,7 @@ exports.HTTPHandler = {
             const db = await getDb();
             const sessions = db.collection("sessions");
 
-            await collection.deleteOne({ refreshToken });
+            await sessions.deleteOne({ refreshToken });
         }
 
         try {
@@ -305,6 +305,7 @@ exports.HTTPHandler = {
             'Content-Type': 'application/json',
             'Set-Cookie': [
                 'userToken=; Path=/; Max-Age=0',
+                'refreshToken=; Path=/; Max-Age=0',
                 'userId=; Path=/; Max-Age=0',
                 'gameId=; Path=/; Max-Age=0'
             ],

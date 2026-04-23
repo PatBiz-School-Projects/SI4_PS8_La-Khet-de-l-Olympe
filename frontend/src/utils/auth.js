@@ -15,9 +15,9 @@ export async function setAuthTokens(accessToken, refreshToken = accessToken) {
     if (refreshToken) await setCookie(REFRESH_TOKEN_COOKIE, refreshToken);
 }
 
-export function clearAuthTokens() {
-    removeCookie(ACCESS_TOKEN_COOKIE);
-    removeCookie(REFRESH_TOKEN_COOKIE);
+export async function clearAuthTokens() {
+    await removeCookie(ACCESS_TOKEN_COOKIE);
+    await removeCookie(REFRESH_TOKEN_COOKIE);
 }
 
 export async function verifyToken(token) {

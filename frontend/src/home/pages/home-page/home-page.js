@@ -226,6 +226,8 @@ async function login() {
 
 async function logout() {
     try {
+        const token = getCookie("userToken")
+        console.log("Token logout",token);
         await apiFetch("/api/auth/logout", {
             method: "POST",
             headers: {
@@ -237,8 +239,8 @@ async function logout() {
         console.error("Logout request failed", error);
     } finally {
         await clearPushRegistration();
-        clearAuthTokens();
-        removeAllCookies();
+        await clearAuthTokens();
+        await removeAllCookies();
         window.location.reload();
     }
 }
@@ -802,7 +804,7 @@ onload = async () => {
     const payload = decodeJwtPayload(token);
     const userId = payload?.sub;
     if (!userId) {
-        clearAuthTokens();
+        await clearAuthTokens();
         return;
     }
 

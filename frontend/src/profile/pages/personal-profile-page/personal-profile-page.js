@@ -49,8 +49,8 @@ async function logoutFromProfile() {
     } catch (error) {
         console.error("Erreur lors de la déconnexion", error);
     } finally {
-        clearAuthTokens();
-        removeAllCookies();
+        await clearAuthTokens();
+        await removeAllCookies();
         window.location.href = '/home/pages/home-page/home-page.html';
     }
 }
