@@ -100,9 +100,8 @@ exports.public = (handlerCb) => async (req, res) => {
  *    - Renewal fails    => respond 401, halt the request.
  */
 exports.authenticated = (handlerCb) => async (req, res) => {
-    const { userToken: cookieAccessToken, refreshToken: cookieRefreshToken } = parseCookies(req.headers.cookie);
-
-    const accessToken  = req.headers.authorization?.replace('Bearer ', '') || cookieAccessToken;
+    const { userToken: cookieAccessToken } = parseCookies(req.headers.cookie);
+    const accessToken = req.headers.authorization?.replace('Bearer ', '') || cookieAccessToken;
     const refreshToken = req.headers['refreshtoken'] || cookieRefreshToken;
     try {
         // Step 1: Validate the current access token
@@ -149,7 +148,8 @@ exports.authenticated = (handlerCb) => async (req, res) => {
  * Dispatches the incoming request to the given guest & authenticated handler based on the presence of an access token.
  */
 exports.dispatch_GuestORAuthenticated = (guestHandlerCb, authenticatedHandlerCb) => async (req, res) => {
-    const { userToken: accessToken } = parseCookies(req.headers.cookie);
+    let { userToken: cookieAccessToken } = parseCookies(req.headers.cookie);
+    const accessToken = req.headers.authorization?.replace('Bearer ', '') || cookieAccessToken;
 
     if (accessToken) {
         await authenticatedHandlerCb(req, res);
