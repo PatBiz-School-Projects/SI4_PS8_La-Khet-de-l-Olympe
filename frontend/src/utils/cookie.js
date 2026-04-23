@@ -1,6 +1,8 @@
 import { IS_MOBILE_WEBVIEW,API_HOST } from "/env.js";
 import { CapacitorCookies } from "https://cdn.jsdelivr.net/npm/@capacitor/core@8.3.1/+esm";
 
+const MOBILE_COOKIE_KEYS = ["userToken", "refreshToken", "guestToken", "userId", "gameId"];
+
 
 export function getCookie(name) {
     if (IS_MOBILE_WEBVIEW) {
@@ -16,6 +18,7 @@ export function getCookie(name) {
 
 export async function setCookie(name, value) {
     if (IS_MOBILE_WEBVIEW) {
+        localStorage.setItem(name, value);
         await CapacitorCookies.setCookie({
             url: API_HOST,
             key: name,
@@ -28,6 +31,7 @@ export async function setCookie(name, value) {
 
 export async function removeCookie(name) {
     if (IS_MOBILE_WEBVIEW) {
+        localStorage.removeItem(name);
         await CapacitorCookies.deleteCookie({
             url: API_HOST,
             key: name,
@@ -40,13 +44,16 @@ export async function removeCookie(name) {
 /** @alias {@link clearCookies()} */
 export async function removeAllCookies() {
     if (IS_MOBILE_WEBVIEW) {
+        for (const key of MOBILE_COOKIE_KEYS) {
+            localStorage.removeItem(key);
+        }
         await CapacitorCookies.clearCookies({ url: API_HOST });
         return;
     }
     const cookies = document.cookie.split(';');
     for (let cookie of cookies) {
         const name = cookie.split('=')[0].trim();
-        removeCookie(name);
+        await removeCookie(name);
     }
 }
 
