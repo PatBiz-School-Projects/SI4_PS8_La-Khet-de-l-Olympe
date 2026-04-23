@@ -7,11 +7,18 @@
     "androidScheme": "https"
   },
   "plugins": {
-    "CapacitorCookies": {
-      "enabled": true
-    },
-    "CapacitorHttp": {
-      "enabled": true
-    }
+      "CapacitorCookies": {
+          "enabled": true
+      },
+      "CapacitorHttp": {
+          "enabled": true
+      },
+      "SplashScreen": {
+          "launchShowDuration": 0,
+          "launchAutoHide": true,
+          "backgroundColor": "#121016",
+          "splashFullScreen": true,
+          "splashImmersive": true
+      }
   }
 }

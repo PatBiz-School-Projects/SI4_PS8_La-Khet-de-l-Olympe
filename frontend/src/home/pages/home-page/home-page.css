@@ -395,7 +395,7 @@ home-mobile-navbar {
 }
 
 .play-buttons--mobile {
-    margin-top: 0;
+    margin-top: 40vh;
 }
 .title-block--mobile {
     margin-top: 8px;
@@ -1138,8 +1138,50 @@ app-modal#difficulty-modal [slot="modal-content"] div#modal-btns {
  ******************************************************************************/
 
 
-.mobile {
-    home-mobile-navbar:not([hidden]) {
+.mobile home-mobile-navbar:not([hidden]) {
         display: block !important;
     }
+
+
+/* ==========================================================================
+   SPLASH SCREEN (Image Plein Écran)
+   ========================================================================== */
+
+#mobile-splash-screen {
+    display: none; /* Toujours caché sur PC */
+}
+
+/* S'active uniquement sur mobile */
+.mobile #mobile-splash-screen {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    background: #0a0a0f; /* Fond noir profond sous l'image au cas où */
+
+    /* Animation de disparition après 1.5s */
+    animation: splashFadeOut 0.5s ease-in-out 1.5s forwards;
+    overflow: hidden;
+}
+
+.mobile #mobile-splash-screen .splash-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Assure que l'image remplit l'écran sans se déformer */
+    object-position: center; /* Centre l'image */
+
+    /* Léger effet de zoom lent pour dynamiser l'image fixe */
+    animation: splashZoomIn 2s ease-out forwards;
+}
+
+@keyframes splashFadeOut {
+    to {
+        opacity: 0;
+        visibility: hidden;
+    }
+}
+
+@keyframes splashZoomIn {
+    from { transform: scale(1.08); }
+    to { transform: scale(1); }
 }

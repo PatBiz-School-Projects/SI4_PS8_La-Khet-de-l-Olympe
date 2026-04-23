@@ -11,9 +11,9 @@ export class GameMobilePyramidCounter extends HTMLElement {
         this._active = false;
     }
 
-    connectedCallback() {
+   async connectedCallback() {
         this.render();
-        this.shadowRoot.addEventListener('click', () => {
+        this.shadowRoot.addEventListener('click', (event) => {
             if (this._active && this._count > 0) {
 
                 event.stopPropagation();

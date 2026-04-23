@@ -54,7 +54,7 @@ const chatBox = desktopChatBox;
 
 let USER_ID;
 let searchDebounceId;
-const isMobileLayout = !IS_MOBILE_WEBVIEW;
+const isMobileLayout = IS_MOBILE_WEBVIEW;
 let mobileChatComponent = null;
 
 const searchComponent = new SearchComponent({
@@ -724,6 +724,16 @@ window.addEventListener("beforeunload", () => {
  onLoad function
  */
 onload = async () => {
+
+    const splashScreen = document.getElementById("mobile-splash-screen");
+    if (splashScreen) {
+        splashScreen.addEventListener('animationend', (event) => {
+
+            if (event.animationName === 'splashFadeOut') {
+                splashScreen.remove();
+            }
+        });
+    }
     applyResponsiveLayout();
     window.addEventListener("resize", applyResponsiveLayout);
     searchComponent.bindInput();
