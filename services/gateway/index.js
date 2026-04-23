@@ -35,7 +35,7 @@ async function handleHTTPRequest(req, res) {
     if (ALLOWED_ORIGINS.includes(origin)) {
         res.setHeader("Access-Control-Allow-Origin", origin);
         res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS");
-        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, refreshToken");
+        res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization, refreshToken, guestToken");
         res.setHeader("Access-Control-Allow-Credentials", "true");
     }
 
