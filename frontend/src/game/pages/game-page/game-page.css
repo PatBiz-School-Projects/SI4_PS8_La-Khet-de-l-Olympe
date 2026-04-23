@@ -261,5 +261,6 @@ chat-box {
         z-index: 60;
         width: 36vw !important;
         height: 12vw!important;
+        pointer-events: auto !important;
     }
 }

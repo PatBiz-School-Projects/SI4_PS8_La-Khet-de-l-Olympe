@@ -14,3 +14,4 @@
         document.documentElement.classList.add("mobile");
     }
 })();
+

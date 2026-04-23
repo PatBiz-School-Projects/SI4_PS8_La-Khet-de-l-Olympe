@@ -375,6 +375,10 @@ homeBtn.onclick = _ => {
         return;
     }
 
+    if (event.target.closest('game-mobile-pyramid-counter, game-rotation-indicator, game-player-inventory, game-mobile-navbar')) {
+        return;
+    }
+
     pendingForfeitAction = () => {
         window.location.href = "/home/pages/home-page/home-page.html";
     };

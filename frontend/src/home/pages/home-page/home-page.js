@@ -724,6 +724,16 @@ window.addEventListener("beforeunload", () => {
  onLoad function
  */
 onload = async () => {
+
+    const splashScreen = document.getElementById("mobile-splash-screen");
+    if (splashScreen) {
+        splashScreen.addEventListener('animationend', (event) => {
+
+            if (event.animationName === 'splashFadeOut') {
+                splashScreen.remove();
+            }
+        });
+    }
     applyResponsiveLayout();
     window.addEventListener("resize", applyResponsiveLayout);
     searchComponent.bindInput();
