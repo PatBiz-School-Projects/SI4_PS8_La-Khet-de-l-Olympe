@@ -37,7 +37,7 @@ export class RotationRenderer {
         ctx.translate(size / 2, size / 2);
         ctx.rotate(angleMap[piece.orientation] || 0);
 
-        const drawSize = size * 0.65;
+        const drawSize = size * 0.90;
         ctx.drawImage(img, -drawSize / 2, -drawSize / 2, drawSize, drawSize);
         ctx.restore();
     }

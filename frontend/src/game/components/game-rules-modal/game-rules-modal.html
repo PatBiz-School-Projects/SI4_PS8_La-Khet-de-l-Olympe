@@ -1,0 +1,37 @@
+<app-modal id="rules-modal">
+    <div slot="modal-header">
+        <h2>Règles de l'Olympe</h2>
+    </div>
+
+    <div slot="modal-content">
+        <div class="scrollable-content">
+            <p class="intro">Détruisez le Pharaon adverse avant qu'il ne détruise le vôtre ! À la fin de chaque tour, votre Sphinx tire un rayon mortel qui rebondit sur les miroirs.</p>
+
+            <h3>Les Artefacts</h3>
+            <ul class="pieces-list">
+                <li><strong>👑 Pharaon :</strong> Le roi. S'il est touché par un laser, vous perdez la partie. Il n'a aucune défense.</li>
+                <li><strong>🦁 Sphinx :</strong> Indestructible. Il tire le laser à la fin de votre tour. Il ne peut pas se déplacer, seulement pivoter.</li>
+                <li><strong>🔺 Pyramide :</strong> Possède 1 miroir en diagonale. Dévie le laser à 90°. Vulnérable sur le dos.</li>
+                <li><strong>🪲 Scarabée :</strong> Possède 2 miroirs. Indestructible. Peut échanger sa place avec le Sphinx ou le Pharaon !</li>
+                <li><strong>🐺 Anubis :</strong> Le bouclier divin. Bloque le laser de face, mais vulnérable sur les côtés.</li>
+            </ul>
+
+            <h3>Votre Tour de Jeu</h3>
+            <p>Choisissez <strong>UNE SEULE</strong> action :</p>
+            <ul>
+                <li><strong>Pivoter</strong> une de vos pièces de 90°.</li>
+                <li><strong>Déplacer</strong> une pièce d'une case (sauf Sphinx et Pharaon).</li>
+                <li><strong>Placer</strong> une Pyramide de votre réserve sur le plateau.</li>
+                <li><strong>Échanger</strong> la position de votre Scarabée.</li>
+            </ul>
+
+            <div class="laser-warning">
+                ⚡ Dès que votre action est finie, le Sphinx tire ! Calculez bien la trajectoire...
+            </div>
+        </div>
+
+        <div id="buttons">
+            <button id="close-btn" class="primary">Compris !</button>
+        </div>
+    </div>
+</app-modal>

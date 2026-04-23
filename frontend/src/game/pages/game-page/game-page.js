@@ -1,14 +1,17 @@
 import { io } from "https://cdn.socket.io/4.8.3/socket.io.esm.min.js";
 
-import { AppMobileNavbar } from "/shared/components/index.js";
+import { Haptics, ImpactStyle, NotificationType } from "https://cdn.jsdelivr.net/npm/@capacitor/haptics@latest/+esm";
+
 import {
     GameActionTimer,
     GameBoard,
     GameForfeitModal,
     GameOverModal,
+    GameRulesModal,
     GamePlayerInventory,
     GameRotationIndicator,
     GameTurnIndicator,
+    GameMobilePyramidCounter
 } from "/game/components/index.js";
 import { ChatBox } from "/chat/components/index.js";
 
@@ -27,7 +30,7 @@ import { apiFetch } from "/utils/wrapFetch.js";
 // REVIEW : It's a feature instead of a util
 import { sendChallenge } from "/utils/challenge.js"
 
-import { API_HOST } from "/env.js";
+import { API_HOST,IS_MOBILE_WEBVIEW } from "/env.js";
 
 
 //
@@ -49,12 +52,42 @@ const player2Inventory = document.querySelector("#player2-inventory");
 const player1RotationIndicator = document.querySelector("#player1-rotation-indicator");
 /** @type { GameRotationIndicator } */
 const player2RotationIndicator = document.querySelector("#player2-rotation-indicator");
+const player1MobileCounter = document.querySelector("#player1-mobile-counter");
+const player2MobileCounter = document.querySelector("#player2-mobile-counter");
 /** @type { GameForfeitModal } */
 const forfeitModal = document.querySelector("game-forfeit-modal");
+/** @type { GameRulesModal } */
+const rulesModal = document.querySelector("game-rules-modal");
 /** @type { GameOverModal } */
 const gameOverModal = document.querySelector("game-over-modal");
 /** @type { ChatBox } */
 const chatBox = document.querySelector("chat-box");
+const mobileNavbar = document.querySelector("game-mobile-navbar");
+const infoBtn = document.querySelector("#info-btn");
+
+if (infoBtn) {
+    infoBtn.onclick = () => rulesModal.show();
+}
+
+if (mobileNavbar) {
+    mobileNavbar.addEventListener('game-mobile-nav-click', (event) => {
+        if (isGameOver) return;
+
+        const section = event.detail.section;
+
+        if (section === 'quit') {
+            forfeitModal.show();
+        } else if (section === 'infos') {
+            rulesModal.show();
+        } else if (section === 'chat') {
+            console.log("Ouvrir le chat...");
+        }
+
+        stateMachine.on(clickHandler.computePageAction(event));
+    });
+}
+
+
 
 
 //
@@ -182,6 +215,12 @@ async function setupVariables() {
     PLAYERS_INVENTORY_BY_ID = { [PLAYERS_ID[0]]: player1Inventory, [PLAYERS_ID[1]]: player2Inventory };
 
     PLAYERS_ROTATION_INDICATOR_BY_ID = { [PLAYERS_ID[0]]: player1RotationIndicator, [PLAYERS_ID[1]]: player2RotationIndicator };
+
+    player1MobileCounter.owner = PLAYERS_ID[0];
+    player1MobileCounter.color = PLAYERS_COLOR_BY_ID[PLAYERS_ID[0]];
+
+    player2MobileCounter.owner = PLAYERS_ID[1];
+    player2MobileCounter.color = PLAYERS_COLOR_BY_ID[PLAYERS_ID[1]];
 }
 
 let isGameOver = false;
@@ -236,7 +275,7 @@ onload = async _ => {
 
     // Initialising turn indicator
     if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
-        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase() === "RED" ? "ROUGE":"BLEU";
     } else {
         turnIndicator.activePlayerName = activePlayer.profile.username;
     }
@@ -245,12 +284,20 @@ onload = async _ => {
     // Initialising players' inventory
     for (const playerId of PLAYERS_ID) {
         const playerInventory = PLAYERS_INVENTORY_BY_ID[playerId];
+        const playerRotationIndicator = PLAYERS_ROTATION_INDICATOR_BY_ID[playerId]
 
         playerInventory.owner = playerId;
         playerInventory.color = PLAYERS_COLOR_BY_ID[playerId];
         playerInventory.active = (playerId === activePlayer.playerId);
+        playerRotationIndicator.style.display = (playerId === activePlayer.playerId) ? '' : 'none';
         await playerInventory.actualise();
     }
+
+    player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+    player2MobileCounter.count = player2Inventory.getNbOfPyramid();
+
+    player1MobileCounter.active = (PLAYERS_ID[0] === activePlayer.playerId);
+    player2MobileCounter.active = (PLAYERS_ID[1] === activePlayer.playerId);
 
     // Initialising players' rotation indicator
     for (const playerId of PLAYERS_ID) {
@@ -267,6 +314,10 @@ onload = async _ => {
     } else {
         chatBox.remove();
         gameOverModal.deactivateChallenge();
+
+        if (mobileNavbar) {
+            mobileNavbar.hideChat();
+        }
     }
 }
 
@@ -353,7 +404,7 @@ gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
     stateMachine.on({ type: GamePageActionType.START_TURN, payload: payload });
 
     if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
-        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase() === "RED" ? "ROUGE":"BLEU";
     } else {
         turnIndicator.activePlayerName = activePlayer.profile.username;
     }
@@ -368,8 +419,14 @@ gameSocket.on("start-turn", gameEventQueue.enqueue(async payload => {
 
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = true;
 
+    if (CLIENT_PLAYER.playerId === PLAYERS_ID[0]) player1MobileCounter.active = true;
+    if (CLIENT_PLAYER.playerId === PLAYERS_ID[1]) player2MobileCounter.active = true;
+
     await player1Inventory.actualise();
     await player2Inventory.actualise();
+
+    player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+    player2MobileCounter.count = player2Inventory.getNbOfPyramid();
 }));
 
 gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
@@ -386,7 +443,7 @@ gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
     stateMachine.on({ type: GamePageActionType.END_TURN })
 
     if (GAME_MODE === GameMode.LOCAL_MULTIPLAYER) {
-        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase();
+        turnIndicator.activePlayerName = PLAYERS_COLOR_BY_ID[activePlayer.playerId].toUpperCase() === "RED" ? "ROUGE":"BLEU";
     } else {
         turnIndicator.activePlayerName = activePlayer.profile.username;
     }
@@ -394,6 +451,8 @@ gameSocket.on("end-turn", gameEventQueue.enqueue(async _ => {
     turnIndicator.color = PLAYERS_COLOR_BY_ID[activePlayer.playerId];
 
     PLAYERS_INVENTORY_BY_ID[CLIENT_PLAYER.playerId].active = false;
+    player1MobileCounter.active = false;
+    player2MobileCounter.active = false;
 }));
 
 gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, result}) => {
@@ -428,6 +487,10 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
             console.log("Opponent placed piece:", piece, "at:", pos);
 
             await PLAYERS_INVENTORY_BY_ID[piece.owner].popPyramid();
+
+            player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+            player2MobileCounter.count = player2Inventory.getNbOfPyramid();
+
             await board.placePiece(piece, pos);
         } break;
         case "rotate": {
@@ -458,6 +521,9 @@ gameSocket.on("opponent-action", gameEventQueue.enqueue(async ({method, args, re
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
     gameSocket.emit("animation-complete");
 }));
@@ -492,15 +558,36 @@ gameSocket.on("game-over", gameEventQueue.enqueue(async ({state, winnerId, ratin
                 baseMessage = (CLIENT_PLAYER.playerId === winnerId) ? "Victoire !" : "Défaite...";
                 break;
             case GameMode.LOCAL_MULTIPLAYER:
-                baseMessage = "Victoire de " + PLAYERS_COLOR_BY_ID[winnerId].toUpperCase();
+                const color = (PLAYERS_COLOR_BY_ID[winnerId].toUpperCase() === "red")? "ROUGE":"BLEU";
+                baseMessage = "Victoire de " + color;
                 break;
         }
     }
 
     isGameOver = true;
-    gameOverModal.show();
+
+    if (IS_MOBILE_WEBVIEW && GAME_MODE !== GameMode.LOCAL_MULTIPLAYER) {
+        try {
+            if (state === "DRAW") {
+                await Haptics.impact({ style: ImpactStyle.Medium });
+                setTimeout(async () => await Haptics.impact({ style: ImpactStyle.Medium }), 150);
+            } else if (CLIENT_PLAYER.playerId===winnerId) {
+                await Haptics.notification({ type: NotificationType.Success });
+            } else {
+                await Haptics.notification({ type: NotificationType.Error });
+            }
+        } catch (err) {
+            console.error("Erreur avec le moteur haptique :", err);
+        }
+    }
+
     const ratingMessage = formatRatingUpdate(rating ?? ratingUpdate);
     gameOverModal.detail = ratingMessage ? `${baseMessage} ${ratingMessage}` : baseMessage;
+
+    setTimeout(() => {
+        gameOverModal.show();
+    }, 3000);
+
 }));
 
 gameSocket.on("action-timer-sync", async ({remainingTime}) => {
@@ -512,25 +599,6 @@ onclick = (event) => {
     if (isGameOver) {
         return;
     }
-    const navButton = event.target.closest('[data-section]');
-
-    if (navButton) {
-        const section = navButton.dataset.section;
-
-        if (section === 'quit') {
-            document.querySelector('game-forfeit-modal').show();
-            return;
-        }
-        if (section === 'info') {
-            alert(String.raw`Débrouille toi ¯\_(ツ)_/¯`);
-            return;
-        }
-        if (section === 'chat') {
-            console.log("Ouvrir le chat...");
-            return;
-        }
-    }
-
     stateMachine.on(clickHandler.computePageAction(event));
 };
 
@@ -539,6 +607,13 @@ player1Inventory.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
 player2Inventory.addEventListener("inventory-click", event => {
+    stateMachine.on(event.detail);
+});
+
+player1MobileCounter.addEventListener("inventory-click", event => {
+    stateMachine.on(event.detail);
+});
+player2MobileCounter.addEventListener("inventory-click", event => {
     stateMachine.on(event.detail);
 });
 
@@ -637,6 +712,8 @@ stateMachine.subscribe([GameActionType.MOVE_PIECE], async ({piece, from, to}) =>
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
     gameSocket.emit("animation-complete");
 });
@@ -681,6 +758,10 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
     console.log("Placement accepted");
 
     await PLAYERS_INVENTORY_BY_ID[piece.owner].popPyramid();
+
+    player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+    player2MobileCounter.count = player2Inventory.getNbOfPyramid();
+
     player1RotationIndicator.active = false;
     player2RotationIndicator.active = false;
 
@@ -692,6 +773,8 @@ stateMachine.subscribe([GameActionType.PLACE_PIECE], async ({piece, pos}) => {
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
 });
 
@@ -738,6 +821,8 @@ stateMachine.subscribe([GameActionType.ROTATE_PIECE], async ({piece, pos, rotati
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
 
     gameSocket.emit("animation-complete");
@@ -796,6 +881,9 @@ stateMachine.subscribe([GameActionType.SWITCH_PIECES], async ({piece1, pos1, pie
 
         await player1Inventory.actualise();
         await player2Inventory.actualise();
+
+        player1MobileCounter.count = player1Inventory.getNbOfPyramid();
+        player2MobileCounter.count = player2Inventory.getNbOfPyramid();
     }
 
     gameSocket.emit("animation-complete");

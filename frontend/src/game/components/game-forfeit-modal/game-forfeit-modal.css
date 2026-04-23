@@ -9,26 +9,38 @@
 
 app-modal {
     z-index: 1000;
+    box-sizing: border-box;
+    margin: 0 auto; /* Force le centrage */
 
     & [slot="modal-header"] h2 {
         color: var(--text-main);
-        font-size: 1.5rem;
+        font-size: clamp(1.2rem, 4vw, 1.5rem);
         letter-spacing: 0.05em;
         text-transform: uppercase;
+        text-align: center;
+        margin:0;
     }
 
     & [slot="modal-content"] {
         display: flex;
         flex-direction: column;
-        flex-wrap: wrap;
-        gap: 4rem;
+        align-items: center;
         justify-content: center;
+
+        width: 100%;
+        box-sizing: border-box;
+
+        gap: clamp(1.5rem, 5vw, 3rem);
 
         & #buttons {
             display: flex;
+            flex-direction: row;
             flex-wrap: wrap;
-            gap: 2rem;
             justify-content: center;
+            align-items: center;
+            width: 100%;
+
+            gap: clamp(1rem, 3vw, 2rem);
 
             & button {
                 border: 1px solid var(--gold);
@@ -38,14 +50,15 @@ app-modal {
                 padding: 0.8rem 1.3rem;
                 cursor: pointer;
 
+                flex: 1 1 0%;
+                min-width: min(120px, 100%);
+                text-align: center;
+
                 &:hover:not(:disabled) {
                     color: #f0d080;
                     transform: translateY(-3px);
 
-                    &::before {
-                        opacity: 0;
-                    }
-
+                    &::before { opacity: 0; }
                     &::after {
                         opacity: 1;
                         transform: scale(1);

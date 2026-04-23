@@ -487,7 +487,7 @@ async function loadHistory(token) {
         if (!response.ok) throw new Error("Erreur serveur");
 
         const payload = await response.json();
-        const games = payload.games || [];
+        let games = payload.games || [];
 
 
         if (games.length === 0) {
@@ -498,11 +498,22 @@ async function loadHistory(token) {
 
         historyEmptyEl.style.display = 'none';
 
+        const isMobile = document.documentElement.classList.contains('mobile') || document.body.classList.contains('mobile');
+        const limit = isMobile ? 5 : 10;
+
+        const historyTitleEl = document.querySelector('#tab-history h2');
+        if (historyTitleEl) {
+            historyTitleEl.textContent = `Vos ${limit} dernières parties`;
+        }
+
+        games = games.slice(0, limit);
+
         games.forEach(game => {
             const li = document.createElement('li');
 
             let resultClass = 'draw';
             let resultText = 'Égalité';
+            let nbMoves = game.movesCount>0?game.movesCount:0;
             if (game.result === 'WIN') { resultClass = 'win'; resultText = 'Victoire'; }
             if (game.result === 'LOSS') { resultClass = 'loss'; resultText = 'Défaite'; }
 
@@ -521,7 +532,7 @@ async function loadHistory(token) {
                 </div>
                 <div class="history-details">
                     <p class="history-result">${resultText}</p>
-                    <p class="history-meta">${game.movesCount} coups • ${dateStr}</p>
+                    <p class="history-meta">${nbMoves} coups • ${dateStr}</p>
                 </div>
             `;
 
