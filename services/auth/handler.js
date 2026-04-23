@@ -158,7 +158,7 @@ exports.HTTPHandler = {
         }
 
         let refreshToken;
-
+        console.log("origin",origin)
         if (origin === "https://khet-olympe.mobile.app") {
             refreshToken = createMobileSessionId(user);
             await sessions.insertOne({refreshToken, username});
@@ -209,7 +209,7 @@ exports.HTTPHandler = {
             // Check validity of refresh token or session id
             const payload = jwt.verify(token, JWT_SECRET);
             if (payload.type === "session") {
-                const sessionExists = sessions.findOne({sessionId: token});
+                const sessionExists = await sessions.findOne({sessionId: token});
                 if (!sessionExists) {
                     throw new Error(`Session '${payload}' doesn't exist`);
                 }
