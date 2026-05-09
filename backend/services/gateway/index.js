@@ -30,7 +30,10 @@ function getPathSegments(url) {
 
 async function handleHTTPRequest(req, res) {
     const origin = req.headers.origin;
-    console.log("\n\n\n\n\n",origin,"\n\n\n\n\n\n")
+
+    // DEBUG::
+    console.log(`Incoming request from: ${origin}`);
+
     // Add CORS headers to the response
     if (ALLOWED_ORIGINS.includes(origin)) {
         res.setHeader("Access-Control-Allow-Origin", origin);
@@ -55,34 +58,46 @@ async function handleHTTPRequest(req, res) {
         if (filePath[1] === "api") {
             switch(filePath[2]) {
                 case "games":
+                    // DEBUG::
                     console.log("-> Transfer request to game-service (8002)");
+
                     proxy.web(req, res, { target: GAME_SERVICE_URL });
                     break;
                 case "auth":
+                    // DEBUG::
                     console.log("-> Transfer request to auth-service (8003)");
+
                     proxy.web(req, res, { target: AUTH_SERVICE_URL });
                     break;
                 case "users":
+                    // DEBUG::
                     console.log("-> Transfer request to user-service (8004)");
+
                     proxy.web(req, res, { target : USER_SERVICE_URL });
                     break;
                 case "challenge-service" :
-                    console.log("-> Redirection challengeService (8005)");
+                    // DEBUG::
+                    console.log("-> Transfer request to challenge-service (8005)");
+
                     proxy.web(req, res, { target: CHALLENGE_SERVICE_URL });
                     break;
                 case "chats":
-                    console.log("-> Redirection chat-service (8006)");
+                    // DEBUG::
+                    console.log("-> Transfer request to chat-service (8006)");
+
                     proxy.web(req, res, { target: CHAT_SERVICE_URL });
                     break;
             }
 
         // If it doesn't start by /api, then it's a request for a file.
         } else {
+            // DEBUG::
             console.log("Request for a file received, transferring to the file service")
+
             proxy.web(req, res, { target: FILE_SERVICE_URL });
         }
     } catch(error) {
-        console.log(`Error while processing ${req.url}: ${error}`)
+        console.error(`Error while processing ${req.url}: ${error}`)
         res.statusCode = 400;
         res.end(`Something in your request (${req.url}) is strange...`);
     }
@@ -102,15 +117,21 @@ function handleWebSocket(req, socket, head) {
     if (filePath[1] === "api") {
         switch(filePath[2]) {
             case "games":
-                console.log("Transfer WS upgrade to game-service (8002)");
+                // DEBUG::
+                console.log("-> Transfer WS upgrade to game-service (8002)");
+
                 proxy.ws(req, socket, head, { target: GAME_SERVICE_URL });
                 break;
             case "challenge-service":
-                console.log("-> WS Upgrade vers ChallengeService (8005)");
+                // DEBUG::
+                console.log("-> Transfer WS upgrade to challenge-service (8005)");
+
                 proxy.ws(req, socket, head, { target: CHALLENGE_SERVICE_URL });
                 break;
             case "chats":
-                console.log("-> WS Upgrade vers chat-service (8006)");
+                // DEBUG::
+                console.log("-> Transfer WS upgrade to chat-service (8006)");
+
                 proxy.ws(req, socket, head, { target: CHAT_SERVICE_URL });
                 break;
         }
@@ -127,7 +148,10 @@ if (IS_PROD) {
     // HTTP server to redirect client to the HTTPS server
     const httpServer = http.createServer((req, res) => {
         const redirectUrl = `https://${req.headers.host}${req.url}`;
-        console.log(`Redirect to HTTPS: ${req} --> ${redirectUrl}`);
+
+        // DEBUG::
+        console.log(`Redirect HTTP to HTTPS: ${req} --> ${redirectUrl}`);
+
         res.writeHead(301, { 'Location': redirectUrl });
         res.end();
     });
