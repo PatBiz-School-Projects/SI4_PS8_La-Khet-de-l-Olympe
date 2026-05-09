@@ -2,14 +2,13 @@ FROM node:20-slim
 
 WORKDIR /app
 
-COPY userService/package*.json ./
+COPY ./package*.json ./
 RUN npm install --omit=dev
 
-COPY userService/ ./
-COPY helpers ./helpers
+COPY . .
 
 USER node
 
-EXPOSE 8004
+EXPOSE 8001
 
 CMD ["node", "index.js"]

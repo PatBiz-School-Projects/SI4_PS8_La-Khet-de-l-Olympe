@@ -40,7 +40,7 @@ services:
   gateway:
     <<: *common
     build:
-      context: ./services/gateway
+      context: ./backend/services/gateway
       network: host
     depends_on:
       - game-service
@@ -58,6 +58,8 @@ services:
       USER_SERVICE_URL:      *users-url
       CHALLENGE_SERVICE_URL: *challenges-url
       CHAT_SERVICE_URL:      *chats-url
+    volumes:
+      - ./backend/helpers:/app/helpers:ro
     ports:
       - "8000:8000"
       - "8443:8443"
@@ -68,22 +70,22 @@ services:
   file-service:
     <<: *common
     build:
-      context: ./services/files
+      context: ./backend/services/files
       network: host
     environment:
       IS_PROD: ${IS_PROD}
       PORT: *files-port
     volumes:
-      - ./frontend/src:/app/front
-      - ./frontend/assets:/app/front/assets
+      - ./backend/helpers:/app/helpers:ro
+      - ./frontend/src:/app/front:ro
+      - ./frontend/assets:/app/front/assets:ro
     networks:
       - internal
 
   user-service:
     <<: *common
     build:
-      context: ./services
-      dockerfile: ./userService/Dockerfile
+      context: ./backend/services/userService
       network: host
     depends_on:
       mongo:
@@ -96,14 +98,15 @@ services:
       DB_URL:           *mongo-url
       REDIS_URL:        *redis-url
       AUTH_SERVICE_URL: *auth-url
+    volumes:
+      - ./backend/helpers:/app/helpers:ro
     networks:
       - internal
 
   game-service:
     <<: *common
     build:
-      context: ./services
-      dockerfile: ./gameService/Dockerfile
+      context: ./backend/services/gameService
       network: host
     depends_on:
       mongo:
@@ -120,14 +123,15 @@ services:
       USER_SERVICE_URL: *users-url
       CHAT_SERVICE_URL: *chats-url
       AUTH_SERVICE_URL: *auth-url
+    volumes:
+      - ./backend/helpers:/app/helpers:ro
     networks:
       - internal
 
   chat-service:
     <<: *common
     build:
-      context: ./services
-      dockerfile: ./chats/Dockerfile
+      context: ./backend/services/chats
       network: host
     depends_on:
       mongo:
@@ -144,14 +148,15 @@ services:
       REDIS_URL:        *redis-url
       USER_SERVICE_URL: *users-url
       AUTH_SERVICE_URL: *auth-url
+    volumes:
+      - ./backend/helpers:/app/helpers:ro
     networks:
       - internal
 
   challenge-service:
     <<: *common
     build:
-      context: ./services
-      dockerfile: ./challengeService/Dockerfile
+      context: ./backend/services/challengeService
       network: host
     depends_on:
       user-service:
@@ -164,14 +169,15 @@ services:
       USER_SERVICE_URL: *users-url
       GAME_SERVICE_URL: *games-url
       AUTH_SERVICE_URL: *auth-url
+    volumes:
+      - ./backend/helpers:/app/helpers:ro
     networks:
       - internal
 
   auth-service:
     <<: *common
     build:
-      context: ./services
-      dockerfile: ./auth/Dockerfile
+      context: ./backend/services/auth
       network: host
     depends_on:
       mongo:
@@ -188,6 +194,8 @@ services:
       DB_URL:               *mongo-url
       USER_SERVICE_URL:     *users-url
       AUTH_SERVICE_URL:     *auth-url
+    volumes:
+      - ./backend/helpers:/app/helpers:ro
     networks:
       - internal
 
@@ -195,7 +203,7 @@ services:
     <<: *common
     image: mongo:7.0
     volumes:
-      - ./data/db:/data/db
+      - ./backend/database:/data/db
     command: ["mongod", "--quiet", "--logpath", "/dev/null"]
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
